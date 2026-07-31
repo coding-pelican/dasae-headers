@@ -27,7 +27,6 @@ T_use_E$($set(mem_E)(io_PTY__linux_StrPZ0List));
 $static fn_((io_PTY__linux_freeStrPZ0List(mem_Alctr gpa, io_PTY__linux_StrPZ0List* list))(void));
 $static fn_((io_PTY__linux_makeStrPZ0List(mem_Alctr gpa, S$S_const$u8 args))(mem_E$io_PTY__linux_StrPZ0List));
 $static fn_((io_PTY__linux_slavePath(u32 number, S$u8 out))(S_const$u8));
-$static fn_((io_PTY__linux_termFromStatus(int status))(proc_Child_Ter));
 $static fn_((io_PTY__linux_exec(proc_Cmd cmd, io_PTY__linux_StrPZ0List argv, io_PTY__linux_StrPZ0List env))(void));
 #endif /* plat_is_linux */
 
@@ -43,14 +42,14 @@ T_alias$((io_PTY__ConPtyApi)(struct io_PTY__ConPtyApi {
 }));
 
 T_alias$((io_PTY__windows_EnvBlock)(O$S$u16));
-T_use_E$($set(io_PTY_E)(io_PTY__windows_EnvBlock));
-T_use_E$($set(io_PTY_E)(S$u16));
+T_use_E$($set(io_PTY_SpawnE)(io_PTY__windows_EnvBlock));
+T_use_E$($set(io_PTY_SpawnE)(S$u16));
 
 $static fn_((io_PTY__loadConPtyApi(io_PTY__ConPtyApi* out))(bool));
-$static fn_((io_PTY__mapWindowsOpenError(DWORD error))(io_PTY_E));
+$static fn_((io_PTY__mapWindowsOpenError(DWORD error))(EAny));
 $static fn_((io_PTY__windowsQuoteAppend(io_Writer out, S_const$u8 arg))(io_WriteE$void));
-$static fn_((io_PTY__windowsMakeCmdLine(mem_Alctr gpa, S$S_const$u8 argv))(io_PTY_E$S$u16));
-$static fn_((io_PTY__windowsMakeEnvBlock(mem_Alctr gpa, O$proc_Cmd_Env env_opt))(io_PTY_E$io_PTY__windows_EnvBlock));
+$static fn_((io_PTY__windowsMakeCmdLine(mem_Alctr gpa, S$S_const$u8 argv))(io_PTY_SpawnE$S$u16));
+$static fn_((io_PTY__windowsMakeEnvBlock(mem_Alctr gpa, O$proc_Cmd_Env env_opt))(io_PTY_SpawnE$io_PTY__windows_EnvBlock));
 $static fn_((io_PTY__windowsFreeWide(mem_Alctr gpa, S$u16 text))(void));
 $static fn_((io_PTY__windowsFreeEnvBlock(mem_Alctr gpa, io_PTY__windows_EnvBlock block))(void));
 $static fn_((io_PTY__windowsHpc(const io_PTY* self))(HPCON));
@@ -125,25 +124,13 @@ fn_((io_PTY__linux_slavePath(u32 number, S$u8 out))(S_const$u8)) {
     return S_prefix((out.as_const)(prefix.len + digit_count));
 };
 
-fn_((io_PTY__linux_termFromStatus(int status))(proc_Child_Ter)) {
-    if ((status & 0x7f) == 0) {
-        return union_of$((proc_Child_Ter)(proc_Child_Ter_Tag_exited){
-            as$(u8)((status >> 8) & 0xff)
-        });
-    }
-    if ((status & 0xff) == 0x7f) {
-        return union_of$((proc_Child_Ter)(proc_Child_Ter_Tag_stopped){
-            as$(sys_posix_signal_t)((status >> 8) & 0xff)
-        });
-    }
-    return union_of$((proc_Child_Ter)(proc_Child_Ter_Tag_signal){
-        as$(sys_posix_signal_t)(status & 0x7f)
-    });
-};
-
 fn_((io_PTY__linux_exec(proc_Cmd cmd, io_PTY__linux_StrPZ0List argv, io_PTY__linux_StrPZ0List env))(void)) {
-    if_some((cmd.cwd)(cwd)) {
-        if (sys_call_linux_fchdir(as$(sys_call_linux_word)(fs_Dir_handle(cwd))) != 0) sys_call_linux_exit_group(127);
+    if (matches(cmd.cwd, proc_Cwd_dir)) {
+        if (
+            sys_call_linux_fchdir(as$(sys_call_linux_word)(fs_Dir_handle(union_to((cmd.cwd)(proc_Cwd_dir))))) != 0
+        ) {
+            sys_call_linux_exit_group(127);
+        }
     };
     let_ignore = sys_call_linux_execve(
         (as$(const char*)(*S_at((argv.ptrs)[0]))),
@@ -167,12 +154,12 @@ fn_((io_PTY__loadConPtyApi(io_PTY__ConPtyApi* out))(bool)) {
     return out->create != null && out->resize != null && out->close != null;
 };
 
-fn_((io_PTY__mapWindowsOpenError(DWORD error))(io_PTY_E)) {
+fn_((io_PTY__mapWindowsOpenError(DWORD error))(EAny)) {
     switch (error) {
     case ERROR_NOT_ENOUGH_MEMORY: $fallthrough;
     case ERROR_OUTOFMEMORY: $fallthrough;
-    case_((ERROR_NO_SYSTEM_RESOURCES)) return E_cause$io_PTY_SystemResources() $end(case);
-    default_() return E_cause$io_PTY_OpenFailed() $end(default);
+    case_((ERROR_NO_SYSTEM_RESOURCES)) return E_cause$io_PTY_SystemResources().any $end(case);
+    default_() return E_cause$io_PTY_OpenFailed().any $end(default);
     }
 };
 
@@ -208,7 +195,7 @@ fn_((io_PTY__windowsQuoteAppend(io_Writer out, S_const$u8 arg))(io_WriteE$void) 
     return_ok({});
 } $unscoped(fn);
 
-fn_((io_PTY__windowsMakeCmdLine(mem_Alctr gpa, S$S_const$u8 argv))(io_PTY_E$S$u16) $guard) {
+fn_((io_PTY__windowsMakeCmdLine(mem_Alctr gpa, S$S_const$u8 argv))(io_PTY_SpawnE$S$u16) $guard) {
     if (argv.len == 0) return_err(E_cause$io_PTY_InvalidCommand());
     var_(cap, usize) = 0;
     for_(($rt(argv.len))(i)) {
@@ -245,7 +232,7 @@ fn_((io_PTY__windowsMakeCmdLine(mem_Alctr gpa, S$S_const$u8 argv))(io_PTY_E$S$u1
     return_ok(wide);
 } $unguarded(fn);
 
-fn_((io_PTY__windowsMakeEnvBlock(mem_Alctr gpa, O$proc_Cmd_Env env_opt))(io_PTY_E$io_PTY__windows_EnvBlock) $guard) {
+fn_((io_PTY__windowsMakeEnvBlock(mem_Alctr gpa, O$proc_Cmd_Env env_opt))(io_PTY_SpawnE$io_PTY__windows_EnvBlock) $guard) {
     if_none(env_opt) return_ok(none());
     let env = unwrap_(env_opt);
     var_(cap, usize) = 1;
@@ -300,7 +287,7 @@ fn_((io_PTY__windowsHpc(const io_PTY* self))(HPCON)) {
 
 /*---------- PTY Lifecycle --------------------------------------------------*/
 
-fn_((io_PTY_open(io_PTY_OpenCfg cfg))(io_PTY_E$io_PTY) $guard) {
+fn_((io_PTY_open(io_PTY_OpenCfg cfg))(io_PTY_OpenE$io_PTY) $guard) {
     if (!io_PTY__validSize(cfg.size)) return_err(E_cause$io_PTY_InvalidSize());
 #if plat_is_windows
     if (cfg.nonblocking) return_err(E_cause$io_PTY_Unsupported());
@@ -400,7 +387,7 @@ fn_((io_PTY_writer(io_PTY* self))(io_Writer)) {
     return fs_File_writer(orelse_((self->write_file)(self->read_file)));
 };
 
-fn_((io_PTY_resize(io_PTY* self, io_PTY_Size size))(io_PTY_E$void) $scope) {
+fn_((io_PTY_resize(io_PTY* self, io_PTY_Size size))(io_PTY_ResizeE$void) $scope) {
     claim_assert_nonnull(self);
     if (!io_PTY__validSize(size)) return_err(E_cause$io_PTY_InvalidSize());
 #if plat_is_windows
@@ -421,10 +408,12 @@ fn_((io_PTY_resize(io_PTY* self, io_PTY_Size size))(io_PTY_E$void) $scope) {
 
 /*---------- PTY Session ----------------------------------------------------*/
 
-fn_((io_PTY_spawn(io_PTY_SpawnCfg cfg))(io_PTY_E$io_PTY_Session) $guard) {
+fn_((io_PTY_spawn(io_PTY_SpawnCfg cfg))(io_PTY_SpawnE$io_PTY_Session) $guard) {
     if (cfg.cmd.argv.len == 0) return_err(E_cause$io_PTY_InvalidCommand());
 #if plat_is_windows
-    if (isSome(cfg.cmd.cwd)) return_err(E_cause$io_PTY_Unsupported());
+    if (!matches(cfg.cmd.cwd, proc_Cwd_inherit)) {
+        return_err(E_cause$io_PTY_Unsupported());
+    }
     var pty = try_(io_PTY_open(cfg.pty));
     errdefer_($ignore, io_PTY_close(&pty));
     var cmd_line = try_(io_PTY__windowsMakeCmdLine(cfg.gpa, cfg.cmd.argv));
@@ -481,6 +470,9 @@ fn_((io_PTY_spawn(io_PTY_SpawnCfg cfg))(io_PTY_E$io_PTY_Session) $guard) {
     });
 #elif plat_is_linux
     if (cfg.cmd.expand_arg0 == proc_ArgExpsn_expand) return_err(E_cause$io_PTY_InvalidCommand());
+    if (matches(cfg.cmd.cwd, proc_Cwd_path)) {
+        return_err(E_cause$io_PTY_Unsupported());
+    }
     var pty = try_(io_PTY_open(cfg.pty));
     errdefer_($ignore, io_PTY_close(&pty));
     var argv = try_(io_PTY__linux_makeStrPZ0List(cfg.gpa, cfg.cmd.argv));
@@ -517,7 +509,7 @@ fn_((io_PTY_spawn(io_PTY_SpawnCfg cfg))(io_PTY_E$io_PTY_Session) $guard) {
     return_ok((io_PTY_Session){
         .pty = pty,
         .child = {
-            .handle = some(as$(proc_Child_Handle)(pid)),
+            .handle = none(),
             .id = as$(proc_Child_Id)(pid),
             .io = {
                 .in = none(),
@@ -532,12 +524,14 @@ fn_((io_PTY_spawn(io_PTY_SpawnCfg cfg))(io_PTY_E$io_PTY_Session) $guard) {
 #endif
 } $unguarded(fn);
 
-fn_((io_PTY_Session_close(io_PTY_Session* self))(void)) {
+fn_((io_PTY_Session_close(
+    proc_Self provider,
+    io_PTY_Session* self
+))(void)) {
+    proc_ensureValid(provider);
     claim_assert_nonnull(self);
+    proc_Child_kill(provider, &self->child);
     io_PTY_close(&self->pty);
-#if plat_is_windows
-    if_some((self->child.handle)(handle)) CloseHandle(as$(HANDLE)(handle));
-#endif
     asg_l((self)(cleared()));
 };
 
@@ -551,35 +545,25 @@ fn_((io_PTY_Session_writer(io_PTY_Session* self))(io_Writer)) {
     return io_PTY_writer(&self->pty);
 };
 
-fn_((io_PTY_Session_resize(io_PTY_Session* self, io_PTY_Size size))(io_PTY_E$void) $scope) {
+fn_((io_PTY_Session_resize(io_PTY_Session* self, io_PTY_Size size))(io_PTY_ResizeE$void) $scope) {
     claim_assert_nonnull(self);
     return_(io_PTY_resize(&self->pty, size));
 } $unscoped(fn);
 
 fn_((io_PTY_Session_wait(
+    proc_Self provider,
     io_PTY_Session* self
 ))(proc_Child_Wait_E$proc_Child_Ter) $scope) {
+    proc_ensureValid(provider);
     claim_assert_nonnull(self);
-#if plat_is_windows
-    return_(proc_Child_wait(&self->child));
-#elif plat_is_linux
-    var_(status, int) = 0;
-    if (sys_call_linux_wait4(as$(sys_call_linux_word)(self->child.id), &status, 0, null) < 0) {
-        return_err(E_cause$proc_SystemResources());
-    }
-    return_ok(io_PTY__linux_termFromStatus(status));
-#else
-    return_err(E_cause$io_PTY_Unsupported());
-#endif
+    return_(proc_Child_wait(provider, &self->child));
 } $unscoped(fn);
 
-fn_((io_PTY_Session_kill(io_PTY_Session* self))(void)) {
+fn_((io_PTY_Session_kill(
+    proc_Self provider,
+    io_PTY_Session* self
+))(void)) {
+    proc_ensureValid(provider);
     claim_assert_nonnull(self);
-#if plat_is_windows
-    proc_Child_kill(self->child);
-#elif plat_is_linux
-    let_ignore = sys_call_linux_kill(as$(sys_call_linux_word)(self->child.id), 15);
-#else
-    let_ignore = self;
-#endif
+    proc_Child_kill(provider, &self->child);
 };

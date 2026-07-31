@@ -19,7 +19,7 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "dh/prl.h"
-#include "start/Entry.h"
+#include "start/Invoc.h"
 
 #if plat_is_windows
 #include "sys/api/windows/proc.h"

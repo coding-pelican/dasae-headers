@@ -10,29 +10,24 @@
 
 /*========== Internal Declarations ==========================================*/
 
-T_alias$((heap_VMap__SystemCtx)(struct heap_VMap__SystemCtx {
-    var_(geom, heap_Geom);
-}));
-
-$static fn_((heap_VMap__system_ctx(P$raw ctx))(heap_VMap__SystemCtx*));
-$static fn_((heap_VMap__system_map(P$raw ctx, O$P$raw addr_hint, usize len))(O$P$u8));
-$static fn_((heap_VMap__system_release(P$raw ctx, P$raw addr, usize len))(bool));
-$static fn_((heap_VMap__system_remap(P$raw ctx, P$raw addr, usize old_len, usize new_len))(O$P$u8));
+$static fn_((heap_VMap__system_map(const heap_VMap_Ctx* ctx, O$P$raw addr_hint, usize len))(O$P$u8));
+$static fn_((heap_VMap__system_release(const heap_VMap_Ctx* ctx, P$raw addr, usize len))(bool));
+$static fn_((heap_VMap__system_remap(const heap_VMap_Ctx* ctx, P$raw addr, usize old_len, usize new_len))(O$P$u8));
 
 /*========== External Definitions ===========================================*/
 
 fn_((heap_VMap_system(void))(heap_VMap_E$heap_VMap) $scope) {
 #if plat_is_windows || plat_is_linux || plat_is_darwin
-    let geom = catch_((heap_Geom_system())($ignore, return_err(E_cause$heap_VMap_Unsupported())));
-    $static var_(ctx, heap_VMap__SystemCtx) $undefined_static;
+    $static var_(inner, Void) $undefined_static;
+    $static var_(ctx, heap_VMap_Ctx) $undefined_static;
     $static let_(vtbl, heap_VMap_VTbl) = {
         .mapFn = heap_VMap__system_map,
         .releaseFn = heap_VMap__system_release,
         .remapFn = heap_VMap__system_remap,
     };
-    asg_l((&ctx)((heap_VMap__SystemCtx){ .geom = geom }));
+    let geom = catch_((heap_Geom_system())($ignore, return_err(E_cause$heap_VMap_Unsupported())));
+    asg_l((&ctx)((heap_VMap_Ctx){ .inner = &inner, .geom = geom }));
     return_ok(heap_VMap_ensureValid((heap_VMap){
-        .geom = ctx.geom,
         .ctx = &ctx,
         .vtbl = &vtbl,
     }));
@@ -43,7 +38,7 @@ fn_((heap_VMap_system(void))(heap_VMap_E$heap_VMap) $scope) {
 
 fn_((heap_VMap_geom(heap_VMap self))(heap_Geom)) {
     self = heap_VMap_ensureValid(self);
-    return self.geom;
+    return self.ctx->geom;
 };
 
 fn_((heap_VMap_map(heap_VMap self, O$P$raw addr_hint, usize len))(O$P$u8)) {
@@ -63,14 +58,9 @@ fn_((heap_VMap_remap(heap_VMap self, P$raw addr, usize old_len, usize new_len))(
 
 /*========== Internal Definitions ===========================================*/
 
-fn_((heap_VMap__system_ctx(P$raw ctx))(heap_VMap__SystemCtx*)) {
-    return ptrCast$((heap_VMap__SystemCtx*)(ensureNonnull(ctx)));
-};
-
-fn_((heap_VMap__system_map(P$raw ctx, O$P$raw addr_hint, usize len))(O$P$u8) $scope) {
-    let system = heap_VMap__system_ctx(ctx);
+fn_((heap_VMap__system_map(const heap_VMap_Ctx* ctx, O$P$raw addr_hint, usize len))(O$P$u8) $scope) {
     let hint = orelse_((addr_hint)(null));
-    let aligned_len = heap_Geom_alignPageWith(system->geom, len);
+    let aligned_len = heap_Geom_alignPageWith(ctx->geom, len);
 #if plat_is_windows
     let addr = VirtualAlloc(hint, aligned_len, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
     return_(expr_(ReturnType $scope)(
@@ -100,9 +90,8 @@ fn_((heap_VMap__system_map(P$raw ctx, O$P$raw addr_hint, usize len))(O$P$u8) $sc
 #endif
 } $unscoped(fn);
 
-fn_((heap_VMap__system_release(P$raw ctx, P$raw addr, usize len))(bool)) {
-    let system = heap_VMap__system_ctx(ctx);
-    let aligned_len = heap_Geom_alignPageWith(system->geom, len);
+fn_((heap_VMap__system_release(const heap_VMap_Ctx* ctx, P$raw addr, usize len))(bool)) {
+    let aligned_len = heap_Geom_alignPageWith(ctx->geom, len);
 #if plat_is_windows
     let_ignore = aligned_len;
     return VirtualFree(addr, 0, MEM_RELEASE);
@@ -117,13 +106,12 @@ fn_((heap_VMap__system_release(P$raw ctx, P$raw addr, usize len))(bool)) {
 #endif
 };
 
-fn_((heap_VMap__system_remap(P$raw ctx, P$raw addr, usize old_len, usize new_len))(O$P$u8) $scope) {
+fn_((heap_VMap__system_remap(const heap_VMap_Ctx* ctx, P$raw addr, usize old_len, usize new_len))(O$P$u8) $scope) {
 #if plat_is_linux
-    let system = heap_VMap__system_ctx(ctx);
     let new_addr = sys_call_linux_mremap(
         addr,
-        heap_Geom_alignPageWith(system->geom, old_len),
-        heap_Geom_alignPageWith(system->geom, new_len),
+        heap_Geom_alignPageWith(ctx->geom, old_len),
+        heap_Geom_alignPageWith(ctx->geom, new_len),
         sys_call_linux_MREMAP_MAYMOVE,
         null
     );

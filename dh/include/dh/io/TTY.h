@@ -5,7 +5,7 @@
  * @file    TTY.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2026-06-24 (date of creation)
- * @updated 2026-06-24 (date of last update)
+ * @updated 2026-07-31 (date of last update)
  * @ingroup dal-project/da/io
  * @prefix  io_TTY
  *
@@ -20,7 +20,7 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "self.h"
+#include "Self.h"
 #include "../fs/File/self.h"
 #include "../proc/std.h"
 
@@ -28,12 +28,25 @@ extern "C" {
 
 /*---------- Errors ---------------------------------------------------------*/
 
-errset_((io_TTY_E)(
-    io_TTY_Unsupported,
-    io_TTY_NotTTY,
-    io_TTY_BadHandle,
-    io_TTY_ModeFailed,
-    io_TTY_QueryFailed
+errset_((io_TTY_UnsupportedE)(io_TTY_Unsupported));
+errset_((io_TTY_NotTTYE)(io_TTY_NotTTY));
+errset_((io_TTY_BadHandleE)(io_TTY_BadHandle));
+errset_((io_TTY_ModeFailedE)(io_TTY_ModeFailed));
+errset_((io_TTY_QueryFailedE)(io_TTY_QueryFailed));
+
+errset_((io_TTY_IsTTYE)() $union_errset_(io_TTY_BadHandleE));
+errset_((io_TTY_ModeE)() $union_errset_(
+    io_TTY_UnsupportedE,
+    io_TTY_BadHandleE,
+    io_TTY_ModeFailedE
+));
+errset_((io_TTY_ApplyModeE)() $union_errset_(
+    io_TTY_NotTTYE,
+    io_TTY_ModeE
+));
+errset_((io_TTY_QueryE)() $union_errset_(
+    io_TTY_UnsupportedE,
+    io_TTY_QueryFailedE
 ));
 
 /*---------- Terminal Mode --------------------------------------------------*/
@@ -91,20 +104,21 @@ T_alias$((io_TTY_ModeSnapshot)(struct io_TTY_ModeSnapshot {
     var_(input, O$io_TTY_ModeState);
     var_(output, O$io_TTY_ModeState);
 }));
-T_use_E$($set(io_TTY_E)(io_TTY_ModeSnapshot));
+T_use_E$($set(io_TTY_ModeE)(io_TTY_ModeSnapshot));
 
 T_alias$((io_TTY_CellSize)(struct io_TTY_CellSize {
     var_(cols, u16);
     var_(rows, u16);
 }));
-T_use_E$($set(io_TTY_E)(io_TTY_CellSize));
+T_use_E$($set(io_TTY_QueryE)(io_TTY_CellSize));
 
 T_alias$((io_TTY_Pos)(struct io_TTY_Pos {
     var_(x, u16);
     var_(y, u16);
 }));
-T_use_E$($set(io_TTY_E)(io_TTY_Pos));
-T_use_E$($set(io_TTY_E)(bool));
+T_use_E$($set(io_TTY_QueryE)(io_TTY_Pos));
+T_use_E$($set(io_TTY_IsTTYE)(bool));
+T_use_E$($set(io_TTY_QueryE)(bool));
 
 /*---------- Terminal Instance ----------------------------------------------*/
 
@@ -113,7 +127,7 @@ T_alias$((io_TTY_Cfg)(struct io_TTY_Cfg {
     var_(output_file, fs_File);
 }));
 $attr($inline_always)
-$static fn_((io_TTY_Cfg_std(void))(io_TTY_Cfg));
+$static fn_((io_TTY_Cfg_std(proc_std_Self std))(io_TTY_Cfg));
 
 T_alias$((io_TTY_Restore)(struct io_TTY_Restore {
     var_(snapshot, io_TTY_ModeSnapshot);
@@ -139,28 +153,28 @@ $extern fn_((io_TTY_writer(const io_TTY* self))(io_Writer));
 /*---------- Mode Control ---------------------------------------------------*/
 
 $attr($must_check)
-$extern fn_((io_TTY_snapshot(const io_TTY* self))(io_TTY_E$io_TTY_ModeSnapshot));
+$extern fn_((io_TTY_snapshot(const io_TTY* self))(io_TTY_ModeE$io_TTY_ModeSnapshot));
 $attr($must_check)
-$extern fn_((io_TTY_restore(const io_TTY* self, io_TTY_ModeSnapshot snapshot))(io_TTY_E$void));
+$extern fn_((io_TTY_restore(const io_TTY* self, io_TTY_ModeSnapshot snapshot))(io_TTY_ModeE$void));
 $attr($must_check)
-$extern fn_((io_TTY_applyModePatch(const io_TTY* self, io_TTY_ModePatch patch))(io_TTY_E$void));
+$extern fn_((io_TTY_applyModePatch(const io_TTY* self, io_TTY_ModePatch patch))(io_TTY_ApplyModeE$void));
 $attr($must_check)
-$extern fn_((io_TTY_enterMode(io_TTY* self, io_TTY_ModePatch patch))(io_TTY_E$void));
+$extern fn_((io_TTY_enterMode(io_TTY* self, io_TTY_ModePatch patch))(io_TTY_ApplyModeE$void));
 $extern fn_((io_TTY_leaveMode(io_TTY* self))(void));
 $extern fn_((io_TTY_isInEnteredMode(const io_TTY* self))(bool));
 
 /*---------- Queries --------------------------------------------------------*/
 
 $attr($must_check)
-$extern fn_((io_TTY_inputIsTTY(const io_TTY* self))(io_TTY_E$bool));
+$extern fn_((io_TTY_inputIsTTY(const io_TTY* self))(io_TTY_IsTTYE$bool));
 $attr($must_check)
-$extern fn_((io_TTY_outputIsTTY(const io_TTY* self))(io_TTY_E$bool));
+$extern fn_((io_TTY_outputIsTTY(const io_TTY* self))(io_TTY_IsTTYE$bool));
 $attr($must_check)
-$extern fn_((io_TTY_queryScreenCells(const io_TTY* self))(io_TTY_E$io_TTY_CellSize));
+$extern fn_((io_TTY_queryScreenCells(const io_TTY* self))(io_TTY_QueryE$io_TTY_CellSize));
 $attr($must_check)
-$extern fn_((io_TTY_queryCursorPosNative(const io_TTY* self))(io_TTY_E$io_TTY_Pos));
+$extern fn_((io_TTY_queryCursorPosNative(const io_TTY* self))(io_TTY_QueryE$io_TTY_Pos));
 $attr($must_check)
-$extern fn_((io_TTY_inputReady(const io_TTY* self))(io_TTY_E$bool));
+$extern fn_((io_TTY_inputReady(const io_TTY* self))(io_TTY_QueryE$bool));
 
 /*========== Macros and Definitions =========================================*/
 
@@ -221,10 +235,11 @@ fn_((io_TTY_ModePatch_cbreakVT(void))(io_TTY_ModePatch)) {
     };
 };
 
-fn_((io_TTY_Cfg_std(void))(io_TTY_Cfg)) {
+fn_((io_TTY_Cfg_std(proc_std_Self std))(io_TTY_Cfg)) {
+    std = proc_std_ensureValid(std);
     return (io_TTY_Cfg){
-        .input_file = proc_std_in(),
-        .output_file = proc_std_out(),
+        .input_file = proc_std_in(std),
+        .output_file = proc_std_out(std),
     };
 };
 #endif /* in_analysis_active_only || in_comptime */

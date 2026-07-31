@@ -67,37 +67,32 @@ struct Sched_VTbl {
     /// to eager or await-time execution.
     /// Thread-safe.
     $attr($must_check)
-    fn_(((*spawnFn)(
-        P$raw ctx,
-        u_P$raw result,
-        P$$(Clsr$raw) inner
-    ))(Sched_ConcE$P$FutureAny));
+    fn_(((*spawnFn)(P$raw ctx, u_P$raw result, P$$(Clsr$raw) inner))(Sched_ConcE$P$FutureAny));
 
-    /// This function is only called when `async` or `spawn` returns `some`.
-    ///
-    /// Thread-safe.
-    fn_(((*awaitFn)(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void));
-    /// Request cooperative cancel for `any_future`, like `std.Io.Future.cancel`.
-    ///
-    /// This function is only called when `async` or `spawn` returns `some`.
-    ///
-    /// Thread-safe.
-    fn_(((*cancelFn)(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void));
+    T_embed$(struct Sched_VTbl_Future {
+        /// This function is only called when `async` or `spawn` returns `some`.
+        ///
+        /// Thread-safe.
+        fn_(((*awaitFn)(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void));
+        /// Request cooperative cancel for `any_future`.
+        ///
+        /// This function is only called when `async` or `spawn` returns `some`.
+        ///
+        /// Thread-safe.
+        fn_(((*cancelFn)(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void));
+    });
 
-    /// Re-arm cancel after a prior `Sched_Canceled` from `idleFn` or another
-    /// cancellation point, like `std.Io.recancel`.
+    /// Re-arm cancel after a prior `Sched_Canceled` from `idleFn` or another cancellation point.
     ///
     /// Not thread-safe.
     fn_(((*recancelFn)(P$raw ctx))(void));
-    /// Toggle whether `idleFn` and other cancellation points may return
-    /// `Sched_Canceled`, like `std.Io.swapCancelProtcn`.
+    /// Toggle whether `idleFn` and other cancellation points may return `Sched_Canceled`.
     ///
     /// Not thread-safe.
     fn_(((*swapCancelProtcnFn)(P$raw ctx, Sched_CancelProtcn new_protect))(Sched_CancelProtcn));
     /// Cooperative no-op for the current routine; may return `Sched_Canceled`.
-    /// Same role as `std.Io.checkCancel`: one outstanding request is consumed
-    /// per successful `Sched_Canceled` return. Use `try_`/`catch_` like
-    /// `time_Awake_sleep`, not as a boolean test.
+    /// One outstanding request is consumed per successful `Sched_Canceled` return.
+    /// per successful `Sched_Canceled` return. Use `try_`/`catch_` like `time_Awake_sleep`, not as a boolean test.
     ///
     /// Not thread-safe.
     $attr($must_check)

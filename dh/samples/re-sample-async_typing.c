@@ -122,7 +122,7 @@ $static fn_((Terminal_writeTextAt(u32 x, u32 y, S_const$u8 text))(void)) {
 
 T_use_A$(1024, u8);
 $static fn_((Terminal_readBytes(S$u8 mem))(S$u8)) {
-    let stream_in = fs_File_reader(proc_std_in());
+    let stream_in = fs_File_reader(proc_std_nativeFiles().in);
     return S_prefix((mem)(catch_((io_Reader_read(stream_in, mem))($ignore, claim_unreachable))));
 };
 

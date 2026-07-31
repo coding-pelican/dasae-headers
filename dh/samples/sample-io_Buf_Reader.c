@@ -6,9 +6,7 @@
 #include "dh/fmt/common.h"
 
 fn_((main(proc_Entry entry))(E$void) $scope) {
-    let_ignore = entry;
-
-    let in_file = proc_std_in();
+    let in_file = proc_std_in(entry.std);
     let unbufd = fs_File_reader(in_file);
 
     var_(buf, A$$(4096, u8)) $undefined;

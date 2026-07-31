@@ -19,7 +19,10 @@ TEST_fn_("io/PTY: invalid sizes are rejected before platform open" $guard) {
     cfg.size = (io_PTY_Size){ .cols = 0, .rows = 24 };
 
     let rejected = eval_(bool $scope)(catch_((io_PTY_open(cfg))(err, {
-        try_(TEST_expect(E_tag$io_PTY_E(err) == E_Tag$io_PTY_InvalidSize));
+        try_(TEST_expect(E_eql(
+            err.as_any,
+            E_cause$io_PTY_InvalidSize().as_any
+        )));
         $break_(true);
     }))) eval_(else)({
         $break_(false);
@@ -27,9 +30,9 @@ TEST_fn_("io/PTY: invalid sizes are rejected before platform open" $guard) {
     try_(TEST_expect(rejected));
 } $unguarded(TEST_fn);
 
-$static fn_((test_io_PTY_openSupported(io_PTY_OpenCfg cfg))(io_PTY_E$io_PTY) $scope) {
+$static fn_((test_io_PTY_openSupported(io_PTY_OpenCfg cfg))(io_PTY_OpenE$io_PTY) $scope) {
     return_ok(catch_((io_PTY_open(cfg))(err, {
-        if (E_tag$io_PTY_E(err) == E_Tag$io_PTY_Unsupported) {
+        if (E_eql(err.as_any, E_cause$io_PTY_Unsupported().as_any)) {
             try_(TEST_skipMsg(u8_l("PTY is not supported on this platform")));
         }
         return_err(err);
@@ -48,6 +51,16 @@ TEST_fn_("io/PTY: open resize and close supported PTY" $guard) {
 TEST_fn_("io/PTY: spawn session waits for child termination" $guard) {
     var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
+    var std_direct = proc_std_Direct_initNative();
+    var direct = proc_Direct_init(
+        proc_Env_none,
+        heap_Sys_alctr(&heap),
+        proc_std_Direct_self(&std_direct)
+    );
+    let provider = catch_((proc_Direct_self(&direct))(
+        $ignore,
+        claim_unreachable
+    ));
 
 #if plat_is_windows
     var_(argv, A$$(4, S_const$u8)) = A_init({
@@ -72,7 +85,7 @@ TEST_fn_("io/PTY: spawn session waits for child termination" $guard) {
         (proc_Cmd){
             .argv = A_ref$((S$S_const$u8)(argv)),
             .env = none(),
-            .cwd = none(),
+            .cwd = union_of((proc_Cwd_inherit){}),
             .std_in = union_of((proc_std_IO_ignore){}),
             .std_out = union_of((proc_std_IO_ignore){}),
             .std_err = union_of((proc_std_IO_ignore){}),
@@ -84,15 +97,15 @@ TEST_fn_("io/PTY: spawn session waits for child termination" $guard) {
     cfg.pty.size = (io_PTY_Size){ .cols = 80, .rows = 24 };
 
     var session = catch_((io_PTY_spawn(cfg))(err, {
-        if (E_tag$io_PTY_E(err) == E_Tag$io_PTY_Unsupported) {
+        if (E_eql(err.as_any, E_cause$io_PTY_Unsupported().as_any)) {
             try_(TEST_skipMsg(u8_l("PTY spawn is not supported on this platform")));
         }
         return_err(err);
     }));
-    defer_(io_PTY_Session_close(&session));
+    defer_(io_PTY_Session_close(provider, &session));
 
     try_(io_PTY_Session_resize(&session, (io_PTY_Size){ .cols = 100, .rows = 30 }));
-    let term = try_(io_PTY_Session_wait(&session));
-    try_(TEST_expect(matches(term, proc_Child_Ter_Tag_exited)));
-    try_(TEST_expect(union_to((term)(proc_Child_Ter_Tag_exited)) == 5));
+    let term = try_(io_PTY_Session_wait(provider, &session));
+    try_(TEST_expect(matches(term, proc_Child_Ter_exited)));
+    try_(TEST_expect(union_to((term)(proc_Child_Ter_exited)) == 5));
 } $unguarded(TEST_fn);

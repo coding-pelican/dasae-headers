@@ -31,13 +31,12 @@ T_alias$((proc_Preopens_Resrc)(variant_((proc_Preopens_Resrc $fits($packed))(
 ))));
 T_use_O$(proc_Preopens_Resrc);
 
-/// Platform preopened-resource catalog.
-///
-/// Windows and POSIX derive only the three standard streams and therefore
-/// carry no storage. WASI can extend this concrete type with its descriptor map.
-T_alias$((proc_Preopens)(struct proc_Preopens {}));
+/// Concrete named resources inherited by the process.
+T_alias$((proc_Preopens)(struct proc_Preopens {
+    var_(std, proc_std_Self);
+}));
 T_use_prl$(proc_Preopens);
-$extern fn_((proc_Preopens_direct(void))(proc_Preopens));
+$extern fn_((proc_Preopens_fromStd(proc_std_Self std))(proc_Preopens));
 $extern fn_((proc_Preopens_by(
     proc_Preopens self,
     S_const$u8 name

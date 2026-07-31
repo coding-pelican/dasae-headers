@@ -19,14 +19,14 @@ fn_((io_Reader_read(io_Reader self, S$u8 out_bytes))(io_ReadE$usize)) {
     return self.readFn(self.ctx, out_bytes);
 };
 
-fn_((io_Reader_readByte(io_Reader self))(io_ReadE$u8) $scope) {
+fn_((io_Reader_readByte(io_Reader self))(io_ReadExactE$u8) $scope) {
     var_(byte_buf, A$$(1, u8)) $undefined;
     let bytes_read = try_(io_Reader_read(self, A_ref$((S$u8)byte_buf)));
     if (bytes_read == 0) return_err(E_cause$UnexpectedEOF());
     return_ok(*A_at((byte_buf)[0]));
 } $unscoped(fn);
 
-fn_((io_Reader_readExact(io_Reader self, S$u8 out_bytes))(io_ReadE$void) $scope) {
+fn_((io_Reader_readExact(io_Reader self, S$u8 out_bytes))(io_ReadExactE$void) $scope) {
     let bytes_read = try_(io_Reader_readAtLeast(self, out_bytes, out_bytes.len));
     if (bytes_read != out_bytes.len) return_err(E_cause$UnexpectedEOF());
     return_ok({});
@@ -43,13 +43,13 @@ fn_((io_Reader_readAtLeast(io_Reader self, S$u8 out_bytes, usize least_len))(io_
     return_ok(idx);
 } $unscoped(fn);
 
-fn_((io_Reader_skip(io_Reader self, usize discard_len))(io_ReadE$void) $scope) {
+fn_((io_Reader_skip(io_Reader self, usize discard_len))(io_ReadExactE$void) $scope) {
     let skipped_len = try_(io_Reader_skipAtLeast(self, discard_len));
     if (skipped_len != discard_len) return_err(E_cause$UnexpectedEOF());
     return_ok({});
 } $unscoped(fn);
 
-fn_((io_Reader_skipByte(io_Reader self))(io_ReadE$void) $scope) {
+fn_((io_Reader_skipByte(io_Reader self))(io_ReadExactE$void) $scope) {
     return io_Reader_skip(self, 1);
 } $unscoped(fn);
 
@@ -66,7 +66,7 @@ fn_((io_Reader_skipAtLeast(io_Reader self, usize least_len))(io_ReadE$usize) $sc
     return_ok(skipped_len);
 } $unscoped(fn);
 
-fn_((io_Reader_copy(io_Reader self, io_Writer writer))(io_E$usize) $scope) {
+fn_((io_Reader_copy(io_Reader self, io_Writer writer))(io_CopyE$usize) $scope) {
     var_(temp_buf, A$$(1024, u8)) $undefined;
     var_(total, usize) = 0;
     while (true) {
@@ -77,19 +77,19 @@ fn_((io_Reader_copy(io_Reader self, io_Writer writer))(io_E$usize) $scope) {
     }
 } $unscoped(fn);
 
-fn_((io_Reader_copyByte(io_Reader self, io_Writer writer))(io_E$void) $scope) {
+fn_((io_Reader_copyByte(io_Reader self, io_Writer writer))(io_CopyExactE$void) $scope) {
     let byte = try_(io_Reader_readByte(self));
     try_(io_Writer_writeByte(writer, byte));
     return_ok({});
 } $unscoped(fn);
 
-fn_((io_Reader_copyExact(io_Reader self, io_Writer writer, usize copy_len))(io_E$void) $scope) {
+fn_((io_Reader_copyExact(io_Reader self, io_Writer writer, usize copy_len))(io_CopyExactE$void) $scope) {
     let copied_len = try_(io_Reader_copyAtLeast(self, writer, copy_len));
     if (copied_len != copy_len) return_err(E_cause$UnexpectedEOF());
     return_ok({});
 } $unscoped(fn);
 
-fn_((io_Reader_copyAtLeast(io_Reader self, io_Writer writer, usize least_len))(io_E$usize) $scope) {
+fn_((io_Reader_copyAtLeast(io_Reader self, io_Writer writer, usize least_len))(io_CopyE$usize) $scope) {
     var_(temp_buf, A$$(1024, u8)) $undefined;
     var_(copied_len, usize) = 0;
     while (copied_len < least_len) {

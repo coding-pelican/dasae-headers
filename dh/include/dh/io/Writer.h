@@ -5,7 +5,7 @@
  * @file    Writer.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2025-05-13 (date of creation)
- * @updated 2026-02-06 (date of last update)
+ * @updated 2026-07-31 (date of last update)
  * @ingroup dal-project/da/io
  * @prefix  io_Writer
  */
@@ -43,8 +43,7 @@ $attr($inline_always)
 $static fn_((io_Writer_isValid(io_Writer self))(bool));
 $attr($inline_always)
 $static fn_((io_Writer_assertValid(
-    P$raw ctx,
-    fn_(((*writeFn)(P$raw ctx, S_const$u8 bytes))(io_WriteE$usize))
+    P$raw ctx, fn_(((*writeFn)(P$raw ctx, S_const$u8 bytes))(io_WriteE$usize))
 ))(void));
 $attr($inline_always)
 $static fn_((io_Writer_ensureValid(io_Writer self))(io_Writer));

@@ -5,7 +5,7 @@
  * @file    stream.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2025-08-09 (date of creation)
- * @updated 2026-06-24 (date of last update)
+ * @updated 2026-07-31 (date of last update)
  * @ingroup dal-project/da/io
  * @prefix  io_stream
  */
@@ -18,7 +18,7 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "self.h"
+#include "Self.h"
 
 /*========== Macros and Declarations ========================================*/
 

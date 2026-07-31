@@ -24,16 +24,28 @@ T_alias$((proc_ArgExpsn)(enum_((proc_ArgExpsn $fits($packed))(
 T_alias$((proc_Cmd_Env)(S$S_const$u8));
 T_use_O$(proc_Cmd_Env);
 
+T_alias$((proc_Cwd)(variant_((proc_Cwd $fits($packed))(
+    (proc_Cwd_inherit, Void),
+    (proc_Cwd_dir, fs_Dir),
+    (proc_Cwd_path, S_const$u8)
+))));
+
 T_alias$((proc_Cmd)(struct proc_Cmd {
     var_(argv, S$S_const$u8);
     var_(env, O$proc_Cmd_Env);
-    var_(cwd, O$fs_Dir);
+    var_(cwd, proc_Cwd);
     var_(std_in, proc_std_IO);
     var_(std_out, proc_std_IO);
     var_(std_err, proc_std_IO);
     var_(expand_arg0, proc_ArgExpsn);
     var_(start_suspended, bool);
     var_(create_no_window, bool);
+}));
+
+T_alias$((proc_Replace_Opts)(struct proc_Replace_Opts {
+    var_(argv, S$S_const$u8);
+    var_(env, O$proc_Cmd_Env);
+    var_(expand_arg0, proc_ArgExpsn);
 }));
 
 #if defined(__cplusplus)

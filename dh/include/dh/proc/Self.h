@@ -23,10 +23,9 @@ extern "C" {
 #include "Child.h"
 #include "Cmd.h"
 #include "Env.h"
+#include "../mem/Alctr.h"
 
 /*========== Macros and Declarations ========================================*/
-
-#define proc_Direct_supported pp_or(plat_is_windows, plat_is_linux)
 
 T_alias$((proc_Self_VTbl)(struct proc_Self_VTbl));
 T_alias$((proc_Self)(struct proc_Self {
@@ -35,6 +34,12 @@ T_alias$((proc_Self)(struct proc_Self {
 }));
 T_use_prl$(proc_Self);
 T_use_E$($set(proc_Direct_E)(proc_Self));
+$attr($must_check)
+$extern fn_((proc_Child_wait(
+    proc_Self provider,
+    proc_Child* self
+))(proc_Child_Wait_E$proc_Child_Ter));
+$extern fn_((proc_Child_kill(proc_Self provider, proc_Child* self))(void));
 $attr($inline_always)
 $static fn_((proc_isValid(proc_Self self))(bool));
 $attr($inline_always)
@@ -43,46 +48,56 @@ $attr($inline_always)
 $static fn_((proc_ensureValid(proc_Self self))(proc_Self));
 
 $attr($must_check)
-$extern fn_((proc_executablePath(proc_Self self, S$u8 out_buf))(proc_Path_E$S$u8));
+$extern fn_((proc_exePath(proc_Self self, S$u8 out_buf))(proc_ExecutablePath_E$S$u8));
 $attr($must_check)
-$extern fn_((proc_currentPath(proc_Self self, S$u8 out_buf))(proc_Path_E$S$u8));
+$extern fn_((proc_exePathAlloc(proc_Self self, mem_Alctr gpa))(proc_ExecutablePathAlloc_E$S$u8));
 $attr($must_check)
-$extern fn_((proc_setCurrentPath(proc_Self self, S_const$u8 path))(proc_Path_E$void));
+$extern fn_((proc_exeDirPath(proc_Self self, S$u8 out_buf))(proc_ExecutablePath_E$S$u8));
+$attr($must_check)
+$extern fn_((proc_exeDirPathAlloc(proc_Self self, mem_Alctr gpa))(proc_ExecutablePathAlloc_E$S$u8));
+$attr($must_check)
+$extern fn_((proc_currPath(proc_Self self, S$u8 out_buf))(proc_CurrentPath_E$S$u8));
+$attr($must_check)
+$extern fn_((proc_currPathAlloc(proc_Self self, mem_Alctr gpa))(proc_CurrentPathAlloc_E$S$u8));
+$attr($must_check)
+$extern fn_((proc_setCurrDir(proc_Self self, fs_Dir dir))(proc_SetCurrentDir_E$void));
+$attr($must_check)
+$extern fn_((proc_setCurrPath(proc_Self self, S_const$u8 path))(proc_SetCurrentPath_E$void));
 $attr($must_check)
 $extern fn_((proc_spawn(proc_Self self, proc_Cmd cmd))(proc_Spawn_E$proc_Child));
 $attr($must_check)
 $extern fn_((proc_spawnPath(proc_Self self, fs_Dir dir, proc_Cmd cmd))(proc_Spawn_E$proc_Child));
 $attr($must_check)
-$extern fn_((proc_replace(proc_Self self, proc_Cmd cmd))(proc_Spawn_E$void));
+$extern fn_((proc_replace(proc_Self self, proc_Replace_Opts opts))(proc_Replace_E$void));
 $attr($must_check)
-$extern fn_((proc_replacePath(proc_Self self, fs_Dir dir, proc_Cmd cmd))(proc_Spawn_E$void));
-
-/// Native process provider whose borrowed environment is used when a child
-/// inherits the current process environment.
-T_alias$((proc_Direct)(struct proc_Direct {
-    var_(env, proc_Env);
-}));
-$attr($inline_always)
-$static fn_((proc_Direct_init(proc_Env env))(proc_Direct));
-/// Return the platform capability backed by `self`.
-$attr($must_check)
-$extern fn_((proc_Direct_self(proc_Direct* self))(proc_Direct_E$proc_Self));
+$extern fn_((proc_replacePath(proc_Self self, fs_Dir dir, proc_Replace_Opts opts))(proc_Replace_E$void));
 
 struct proc_Self_VTbl {
     $attr($must_check)
-    fn_(((*executablePathFn)(P$raw ctx, S$u8 out_buf))(proc_Path_E$S$u8));
+    fn_(((*exePathFn)(P$raw ctx, S$u8 out_buf))(proc_ExecutablePath_E$S$u8));
     $attr($must_check)
-    fn_(((*currentPathFn)(P$raw ctx, S$u8 out_buf))(proc_Path_E$S$u8));
+    fn_(((*currPathFn)(P$raw ctx, S$u8 out_buf))(proc_CurrentPath_E$S$u8));
     $attr($must_check)
-    fn_(((*setCurrentPathFn)(P$raw ctx, S_const$u8 path))(proc_Path_E$void));
+    fn_(((*setCurrDirFn)(P$raw ctx, fs_Dir dir))(proc_SetCurrentDir_E$void));
+    $attr($must_check)
+    fn_(((*setCurrPathFn)(P$raw ctx, S_const$u8 path))(proc_SetCurrentPath_E$void));
     $attr($must_check)
     fn_(((*spawnFn)(P$raw ctx, proc_Cmd cmd))(proc_Spawn_E$proc_Child));
     $attr($must_check)
     fn_(((*spawnPathFn)(P$raw ctx, fs_Dir dir, proc_Cmd cmd))(proc_Spawn_E$proc_Child));
     $attr($must_check)
-    fn_(((*replaceFn)(P$raw ctx, proc_Cmd cmd))(proc_Spawn_E$void));
+    fn_(((*replaceFn)(P$raw ctx, proc_Replace_Opts opts))(proc_Replace_E$void));
     $attr($must_check)
-    fn_(((*replacePathFn)(P$raw ctx, fs_Dir dir, proc_Cmd cmd))(proc_Spawn_E$void));
+    fn_(((*replacePathFn)(P$raw ctx, fs_Dir dir, proc_Replace_Opts opts))(proc_Replace_E$void));
+
+    T_embed$(struct proc_Self_VTbl_Child {
+        $attr($must_check)
+        fn_(((*waitFn)(
+            P$raw ctx,
+            proc_Child* self
+        ))(proc_Child_Wait_E$proc_Child_Ter));
+        fn_(((*killFn)(P$raw ctx, proc_Child* self))(void));
+    });
 };
 
 /*========== Macros and Definitions =========================================*/
@@ -91,30 +106,33 @@ struct proc_Self_VTbl {
 fn_((proc_isValid(proc_Self self))(bool)) {
     return isNonnull(self.ctx)
         && isNonnull(self.vtbl)
-        && isNonnull(self.vtbl->executablePathFn)
-        && isNonnull(self.vtbl->currentPathFn)
-        && isNonnull(self.vtbl->setCurrentPathFn)
+        && isNonnull(self.vtbl->exePathFn)
+        && isNonnull(self.vtbl->currPathFn)
+        && isNonnull(self.vtbl->setCurrDirFn)
+        && isNonnull(self.vtbl->setCurrPathFn)
         && isNonnull(self.vtbl->spawnFn)
         && isNonnull(self.vtbl->spawnPathFn)
         && isNonnull(self.vtbl->replaceFn)
-        && isNonnull(self.vtbl->replacePathFn);
+        && isNonnull(self.vtbl->replacePathFn)
+        && isNonnull(self.vtbl->waitFn)
+        && isNonnull(self.vtbl->killFn);
 };
 fn_((proc_assertValid(P$raw ctx, P_const$$(proc_Self_VTbl) vtbl))(void)) {
     claim_assert_nonnull(ctx);
     claim_assert_nonnull(vtbl);
-    claim_assert_nonnull(vtbl->executablePathFn);
-    claim_assert_nonnull(vtbl->currentPathFn);
-    claim_assert_nonnull(vtbl->setCurrentPathFn);
+    claim_assert_nonnull(vtbl->exePathFn);
+    claim_assert_nonnull(vtbl->currPathFn);
+    claim_assert_nonnull(vtbl->setCurrDirFn);
+    claim_assert_nonnull(vtbl->setCurrPathFn);
     claim_assert_nonnull(vtbl->spawnFn);
     claim_assert_nonnull(vtbl->spawnPathFn);
     claim_assert_nonnull(vtbl->replaceFn);
     claim_assert_nonnull(vtbl->replacePathFn);
+    claim_assert_nonnull(vtbl->waitFn);
+    claim_assert_nonnull(vtbl->killFn);
 };
 fn_((proc_ensureValid(proc_Self self))(proc_Self)) {
     return proc_assertValid(self.ctx, self.vtbl), self;
-};
-fn_((proc_Direct_init(proc_Env env))(proc_Direct)) {
-    return (proc_Direct){ .env = env };
 };
 #endif /* in_analysis_active_only || in_comptime */
 

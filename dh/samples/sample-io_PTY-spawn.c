@@ -16,7 +16,6 @@
 #include "dh/io/PTY.h"
 
 fn_((main(proc_Entry entry))(E$void) $guard) {
-    let_ignore = entry;
     var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
 
@@ -37,7 +36,7 @@ fn_((main(proc_Entry entry))(E$void) $guard) {
     let_(cmd, proc_Cmd) = {
         .argv = A_ref$((S$S_const$u8)(argv)),
         .env = none(),
-        .cwd = none(),
+        .cwd = union_of((proc_Cwd_inherit){}),
         .std_in = union_of((proc_std_IO_inherit){}),
         .std_out = union_of((proc_std_IO_inherit){}),
         .std_err = union_of((proc_std_IO_inherit){}),
@@ -50,11 +49,11 @@ fn_((main(proc_Entry entry))(E$void) $guard) {
         (.pty.size)({ .cols = u16_(120), .rows = u16_(40) })
     ));
     var session = try_(io_PTY_spawn(cfg));
-    defer_(io_PTY_Session_close(&session));
+    defer_(io_PTY_Session_close(entry.proc, &session));
 
     let_(size, io_PTY_Size) = { .cols = u16_(120), .rows = u16_(40) };
     try_(io_PTY_Session_resize(&session, size));
-    let_ignore = try_(io_PTY_Session_wait(&session));
+    let_ignore = try_(io_PTY_Session_wait(entry.proc, &session));
 
     return_ok({});
 } $unguarded(fn);

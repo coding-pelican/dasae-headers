@@ -4,9 +4,7 @@
 #include "dh/fs/File/self.h"
 
 fn_((main(proc_Entry entry))(E$void) $guard) {
-    let_ignore = entry;
-
-    let out_file = proc_std_out();
+    let out_file = proc_std_out(entry.std);
     let unbufd = fs_File_writer(out_file);
 
     var_(buf, A$$(4096, u8)) $undefined;

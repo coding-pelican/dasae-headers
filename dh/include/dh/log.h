@@ -5,15 +5,12 @@
  * @file    log.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2025-01-03 (date of creation)
- * @updated 2026-05-20 (date of last update)
+ * @updated 2026-07-31 (date of last update)
  * @ingroup dasae-headers(dh)
  * @prefix  log
  *
- * @brief   logging header
- * @details Provides logging functionality with configurable output destination,
- *          log levels, and formatting options.
+ * @brief   Provider-driven logging interface
  */
-
 #pragma once
 #ifndef log__included
 #define log__included 1
@@ -23,85 +20,107 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "fs/File.h"
+#include "io/Self.h"
+#include "io/Writer.h"
+#include "proc/std.h"
 
 /*========== Macros and Declarations ========================================*/
 
-// Log levels
-typedef enum log_Level {
-    log_Level_debug,
-    log_Level_info,
+typedef enum_((log_Level $fits($packed))(
+    log_Level_err,
     log_Level_warn,
-    log_Level_error,
-    log_Level_count
-} log_Level;
+    log_Level_info,
+    log_Level_debug
+)) log_Level;
+$extern fn_((log_Level_asText(log_Level self))(S_const$u8));
 
-// Log configuration
-typedef struct log_Config {
-    fs_File output_file;
-    bool has_output_file;
-    bool owns_output_file;
-    log_Level min_level;
-    bool shows_timestamp;
-    bool shows_level;
-    bool shows_location;
-    bool shows_function;
-} log_Config;
+#define log_scope_default u8_l("")
+#define log_level_default pp_if_(debug_enabled)( \
+    pp_then_(log_Level_debug), \
+    pp_else_(log_Level_info) \
+)
 
-// Initialize logging with a file
-extern E$void log_init(const char* filename) $must_check;
-// Initialize logging with an existing file handle
-extern void log_initWithFile(fs_File file);
-// Close logging
-extern void log_fini(void);
-
-// Configuration setters
-extern void log_setLevel(log_Level level);
-extern void log_showTimestamp(bool shows);
-extern void log_showLevel(bool shows);
-extern void log_showLocation(bool shows);
-extern void log_showFunction(bool shows);
-
-// Configuration getters
-extern log_Level log_getLevel(void);
-extern fs_File log_getOutputFile(void);
-
-// Internal logging function
-extern void log_message(log_Level /* level */, const char* /* file */, int /* line */, const char* /* func */, const char* /* fmt */, ...);
-
-#if !defined(log_comp_disabled_not_debug_enabled)
-#define log_comp_disabled_not_debug_enabled pp_false
-#endif /* !defined(log_comp_disabled_not_debug_enabled) */
-
-// Convenience macros for different log levels
-#if debug_enabled || !log_comp_disabled_not_debug_enabled
-#if in_comptime
-
-#define log_debug(...) log_message(log_Level_debug, __FILE__, __LINE__, __func__, __VA_ARGS__)
-#define log_info(...) log_message(log_Level_info, __FILE__, __LINE__, __func__, __VA_ARGS__)
-#define log_warn(...) log_message(log_Level_warn, __FILE__, __LINE__, __func__, __VA_ARGS__)
-#define log_error(...) log_message(log_Level_error, __FILE__, __LINE__, __func__, __VA_ARGS__)
-
-#else
-
+T_alias$((log_Self_VTbl)(struct log_Self_VTbl));
+/// Copyable logging capability. The provider owns filtering and output policy.
+T_alias$((log_Self)(struct log_Self {
+    var_(ctx, P$raw);
+    var_(vtbl, P_const$$(log_Self_VTbl));
+}));
+T_use_prl$(log_Self);
+$extern let_(log_Self_noop, log_Self);
+$extern let_(log_Self_failing, log_Self);
 $attr($inline_always)
-$static void log_debug(const char* fmt, ...) { let_ignore = fmt; };
+$static fn_((log_isValid(log_Self self))(bool));
 $attr($inline_always)
-$static void log_info(const char* fmt, ...) { let_ignore = fmt; };
+$static fn_((log_assertValid(P$raw ctx, P_const$$(log_Self_VTbl) vtbl))(void));
 $attr($inline_always)
-$static void log_warn(const char* fmt, ...) { let_ignore = fmt; };
-$attr($inline_always)
-$static void log_error(const char* fmt, ...) { let_ignore = fmt; };
+$static fn_((log_ensureValid(log_Self self))(log_Self));
 
-#endif
-#else
+$extern fn_((log_enabled(log_Self self, log_Level level, S_const$u8 scope))(bool));
+$extern fn_((log_stamp(log_Self self, log_Level level, S_const$u8 scope, S_const$u8 fmt, ...))(void));
+$extern fn_((log_stampVaArgs(log_Self self, log_Level level, S_const$u8 scope, S_const$u8 fmt, va_list args))(void));
 
-#define log_debug(...) $unused(0)
-#define log_info(...) $unused(0)
-#define log_warn(...) $unused(0)
-#define log_error(...) $unused(0)
+$extern fn_((log_err(log_Self self, S_const$u8 fmt, ...))(void));
+$extern fn_((log_warn(log_Self self, S_const$u8 fmt, ...))(void));
+$extern fn_((log_info(log_Self self, S_const$u8 fmt, ...))(void));
+$extern fn_((log_debug(log_Self self, S_const$u8 fmt, ...))(void));
 
-#endif
+$extern fn_((log_scopedErr(log_Self self, S_const$u8 scope, S_const$u8 fmt, ...))(void));
+$extern fn_((log_scopedWarn(log_Self self, S_const$u8 scope, S_const$u8 fmt, ...))(void));
+$extern fn_((log_scopedInfo(log_Self self, S_const$u8 scope, S_const$u8 fmt, ...))(void));
+$extern fn_((log_scopedDebug(log_Self self, S_const$u8 scope, S_const$u8 fmt, ...))(void));
+
+struct log_Self_VTbl {
+    fn_(((*enabledFn)(P$raw ctx, log_Level level, S_const$u8 scope))(bool));
+    fn_(((*stampFn)(P$raw ctx, log_Level level, S_const$u8 scope, S_const$u8 fmt, va_list args))(void));
+};
+$extern fn_((log_Self_VTbl_noEnabled(P$raw ctx, log_Level level, S_const$u8 scope))(bool));
+$extern fn_((log_Self_VTbl_unreachableEnabled(P$raw ctx, log_Level level, S_const$u8 scope))(bool));
+$extern fn_((log_Self_VTbl_noStamp(P$raw ctx, log_Level level, S_const$u8 scope, S_const$u8 fmt, va_list args))(void));
+$extern fn_((log_Self_VTbl_unreachableStamp(P$raw ctx, log_Level level, S_const$u8 scope, S_const$u8 fmt, va_list args))(void));
+
+/// Caller-owned writer provider. Synchronization and writer lifetime remain
+/// explicit caller responsibilities.
+T_alias$((log_Writer)(struct log_Writer {
+    var_(output, io_Writer);
+    var_(max_level, log_Level);
+}));
+$extern fn_((log_Writer_init(io_Writer output, log_Level max_level))(log_Writer));
+$extern fn_((log_Writer_self(log_Writer* self))(log_Self));
+
+/// Default logger backed by the explicitly supplied process stderr
+/// and standard-I/O coordination capabilities.
+T_alias$((log_Default)(struct log_Default {
+    var_(io, io_Self);
+    var_(err_io, fs_File_IO);
+    var_(max_level, log_Level);
+}));
+$extern fn_((log_Default_init(
+    io_Self io,
+    proc_std_Self std,
+    log_Level max_level
+))(log_Default));
+$extern fn_((log_Default_self(log_Default* self))(log_Self));
+
+/*========== Macros and Definitions =========================================*/
+
+#if in_analysis_active_only || in_comptime
+fn_((log_isValid(log_Self self))(bool)) {
+    return isNonnull(self.ctx)
+        && isNonnull(self.vtbl)
+        && isNonnull(self.vtbl->enabledFn)
+        && isNonnull(self.vtbl->stampFn);
+};
+fn_((log_assertValid(P$raw ctx, P_const$$(log_Self_VTbl) vtbl))(void)) {
+    claim_assert_nonnull(ctx);
+    claim_assert_nonnull(vtbl);
+    claim_assert_nonnull(vtbl->enabledFn);
+    claim_assert_nonnull(vtbl->stampFn);
+};
+fn_((log_ensureValid(log_Self self))(log_Self)) {
+    return log_assertValid(self.ctx, self.vtbl), self;
+};
+#endif /* in_analysis_active_only || in_comptime */
 
 #if defined(__cplusplus)
 } /* extern "C" */

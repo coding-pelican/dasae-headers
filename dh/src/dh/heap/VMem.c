@@ -13,23 +13,18 @@ $static fn_((heap_VMem__darwin_protect(heap_VMem_Protcn protect))(i32));
 
 /*========== Internal Declarations ==========================================*/
 
-T_alias$((heap_VMem__SystemCtx)(struct heap_VMem__SystemCtx {
-    var_(geom, heap_Geom);
-}));
-
-$static fn_((heap_VMem_system__ctx(P$raw ctx))(heap_VMem__SystemCtx*));
-$static fn_((heap_VMem_system__reserve(P$raw ctx, O$P$raw addr_hint, usize len))(O$P$u8));
-$static fn_((heap_VMem_system__commit(P$raw ctx, P$raw addr, usize len))(bool));
-$static fn_((heap_VMem_system__decommit(P$raw ctx, P$raw addr, usize len))(bool));
-$static fn_((heap_VMem_system__protect(P$raw ctx, P$raw addr, usize len, heap_VMem_Protcn protect))(bool));
-$static fn_((heap_VMem_system__release(P$raw ctx, P$raw addr, usize len))(bool));
+$static fn_((heap_VMem_system__reserve(const heap_VMem_Ctx* ctx, O$P$raw addr_hint, usize len))(O$P$u8));
+$static fn_((heap_VMem_system__commit(const heap_VMem_Ctx* ctx, P$raw addr, usize len))(bool));
+$static fn_((heap_VMem_system__decommit(const heap_VMem_Ctx* ctx, P$raw addr, usize len))(bool));
+$static fn_((heap_VMem_system__protect(const heap_VMem_Ctx* ctx, P$raw addr, usize len, heap_VMem_Protcn protect))(bool));
+$static fn_((heap_VMem_system__release(const heap_VMem_Ctx* ctx, P$raw addr, usize len))(bool));
 
 /*========== External Definitions ===========================================*/
 
 fn_((heap_VMem_system(void))(heap_VMem_E$heap_VMem) $scope) {
 #if plat_is_windows || plat_is_linux || plat_is_darwin
-    let geom = catch_((heap_Geom_system())($ignore, return_err(E_cause$heap_VMem_Unsupported())));
-    $static var_(ctx, heap_VMem__SystemCtx) $undefined_static;
+    $static var_(inner, Void) $undefined_static;
+    $static var_(ctx, heap_VMem_Ctx) $undefined_static;
     $static let_(vtbl, heap_VMem_VTbl) = {
         .reserveFn = heap_VMem_system__reserve,
         .commitFn = heap_VMem_system__commit,
@@ -37,9 +32,9 @@ fn_((heap_VMem_system(void))(heap_VMem_E$heap_VMem) $scope) {
         .protectFn = heap_VMem_system__protect,
         .releaseFn = heap_VMem_system__release,
     };
-    asg_l((&ctx)((heap_VMem__SystemCtx){ .geom = geom }));
+    let geom = catch_((heap_Geom_system())($ignore, return_err(E_cause$heap_VMem_Unsupported())));
+    asg_l((&ctx)({ .inner = &inner, .geom = geom }));
     return_ok(heap_VMem_ensureValid((heap_VMem){
-        .geom = ctx.geom,
         .ctx = &ctx,
         .vtbl = &vtbl,
     }));
@@ -50,7 +45,7 @@ fn_((heap_VMem_system(void))(heap_VMem_E$heap_VMem) $scope) {
 
 fn_((heap_VMem_geom(heap_VMem self))(heap_Geom)) {
     self = heap_VMem_ensureValid(self);
-    return self.geom;
+    return self.ctx->geom;
 };
 
 fn_((heap_VMem_reserve(heap_VMem self, O$P$raw addr_hint, usize len))(O$P$u8)) {
@@ -80,10 +75,6 @@ fn_((heap_VMem_release(heap_VMem self, P$raw addr, usize len))(bool)) {
 
 /*========== Internal Definitions ===========================================*/
 
-fn_((heap_VMem_system__ctx(P$raw ctx))(heap_VMem__SystemCtx*)) {
-    return ptrCast$((heap_VMem__SystemCtx*)(ensureNonnull(ctx)));
-};
-
 #if plat_is_windows
 fn_((heap_VMem__windows_protect(heap_VMem_Protcn protect))(DWORD)) {
     switch (protect) {
@@ -110,10 +101,9 @@ fn_((heap_VMem__darwin_protect(heap_VMem_Protcn protect))(i32)) {
 };
 #endif
 
-fn_((heap_VMem_system__reserve(P$raw ctx, O$P$raw addr_hint, usize len))(O$P$u8) $scope) {
-    let system = heap_VMem_system__ctx(ctx);
+fn_((heap_VMem_system__reserve(const heap_VMem_Ctx* ctx, O$P$raw addr_hint, usize len))(O$P$u8) $scope) {
     let hint = orelse_((addr_hint)(null));
-    let aligned_len = heap_Geom_alignReserveWith(system->geom, len);
+    let aligned_len = heap_Geom_alignReserveWith(ctx->geom, len);
 #if plat_is_windows
     let addr = VirtualAlloc(hint, aligned_len, MEM_RESERVE, PAGE_NOACCESS);
     return_(expr_(ReturnType $scope)(
@@ -143,9 +133,8 @@ fn_((heap_VMem_system__reserve(P$raw ctx, O$P$raw addr_hint, usize len))(O$P$u8)
 #endif
 } $unscoped(fn);
 
-fn_((heap_VMem_system__commit(P$raw ctx, P$raw addr, usize len))(bool)) {
-    let system = heap_VMem_system__ctx(ctx);
-    let aligned_len = heap_Geom_alignCommitWith(system->geom, len);
+fn_((heap_VMem_system__commit(const heap_VMem_Ctx* ctx, P$raw addr, usize len))(bool)) {
+    let aligned_len = heap_Geom_alignCommitWith(ctx->geom, len);
 #if plat_is_windows
     return VirtualAlloc(addr, aligned_len, MEM_COMMIT, PAGE_READWRITE) != null;
 #elif plat_is_linux
@@ -159,9 +148,8 @@ fn_((heap_VMem_system__commit(P$raw ctx, P$raw addr, usize len))(bool)) {
 #endif
 };
 
-fn_((heap_VMem_system__decommit(P$raw ctx, P$raw addr, usize len))(bool)) {
-    let system = heap_VMem_system__ctx(ctx);
-    let aligned_len = heap_Geom_alignCommitWith(system->geom, len);
+fn_((heap_VMem_system__decommit(const heap_VMem_Ctx* ctx, P$raw addr, usize len))(bool)) {
+    let aligned_len = heap_Geom_alignCommitWith(ctx->geom, len);
 #if plat_is_windows
     return VirtualFree(addr, aligned_len, MEM_DECOMMIT);
 #elif plat_is_linux
@@ -175,9 +163,8 @@ fn_((heap_VMem_system__decommit(P$raw ctx, P$raw addr, usize len))(bool)) {
 #endif
 };
 
-fn_((heap_VMem_system__protect(P$raw ctx, P$raw addr, usize len, heap_VMem_Protcn protect))(bool)) {
-    let system = heap_VMem_system__ctx(ctx);
-    let aligned_len = heap_Geom_alignCommitWith(system->geom, len);
+fn_((heap_VMem_system__protect(const heap_VMem_Ctx* ctx, P$raw addr, usize len, heap_VMem_Protcn protect))(bool)) {
+    let aligned_len = heap_Geom_alignCommitWith(ctx->geom, len);
 #if plat_is_windows
     DWORD old_protect = 0;
     return VirtualProtect(addr, aligned_len, heap_VMem__windows_protect(protect), &old_protect);
@@ -193,9 +180,8 @@ fn_((heap_VMem_system__protect(P$raw ctx, P$raw addr, usize len, heap_VMem_Protc
 #endif
 };
 
-fn_((heap_VMem_system__release(P$raw ctx, P$raw addr, usize len))(bool)) {
-    let system = heap_VMem_system__ctx(ctx);
-    let aligned_len = heap_Geom_alignReserveWith(system->geom, len);
+fn_((heap_VMem_system__release(const heap_VMem_Ctx* ctx, P$raw addr, usize len))(bool)) {
+    let aligned_len = heap_Geom_alignReserveWith(ctx->geom, len);
 #if plat_is_windows
     let_ignore = aligned_len;
     return VirtualFree(addr, 0, MEM_RELEASE);

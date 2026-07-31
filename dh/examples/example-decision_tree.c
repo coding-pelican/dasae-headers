@@ -19,7 +19,6 @@
 #include "dh-main.h"
 #include "dh/log.h"
 #include "dh/mem.h"
-#include "dh/heap/Sys.h"
 #include "dh/fs/common.h"
 #include "dh/fs/File.h"
 #include "dh/io/Buf.h"
@@ -52,7 +51,7 @@ $attr($must_check)
 $static fn_((TreeNode_createDecision(mem_Alctr gpa, u32 feature_index, f32 threshold, TreeNode* left, TreeNode* right))(E$P$TreeNode));
 $static fn_((TreeNode_destroyRecur(mem_Alctr gpa, TreeNode* target))(void));
 $static fn_((TreeNode_predict(const TreeNode* target, S_const$f32 features))(i32));
-$static fn_((TreeNode_printRecur(const TreeNode* target, u32 depth))(void));
+$static fn_((TreeNode_printRecur(log_Self logger, const TreeNode* target, u32 depth))(void));
 $attr($must_check)
 $static fn_((TreeNode_saveToFileRecur(const TreeNode* node, io_Writer writer))(E$void));
 $attr($must_check)
@@ -71,43 +70,39 @@ T_alias$((Dataset)(struct Dataset {
 T_use$((Dataset)(E));
 // Forward declarations
 $attr($must_check)
-$static fn_((Dataset_loadFromCSV(mem_Alctr gpa, S_const$u8 filename, bool has_header))(E$Dataset));
+$static fn_((Dataset_loadFromCSV(
+    log_Self logger,
+    mem_Alctr gpa,
+    S_const$u8 filename,
+    bool has_header
+))(E$Dataset));
 $static fn_((Dataset_destroy(Dataset* dataset))(void));
 
 // Main function
-fn_((main(proc_Self self))(E$void) $guard) {
-    let args = self.args.items;
-    // Initialize logging to a file
-    try_(log_init("log/debug.log"));
-    defer_(log_fini());
-    {
-        // Configure logging behavior
-        log_setLevel(log_Level_debug);
-        log_showTimestamp(true);
-        log_showLevel(true);
-        log_showLocation(false);
-        log_showFunction(true);
-    }
-    log_info("Starting decision tree application");
+fn_((main(proc_Entry entry))(E$void) $guard) {
+    let gpa = entry.gpa;
+    var default_logger = log_Default_init(entry.io, entry.std, log_Level_debug);
+    let logger = log_Default_self(&default_logger);
+    log_info(logger, u8_l("Starting decision tree application"));
 
-    // Create gpa
-    var heap = try_(heap_Sys_init());
-    defer_(heap_Sys_fini(&heap));
-    let gpa = heap_Sys_alctr(&heap);
     // Load dataset if a filename was provided, otherwise create a demo tree
-    if (args.len > 1) {
-        log_info("Loading dataset from {:s}", *S_at((args)[1]));
-        var dataset = try_(Dataset_loadFromCSV(gpa, *S_at((args)[1]), true));
+    T_use_A$(4096, u8);
+    $static var_(arg_scratch, A$$(4096, u8)) $undefined_static;
+    var args = proc_Args_iter(entry.args);
+    let_ignore = try_(proc_Args_Iter_skip(&args));
+    if_some((try_(proc_Args_Iter_next(&args, A_ref$((S$u8)arg_scratch))))(dataset_path)) {
+        log_info(logger, u8_l("Loading dataset from {:s}"), dataset_path);
+        var dataset = try_(Dataset_loadFromCSV(logger, gpa, dataset_path, true));
         defer_(Dataset_destroy(&dataset));
         // Here normally build the tree from the dataset
         // For simplicity, we'll just create a demo tree
-        log_info("Loaded {:u} samples with {:u} features", dataset.n_samples, dataset.n_features);
+        log_info(logger, u8_l("Loaded {:u} samples with {:u} features"), dataset.n_samples, dataset.n_features);
         // Demo tree creation would go here
     }
 
     // Create a simple decision tree (manually for demo purposes)
     // In a real implementation, this would be learned from data
-    log_info("Creating demo decision tree");
+    log_info(logger, u8_l("Creating demo decision tree"));
     let leaf_setosa = try_(TreeNode_createLeaf(gpa, 0));
     let leaf_versicolor = try_(TreeNode_createLeaf(gpa, 1));
     let leaf_virginica = try_(TreeNode_createLeaf(gpa, 2));
@@ -129,8 +124,8 @@ fn_((main(proc_Self self))(E$void) $guard) {
     defer_(TreeNode_destroyRecur(gpa, root));
 
     // Print the tree
-    log_info("Decision tree structure:");
-    TreeNode_printRecur(root, 0);
+    log_info(logger, u8_l("Decision tree structure:"));
+    TreeNode_printRecur(logger, root, 0);
 
     // Save the tree to a file
     {
@@ -139,7 +134,7 @@ fn_((main(proc_Self self))(E$void) $guard) {
         defer_(fs_File_close(save_file));
         let writer = fs_File_writer(save_file);
         try_(TreeNode_saveToFileRecur(root, writer));
-        log_info("Saved decision tree to decision_tree.bin");
+        log_info(logger, u8_l("Saved decision tree to decision_tree.bin"));
     }
 
     // Load the tree from the file
@@ -151,12 +146,12 @@ fn_((main(proc_Self self))(E$void) $guard) {
         let reader = fs_File_reader(load_file);
         $break_(try_(TreeNode_loadFromFileRecur(gpa, reader)));
     }) $unguarded(expr);
-    log_info("Loaded decision tree from decision_tree.bin");
+    log_info(logger, u8_l("Loaded decision tree from decision_tree.bin"));
     defer_(TreeNode_destroyRecur(gpa, loaded_tree));
 
     // Verify the loaded tree by printing it
-    log_info("Loaded tree structure:");
-    TreeNode_printRecur(loaded_tree, 0);
+    log_info(logger, u8_l("Loaded tree structure:"));
+    TreeNode_printRecur(logger, loaded_tree, 0);
 
     // Make some predictions
     let_(samples, A$$(3, A$$(4, f32))) = A_init({
@@ -166,10 +161,10 @@ fn_((main(proc_Self self))(E$void) $guard) {
     });
     for_(($rf(0), $s(A_ref(samples)))(i, sample)) {
         let prediction = TreeNode_predict(root, A_ref$((S_const$f32)(*sample)));
-        log_info("Sample {:uz}: Class {:d}", i + 1, prediction);
+        log_info(logger, u8_l("Sample {:uz}: Class {:d}"), i + 1, prediction);
     } $end(for);
 
-    log_info("Decision tree application completed successfully");
+    log_info(logger, u8_l("Decision tree application completed successfully"));
     return_ok({});
 } $unguarded(fn);
 
@@ -202,7 +197,6 @@ fn_((TreeNode_destroyRecur(mem_Alctr gpa, TreeNode* target))(void)) /* NOLINT(mi
         if_some((decision->right)(right)) TreeNode_destroyRecur(gpa, right);
     } $end(patt);
     default_() {
-        log_error("Invalid node type encountered during prediction");
         claim_unreachable;
     } $end(default);
     } $end(match);
@@ -216,7 +210,6 @@ fn_((TreeNode_predict(const TreeNode* target, S_const$f32 features))(i32)) {
     patt_((TreeNode_leaf)(leaf)) return leaf.class_label $end(patt);
     patt_((TreeNode_decision)(decision)) {
         if (features.len <= decision.feature_index) {
-            log_error("Feature index out of bounds: %u >= %zu", decision.feature_index, features.len);
             claim_unreachable;
         }
         curr = expr_(O$TreeNode $scope)(
@@ -226,14 +219,17 @@ fn_((TreeNode_predict(const TreeNode* target, S_const$f32 features))(i32)) {
         ) $unscoped(expr);
     } $end(patt);
     default_() {
-        log_error("Invalid node type encountered during prediction");
         claim_unreachable;
     } $end(default);
     } $end(match);
     claim_unreachable;
 };
 
-fn_((TreeNode_printRecur(const TreeNode* target, u32 depth))(void)) /* NOLINT(misc-no-recursion) */ {
+fn_((TreeNode_printRecur(
+    log_Self logger,
+    const TreeNode* target,
+    u32 depth
+))(void)) /* NOLINT(misc-no-recursion) */ {
     claim_assert_nonnull(target);
     var_(indent, A$$(64, u8)) $undefined;
     {
@@ -247,15 +243,15 @@ fn_((TreeNode_printRecur(const TreeNode* target, u32 depth))(void)) /* NOLINT(mi
     let indent_z = A_ptr(indent);
 
     match_($ref(target)) {
-    patt_((TreeNode_leaf)($ref leaf)) log_info("{:z}Class: {:d}", indent_z, leaf->class_label) $end(patt);
+    patt_((TreeNode_leaf)($ref leaf)) log_info(logger, u8_l("{:z}Class: {:d}"), indent_z, leaf->class_label) $end(patt);
     patt_((TreeNode_decision)($ref decision)) {
-        log_info("{:z}Feature {:u} <= {:.2f}", indent_z, decision->feature_index, decision->threshold);
-        if_some((decision->left)(left)) { TreeNode_printRecur(left, depth + 1); }
-        log_info("{:z}Feature {:u} > {:.2f}", indent_z, decision->feature_index, decision->threshold);
-        if_some((decision->right)(right)) { TreeNode_printRecur(right, depth + 1); }
+        log_info(logger, u8_l("{:z}Feature {:u} <= {:.2f}"), indent_z, decision->feature_index, decision->threshold);
+        if_some((decision->left)(left)) { TreeNode_printRecur(logger, left, depth + 1); }
+        log_info(logger, u8_l("{:z}Feature {:u} > {:.2f}"), indent_z, decision->feature_index, decision->threshold);
+        if_some((decision->right)(right)) { TreeNode_printRecur(logger, right, depth + 1); }
     } $end(patt);
     default_() {
-        log_error("{:z}Invalid node type", indent_z);
+        log_err(logger, u8_l("{:z}Invalid node type"), indent_z);
         claim_unreachable;
     } $end(default);
     } $end(match);
@@ -276,7 +272,6 @@ fn_((TreeNode_saveToFileRecur(const TreeNode* node, io_Writer writer))(E$void) $
         if_some((decision->right)(right)) { try_(TreeNode_saveToFileRecur(right, writer)); }
     } $end(patt);
     default_() {
-        log_error("Invalid node type encountered during saving");
         claim_unreachable;
     } $end(default);
     } $end(match);
@@ -303,7 +298,6 @@ fn_((TreeNode_loadFromFileRecur(mem_Alctr gpa, io_Reader reader))(E$P$TreeNode) 
         return_ok(try_(TreeNode_createDecision(gpa, feature_index, threshold, left, right)));
     } $end(case);
     default_() {
-        log_error("Invalid node tag found in file: {:d}", tag);
         return_err(E_cause$fs_File_ReadFailed());
     } $end(default);
     }
@@ -323,7 +317,12 @@ T_use$((f32)(ArrList_init, ArrList_fini, ArrList_append));
 T_use$((i32)(ArrList_init, ArrList_fini, ArrList_append));
 
 // Implementation of Dataset functions
-fn_((Dataset_loadFromCSV(mem_Alctr gpa, S_const$u8 filename, bool has_header))(E$Dataset) $guard) {
+fn_((Dataset_loadFromCSV(
+    log_Self logger,
+    mem_Alctr gpa,
+    S_const$u8 filename,
+    bool has_header
+))(E$Dataset) $guard) {
     var flags = fs_File_OpenFlags_default;
     flags.mode = fs_OpenMode_read_only;
     let file = try_(fs_File_open(filename, flags));
@@ -356,7 +355,7 @@ fn_((Dataset_loadFromCSV(mem_Alctr gpa, S_const$u8 filename, bool has_header))(E
     if (has_header) line_count--;
     var_(actual_feature_count, u32) = feature_count <= 0 ? 0 : feature_count - 1;
 
-    log_debug("Found {:u} lines and {:u} features in CSV", line_count, actual_feature_count);
+    log_debug(logger, u8_l("Found {:u} lines and {:u} features in CSV"), line_count, actual_feature_count);
 
     var features = try_(ArrList_init$f32(gpa, (as$(usize)(line_count)) * actual_feature_count));
     errdefer_($ignore, ArrList_fini$f32(&features, gpa));
@@ -388,7 +387,9 @@ fn_((Dataset_loadFromCSV(mem_Alctr gpa, S_const$u8 filename, bool has_header))(E
             }
             samples_read++;
         }
-        if (samples_read != line_count) log_warn("Expected {:u} samples but read only {:u}", line_count, samples_read);
+        if (samples_read != line_count) {
+            log_warn(logger, u8_l("Expected {:u} samples but read only {:u}"), line_count, samples_read);
+        }
     }
     return_ok({
         .gpa = gpa,

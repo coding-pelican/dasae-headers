@@ -17,15 +17,23 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
+#include "../mem/Alctr.h"
+#include "../io/Self.h"
 #include "Args.h"
 #include "Env.h"
-#include "Preopens.h"
+#include "std.h"
+#include "mem.h"
 #include "Self.h"
+#include "Preopens.h"
 
 /*========== Macros and Declarations ========================================*/
 
 T_alias$((proc_Entry)(struct proc_Entry {
     var_(proc, proc_Self);
+    var_(gpa, mem_Alctr);
+    var_(io, io_Self);
+    var_(std, proc_std_Self);
+    var_(mem, proc_mem_Self);
     var_(args, proc_Args);
     var_(env, proc_Env);
     var_(preopens, proc_Preopens);

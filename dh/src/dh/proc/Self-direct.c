@@ -1,14 +1,13 @@
-#include "dh/proc.h"
+#include "dh/proc/Direct.h"
 #include "dh/fs/path.h"
-#include "dh/proc/std.h"
 #include "dh/mem/common.h"
 #include "dh/unicode.h"
 
 #if plat_is_windows
 #include "dh/sys/api/windows/file.h"
 #include "dh/sys/api/windows/handle.h"
-#include "dh/sys/api/windows/mem.h"
 #include "dh/sys/api/windows/proc.h"
+#include "dh/sys/api/windows/sync.h"
 #elif plat_is_linux
 #include "dh/sys/call/linux.h"
 #endif /* plat_is_windows */
@@ -17,17 +16,50 @@
 #define proc__windows_path_max (usize_(32768))
 #define proc__windows_path_prefix_len (usize_(4))
 
-$static fn_((proc__windows_heapAlloc(usize len))(O$P$u8)) {
-    let ptr = ptrCast$((P$u8)(HeapAlloc(GetProcessHeap(), 0, len)));
-    return ptr == null ? none$((O$P$u8)) : some$((O$P$u8)(ptr));
+$static fn_((proc__windows_alloc(mem_Alctr gpa, usize len))(O$P$u8)) {
+    return mem_Alctr_rawAlloc($trace gpa, len, alignOfLog2$(u16));
 };
 
-$static fn_((proc__windows_heapFree(P$u8 ptr))(void)) {
+$static fn_((proc__windows_free(mem_Alctr gpa, P$u8 ptr, usize len))(void)) {
     claim_assert_nonnull(ptr);
-    claim_assert(HeapFree(GetProcessHeap(), 0, ptr));
+    mem_Alctr_rawFree(
+        $trace gpa,
+        P_prefix$((S$u8)(ptr)(len)),
+        alignOfLog2$(u16)
+    );
 };
 
 $static fn_((proc__windows_mapError(DWORD err))(EAny)) {
+    switch (err) {
+    case ERROR_FILE_NOT_FOUND: $fallthrough;
+    case ERROR_PATH_NOT_FOUND: return E_cause$proc_FileNotFound().any;
+    case ERROR_ACCESS_DENIED: return E_cause$proc_AccessDenied().any;
+    case ERROR_BAD_FORMAT: $fallthrough;
+    case ERROR_BAD_EXE_FORMAT: $fallthrough;
+    case ERROR_EXE_MACHINE_TYPE_MISMATCH: return E_cause$proc_InvalidExe().any;
+    case ERROR_SHARING_VIOLATION: return E_cause$proc_FileBusy().any;
+    case ERROR_INVALID_NAME: return E_cause$proc_InvalidName().any;
+    case ERROR_DIRECTORY: return E_cause$proc_NotDir().any;
+    case ERROR_NOT_ENOUGH_MEMORY: $fallthrough;
+    case ERROR_OUTOFMEMORY: $fallthrough;
+    case ERROR_NO_SYSTEM_RESOURCES: return E_cause$proc_SystemResources().any;
+    case ERROR_TOO_MANY_OPEN_FILES: return E_cause$proc_ProcessFdQuotaExceeded().any;
+    case ERROR_SHARING_BUFFER_EXCEEDED: return E_cause$proc_ResourceLimitReached().any;
+    default_() return E_cause$proc_SystemResources().any $end(default);
+    }
+};
+
+$static fn_((proc__windows_mapPathQueryError(DWORD err))(EAny)) {
+    switch (err) {
+    case ERROR_FILE_NOT_FOUND: $fallthrough;
+    case ERROR_PATH_NOT_FOUND: return E_cause$proc_FileNotFound().any;
+    case ERROR_ACCESS_DENIED: return E_cause$proc_AccessDenied().any;
+    case ERROR_INSUFFICIENT_BUFFER: return E_cause$proc_ResourceLimitReached().any;
+    default_() return E_cause$proc_SystemResources().any $end(default);
+    }
+};
+
+$static fn_((proc__windows_mapSetPathError(DWORD err))(EAny)) {
     switch (err) {
     case ERROR_FILE_NOT_FOUND: $fallthrough;
     case ERROR_PATH_NOT_FOUND: return E_cause$proc_FileNotFound().any;
@@ -37,8 +69,6 @@ $static fn_((proc__windows_mapError(DWORD err))(EAny)) {
     case ERROR_NOT_ENOUGH_MEMORY: $fallthrough;
     case ERROR_OUTOFMEMORY: $fallthrough;
     case ERROR_NO_SYSTEM_RESOURCES: return E_cause$proc_SystemResources().any;
-    case ERROR_TOO_MANY_OPEN_FILES: $fallthrough;
-    case ERROR_SHARING_BUFFER_EXCEEDED: return E_cause$proc_ResourceLimitReached().any;
     default_() return E_cause$proc_SystemResources().any $end(default);
     }
 };
@@ -73,14 +103,18 @@ typedef struct proc__windows_ResolvedStdIO {
 T_use_E$(proc__windows_ResolvedStdIO);
 
 typedef struct proc__windows_OwnedBuf {
+    var_(gpa, mem_Alctr);
     var_(ptr, O$P$u8);
     var_(len, usize);
+    var_(alloc_len, usize);
 } proc__windows_OwnedBuf;
 T_use_E$(proc__windows_OwnedBuf);
 
 typedef struct proc__windows_OwnedWideBuf {
+    var_(gpa, mem_Alctr);
     var_(ptr, O$P$u16);
     var_(len, usize);
+    var_(alloc_len, usize);
 } proc__windows_OwnedWideBuf;
 T_use_E$(proc__windows_OwnedWideBuf);
 
@@ -96,63 +130,75 @@ $static fn_((proc__windows_ResolvedStdIO_fini(proc__windows_ResolvedStdIO* self)
 
 $static fn_((proc__windows_OwnedBuf_fini(proc__windows_OwnedBuf* self))(void)) {
     claim_assert_nonnull(self);
-    if_some((self->ptr)(ptr)) proc__windows_heapFree(ptr);
+    if_some((self->ptr)(ptr)) proc__windows_free(self->gpa, ptr, self->alloc_len);
     asg_l((&self->ptr)(none()));
     self->len = 0;
+    self->alloc_len = 0;
 };
 
 $static fn_((proc__windows_OwnedWideBuf_fini(proc__windows_OwnedWideBuf* self))(void)) {
     claim_assert_nonnull(self);
-    if_some((self->ptr)(ptr)) proc__windows_heapFree(ptrCast$((P$u8)(ptr)));
+    if_some((self->ptr)(ptr)) {
+        proc__windows_free(self->gpa, ptrCast$((P$u8)(ptr)), self->alloc_len);
+    }
     asg_l((&self->ptr)(none()));
     self->len = 0;
+    self->alloc_len = 0;
 };
 
-$static fn_((proc__windows_wideAlloc(usize len))(O$P$u16) $scope) {
+$static fn_((proc__windows_wideAlloc(mem_Alctr gpa, usize len))(O$P$u16) $scope) {
     let byte_len = orelse_((usize_mulChkd(len, sizeOf$(u16)))(return_none()));
-    let ptr = proc__windows_heapAlloc(byte_len);
+    let ptr = proc__windows_alloc(gpa, byte_len);
     if_none(ptr) return_none();
     return_some(ptrAlignCast$((P$u16)(unwrap_(ptr))));
 } $unscoped(fn);
 
-$static fn_((proc__windows_wtf8ZAlloc(S_const$u8 src))(E$proc__windows_OwnedWideBuf) $scope) {
+$static fn_((proc__windows_wtf8ZAlloc(mem_Alctr gpa, S_const$u8 src))(E$proc__windows_OwnedWideBuf) $scope) {
     let text_len = unicode_wtf8ToWTF16Len(src);
     let alloc_len = orelse_((usize_addChkd(text_len, 1))(return_err(E_cause$proc_SystemResources())));
-    let buf = orelse_((proc__windows_wideAlloc(alloc_len))(return_err(E_cause$proc_SystemResources())));
+    let alloc_bytes = orelse_((usize_mulChkd(alloc_len, sizeOf$(u16)))(return_err(E_cause$proc_SystemResources())));
+    let buf = orelse_((proc__windows_wideAlloc(gpa, alloc_len))(return_err(E_cause$OutOfMemory())));
     let out = P_prefix$((S$u16)(buf)(alloc_len));
     let converted = catch_((unicode_wtf8ToWTF16Within(src, S_prefix((out)(text_len))))(
         $ignore,
         {
-            proc__windows_heapFree(ptrCast$((P$u8)(buf)));
+            proc__windows_free(gpa, ptrCast$((P$u8)(buf)), alloc_bytes);
             return_err(E_cause$proc_InvalidName());
         }
     ));
     claim_assert(converted.len == text_len);
     *S_at((out)[text_len]) = 0;
     return_ok({
+        .gpa = gpa,
         .ptr = some(buf),
         .len = text_len,
+        .alloc_len = alloc_bytes,
     });
 } $unscoped(fn);
 
-$static fn_((proc__windows_wtf8OptZAlloc(O$S_const$u8 src))(E$proc__windows_OwnedWideBuf) $scope) {
+$static fn_((proc__windows_wtf8OptZAlloc(mem_Alctr gpa, O$S_const$u8 src))(E$proc__windows_OwnedWideBuf) $scope) {
     if_none(src) {
         return_ok({
+            .gpa = gpa,
             .ptr = none(),
             .len = 0,
+            .alloc_len = 0,
         });
     }
-    return_(proc__windows_wtf8ZAlloc(unwrap_(src)));
+    return_(proc__windows_wtf8ZAlloc(gpa, unwrap_(src)));
 } $unscoped(fn);
 
-$static fn_((proc__windows_dupSliceZ(S_const$u8 src))(E$proc__windows_OwnedBuf) $scope) {
-    let buf = orelse_((proc__windows_heapAlloc(src.len + 1))(return_err(E_cause$proc_SystemResources())));
-    let out = P_prefix$((S$u8)(buf)(src.len + 1));
+$static fn_((proc__windows_dupSliceZ(mem_Alctr gpa, S_const$u8 src))(E$proc__windows_OwnedBuf) $scope) {
+    let alloc_len = src.len + 1;
+    let buf = orelse_((proc__windows_alloc(gpa, alloc_len))(return_err(E_cause$OutOfMemory())));
+    let out = P_prefix$((S$u8)(buf)(alloc_len));
     mem_copyBytes(S_prefix((out)(src.len)), src);
     *S_at((out)[src.len]) = 0;
     return_ok({
+        .gpa = gpa,
         .ptr = some(buf),
         .len = src.len,
+        .alloc_len = alloc_len,
     });
 } $unscoped(fn);
 
@@ -171,39 +217,44 @@ $static fn_((proc__windows_trimNtPrefix(proc__windows_OwnedBuf* self))(void)) {
     }
 };
 
-$static fn_((proc__windows_dirPathAlloc(fs_Dir dir))(E$proc__windows_OwnedBuf) $guard) {
+$static fn_((proc__windows_dirPathAlloc(mem_Alctr gpa, fs_Dir dir))(E$proc__windows_OwnedBuf) $guard) {
     let need = GetFinalPathNameByHandleA(dir.handle, null, 0, 0);
-    if (need == 0) return_err(proc__windows_mapError(GetLastError()));
-    let buf = orelse_((proc__windows_heapAlloc(as$(usize)(need) + 1))(return_err(E_cause$proc_SystemResources())));
-    errdefer_($ignore, proc__windows_heapFree(buf));
+    if (need == 0) return_err(proc__windows_mapPathQueryError(GetLastError()));
+    let alloc_len = as$(usize)(need) + 1;
+    let buf = orelse_((proc__windows_alloc(gpa, alloc_len))(return_err(E_cause$OutOfMemory())));
+    errdefer_($ignore, proc__windows_free(gpa, buf, alloc_len));
     let wrote = GetFinalPathNameByHandleA(dir.handle, as$(LPSTR)(buf), need + 1, 0);
-    if (wrote == 0) return_err(proc__windows_mapError(GetLastError()));
+    if (wrote == 0) return_err(proc__windows_mapPathQueryError(GetLastError()));
     var_(owned, proc__windows_OwnedBuf) = {
+        .gpa = gpa,
         .ptr = some(buf),
         .len = as$(usize)(wrote),
+        .alloc_len = alloc_len,
     };
     proc__windows_trimNtPrefix(&owned);
     return_ok(owned);
 } $unguarded(fn);
 
-$static fn_((proc__windows_resolvePathAlloc(S_const$u8 base, S_const$u8 sub_path))(E$proc__windows_OwnedBuf) $guard) {
-    if (fs_path_isAbs(sub_path)) return_(proc__windows_dupSliceZ(sub_path));
+$static fn_((proc__windows_resolvePathAlloc(mem_Alctr gpa, S_const$u8 base, S_const$u8 sub_path))(E$proc__windows_OwnedBuf) $guard) {
+    if (fs_path_isAbs(sub_path)) return_(proc__windows_dupSliceZ(gpa, sub_path));
     let base_sub_len = orelse_((usize_addChkd(base.len, sub_path.len))(return_err(E_cause$proc_SystemResources())));
     let cap = orelse_((usize_addChkd(base_sub_len, usize_(2)))(return_err(E_cause$proc_SystemResources())));
-    let buf = orelse_((proc__windows_heapAlloc(cap))(return_err(E_cause$proc_SystemResources())));
-    errdefer_($ignore, proc__windows_heapFree(buf));
+    let buf = orelse_((proc__windows_alloc(gpa, cap))(return_err(E_cause$OutOfMemory())));
+    errdefer_($ignore, proc__windows_free(gpa, buf, cap));
     let out = P_prefix$((S$u8)(buf)(cap));
     let joined = catch_((fs_path_join2(base, sub_path, S_prefix((out)(cap - 1))))($ignore, {
         return_err(E_cause$proc_SystemResources());
     }));
     *S_at((out)[joined.len]) = 0;
     return_ok({
+        .gpa = gpa,
         .ptr = some(buf),
         .len = joined.len,
+        .alloc_len = cap,
     });
 } $unguarded(fn);
 
-$static fn_((proc__windows_envBlockAlloc(O$proc_Cmd_Env override))(E$proc__windows_OwnedWideBuf) $scope) {
+$static fn_((proc__windows_envBlockAlloc(mem_Alctr gpa, O$proc_Cmd_Env override))(E$proc__windows_OwnedWideBuf) $scope) {
     if_none(override) {
         let native = GetEnvironmentStringsW();
         if (native == null) return_err(proc__windows_mapError(GetLastError()));
@@ -218,7 +269,11 @@ $static fn_((proc__windows_envBlockAlloc(O$proc_Cmd_Env override))(E$proc__windo
             claim_assert(FreeEnvironmentStringsW(native));
             return_err(E_cause$proc_SystemResources());
         }));
-        let buf = orelse_((proc__windows_wideAlloc(len))({
+        let alloc_bytes = orelse_((usize_mulChkd(len, sizeOf$(u16)))({
+            claim_assert(FreeEnvironmentStringsW(native));
+            return_err(E_cause$proc_SystemResources());
+        }));
+        let buf = orelse_((proc__windows_wideAlloc(gpa, len))({
             claim_assert(FreeEnvironmentStringsW(native));
             return_err(E_cause$proc_SystemResources());
         }));
@@ -229,8 +284,10 @@ $static fn_((proc__windows_envBlockAlloc(O$proc_Cmd_Env override))(E$proc__windo
         );
         claim_assert(FreeEnvironmentStringsW(native));
         return_ok({
+            .gpa = gpa,
             .ptr = some(buf),
             .len = len,
+            .alloc_len = alloc_bytes,
         });
     }
     let items = unwrap_(override);
@@ -240,19 +297,20 @@ $static fn_((proc__windows_envBlockAlloc(O$proc_Cmd_Env override))(E$proc__windo
         let item_len_z = orelse_((usize_addChkd(item_len, 1))(return_err(E_cause$proc_SystemResources())));
         len = orelse_((usize_addChkd(len, item_len_z))(return_err(E_cause$proc_SystemResources())));
     } $end(for);
-    let buf = orelse_((proc__windows_wideAlloc(len))(return_err(E_cause$proc_SystemResources())));
+    let alloc_bytes = orelse_((usize_mulChkd(len, sizeOf$(u16)))(return_err(E_cause$proc_SystemResources())));
+    let buf = orelse_((proc__windows_wideAlloc(gpa, len))(return_err(E_cause$OutOfMemory())));
     let out = P_prefix$((S$u16)(buf)(len));
     var_(pos, usize) = 0;
     for_(($s(items))(item)) {
         let item_len = unicode_wtf8ToWTF16Len(*item);
         let end = orelse_((usize_addChkd(pos, item_len))({
-            proc__windows_heapFree(ptrCast$((P$u8)(buf)));
+            proc__windows_free(gpa, ptrCast$((P$u8)(buf)), alloc_bytes);
             return_err(E_cause$proc_SystemResources());
         }));
         let converted = catch_((unicode_wtf8ToWTF16Within(*item, S_slice((out)$r(pos, end))))(
             $ignore,
             {
-                proc__windows_heapFree(ptrCast$((P$u8)(buf)));
+                proc__windows_free(gpa, ptrCast$((P$u8)(buf)), alloc_bytes);
                 return_err(E_cause$proc_InvalidName());
             }
         ));
@@ -262,7 +320,12 @@ $static fn_((proc__windows_envBlockAlloc(O$proc_Cmd_Env override))(E$proc__windo
     } $end(for);
     *S_at((out)[pos++]) = 0;
     claim_assert(pos == len);
-    return_ok({ .ptr = some(buf), .len = len });
+    return_ok({
+        .gpa = gpa,
+        .ptr = some(buf),
+        .len = len,
+        .alloc_len = alloc_bytes,
+    });
 } $unscoped(fn);
 
 $static fn_((proc__windows_resolveStdIO(proc_std_IO spec, O$fs_File inherited, DWORD std_id))(E$proc__windows_ResolvedStdIO) $scope) {
@@ -290,7 +353,14 @@ $static fn_((proc__windows_resolveStdIO(proc_std_IO spec, O$fs_File inherited, D
             .needs_close_child = true,
         });
     }
-    if (matches(spec, proc_std_IO_ignore) || matches(spec, proc_std_IO_close)) {
+    if (matches(spec, proc_std_IO_close)) {
+        return_ok({
+            .child = none(),
+            .parent_pipe = none(),
+            .needs_close_child = false,
+        });
+    }
+    if (matches(spec, proc_std_IO_ignore)) {
         let child = try_(proc__windows_stdioNull(for_read));
         return_ok({
             .child = some(child),
@@ -344,18 +414,27 @@ $static fn_((proc__windows_appendQuoted(S$u8 out, usize used, S_const$u8 arg))(O
         }
         if (ch == u8_c('"')) {
             if (used + backslashes * 2 + 1 > out.len) return_none();
-            for (usize i = 0; i < backslashes * 2 + 1; ++i) *S_at((out)[used++]) = u8_c('\\');
+            for_(($r(0, backslashes * 2 + 1))(i)) {
+                let_ignore = i;
+                *S_at((out)[used++]) = u8_c('\\');
+            } $end(for);
             *S_at((out)[used++]) = u8_c('"');
             backslashes = 0;
             continue;
         }
         if (used + backslashes + 1 > out.len) return_none();
-        for (usize i = 0; i < backslashes; ++i) *S_at((out)[used++]) = u8_c('\\');
+        for_(($r(0, backslashes))(i)) {
+            let_ignore = i;
+            *S_at((out)[used++]) = u8_c('\\');
+        } $end(for);
         backslashes = 0;
         *S_at((out)[used++]) = ch;
     } $end(for);
     if (used + backslashes * 2 + 1 > out.len) return_none();
-    for (usize i = 0; i < backslashes * 2; ++i) *S_at((out)[used++]) = u8_c('\\');
+    for_(($r(0, backslashes * 2))(i)) {
+        let_ignore = i;
+        *S_at((out)[used++]) = u8_c('\\');
+    } $end(for);
     *S_at((out)[used++]) = u8_c('"');
     return_some(used);
 } $unscoped(fn);
@@ -375,30 +454,46 @@ $static fn_((proc__windows_commandLine(S$S_const$u8 argv, S$u8 out))(E$S$u8) $sc
 } $unscoped(fn);
 
 $static fn_((proc__windows_spawnImpl(P$raw ctx, proc_Cmd cmd, O$S_const$u8 application_name, O$S_const$u8 current_dir))(proc_Spawn_E$proc_Child) $guard) {
-    claim_assert_nonnull(ctx);
+    let direct = ptrCast$((proc_Direct*)(ensureNonnull(ctx)));
     if (cmd.argv.len == 0) return_err(E_cause$proc_InvalidName());
 
     var_(cmdline_buf, proc__windows_OwnedBuf) = {
-        .ptr = proc__windows_heapAlloc(proc__windows_path_max),
+        .gpa = direct->gpa,
+        .ptr = proc__windows_alloc(direct->gpa, proc__windows_path_max),
         .len = proc__windows_path_max,
+        .alloc_len = proc__windows_path_max,
     };
-    if_none(cmdline_buf.ptr) return_err(E_cause$proc_SystemResources());
+    if_none(cmdline_buf.ptr) return_err(E_cause$OutOfMemory());
     errdefer_($ignore, proc__windows_OwnedBuf_fini(&cmdline_buf));
     let _cmdline = try_(proc__windows_commandLine(cmd.argv, P_prefix$((S$u8)(unwrap_(cmdline_buf.ptr))(cmdline_buf.len))));
-    var_(cmdline_wide, proc__windows_OwnedWideBuf) = try_(proc__windows_wtf8ZAlloc(_cmdline.as_const));
+    var_(cmdline_wide, proc__windows_OwnedWideBuf) = try_(
+        proc__windows_wtf8ZAlloc(direct->gpa, _cmdline.as_const)
+    );
     errdefer_($ignore, proc__windows_OwnedWideBuf_fini(&cmdline_wide));
-    var_(env_block, proc__windows_OwnedWideBuf) = try_(proc__windows_envBlockAlloc(cmd.env));
+    var_(env_block, proc__windows_OwnedWideBuf) = try_(
+        proc__windows_envBlockAlloc(direct->gpa, cmd.env)
+    );
     errdefer_($ignore, proc__windows_OwnedWideBuf_fini(&env_block));
-    var_(application_name_wide, proc__windows_OwnedWideBuf) = try_(proc__windows_wtf8OptZAlloc(application_name));
+    var_(application_name_wide, proc__windows_OwnedWideBuf) = try_(
+        proc__windows_wtf8OptZAlloc(direct->gpa, application_name)
+    );
     errdefer_($ignore, proc__windows_OwnedWideBuf_fini(&application_name_wide));
-    var_(current_dir_wide, proc__windows_OwnedWideBuf) = try_(proc__windows_wtf8OptZAlloc(current_dir));
+    var_(current_dir_wide, proc__windows_OwnedWideBuf) = try_(
+        proc__windows_wtf8OptZAlloc(direct->gpa, current_dir)
+    );
     errdefer_($ignore, proc__windows_OwnedWideBuf_fini(&current_dir_wide));
 
-    var_(std_in, proc__windows_ResolvedStdIO) = try_(proc__windows_resolveStdIO(cmd.std_in, some$((O$fs_File)(proc_std_in())), STD_INPUT_HANDLE));
+    var_(std_in, proc__windows_ResolvedStdIO) = try_(proc__windows_resolveStdIO(
+        cmd.std_in, some$((O$fs_File)(proc_std_in(direct->std))), STD_INPUT_HANDLE
+    ));
     errdefer_($ignore, proc__windows_ResolvedStdIO_fini(&std_in));
-    var_(std_out, proc__windows_ResolvedStdIO) = try_(proc__windows_resolveStdIO(cmd.std_out, some$((O$fs_File)(proc_std_out())), STD_OUTPUT_HANDLE));
+    var_(std_out, proc__windows_ResolvedStdIO) = try_(proc__windows_resolveStdIO(
+        cmd.std_out, some$((O$fs_File)(proc_std_out(direct->std))), STD_OUTPUT_HANDLE
+    ));
     errdefer_($ignore, proc__windows_ResolvedStdIO_fini(&std_out));
-    var_(std_err, proc__windows_ResolvedStdIO) = try_(proc__windows_resolveStdIO(cmd.std_err, some$((O$fs_File)(proc_std_err())), STD_ERROR_HANDLE));
+    var_(std_err, proc__windows_ResolvedStdIO) = try_(proc__windows_resolveStdIO(
+        cmd.std_err, some$((O$fs_File)(proc_std_err(direct->std))), STD_ERROR_HANDLE
+    ));
     errdefer_($ignore, proc__windows_ResolvedStdIO_fini(&std_err));
 
     STARTUPINFOW startup = cleared();
@@ -453,33 +548,65 @@ $static fn_((proc__windows_spawnImpl(P$raw ctx, proc_Cmd cmd, O$S_const$u8 appli
     });
 } $unguarded(fn);
 
-$static fn_((proc__windows_executablePath(S$u8 out_buf))(proc_Path_E$S$u8) $scope) {
+$static fn_((proc__windows_exePath(S$u8 out_buf))(proc_ExecutablePath_E$S$u8) $scope) {
     if (out_buf.len == 0) return_err(E_cause$proc_ResourceLimitReached());
     let wrote = GetModuleFileNameA(null, as$(LPSTR)(out_buf.ptr), as$(DWORD)(out_buf.len));
-    if (wrote == 0) return_err(proc__windows_mapError(GetLastError()));
+    if (wrote == 0) return_err(proc__windows_mapPathQueryError(GetLastError()));
     if (wrote >= out_buf.len) return_err(E_cause$proc_ResourceLimitReached());
     return_ok(S_prefix((out_buf)(as$(usize)(wrote))));
 } $unscoped(fn);
 
-$static fn_((proc__windows_currentPath(S$u8 out_buf))(proc_Path_E$S$u8) $scope) {
+$static fn_((proc__windows_currPath(S$u8 out_buf))(proc_CurrentPath_E$S$u8) $scope) {
     let wrote = GetCurrentDirectoryA(as$(DWORD)(out_buf.len), as$(LPSTR)(out_buf.ptr));
-    if (wrote == 0) return_err(proc__windows_mapError(GetLastError()));
+    if (wrote == 0) return_err(proc__windows_mapPathQueryError(GetLastError()));
     if (wrote >= out_buf.len) return_err(E_cause$proc_ResourceLimitReached());
     return_ok(S_prefix((out_buf)(as$(usize)(wrote))));
 } $unscoped(fn);
 
-$static fn_((proc__windows_setCurrentPath(S_const$u8 path))(proc_Path_E$void) $guard) {
-    var_(path_z, proc__windows_OwnedBuf) = try_(proc__windows_dupSliceZ(path));
+$static fn_((proc__windows_setCurrPath(P$raw ctx, S_const$u8 path))(proc_SetCurrentPath_E$void) $guard) {
+    let direct = ptrCast$((proc_Direct*)(ensureNonnull(ctx)));
+    var_(path_z, proc__windows_OwnedBuf) = try_(proc__windows_dupSliceZ(direct->gpa, path));
     defer_(proc__windows_OwnedBuf_fini(&path_z));
     if (!SetCurrentDirectoryA(as$(LPCSTR)(unwrap_(path_z.ptr)))) {
-        return_err(proc__windows_mapError(GetLastError()));
+        return_err(proc__windows_mapSetPathError(GetLastError()));
+    }
+    return_ok({});
+} $unguarded(fn);
+
+$static fn_((proc__windows_setCurrDir(P$raw ctx, fs_Dir dir))(proc_SetCurrentDir_E$void) $guard) {
+    let direct = ptrCast$((proc_Direct*)(ensureNonnull(ctx)));
+    var_(path, proc__windows_OwnedBuf) = try_(proc__windows_dirPathAlloc(direct->gpa, dir));
+    defer_(proc__windows_OwnedBuf_fini(&path));
+    if (!SetCurrentDirectoryA(as$(LPCSTR)(unwrap_(path.ptr)))) {
+        return_err(proc__windows_mapSetPathError(GetLastError()));
     }
     return_ok({});
 } $unguarded(fn);
 
 $static fn_((proc__windows_spawn(P$raw ctx, proc_Cmd cmd))(proc_Spawn_E$proc_Child) $guard) {
-    if_none(cmd.cwd) return_(proc__windows_spawnImpl(ctx, cmd, none$((O$S_const$u8)), none$((O$S_const$u8))));
-    var_(cwd, proc__windows_OwnedBuf) = try_(proc__windows_dirPathAlloc(unwrap_(cmd.cwd)));
+    if (matches(cmd.cwd, proc_Cwd_inherit)) {
+        return_(proc__windows_spawnImpl(
+            ctx,
+            cmd,
+            none$((O$S_const$u8)),
+            none$((O$S_const$u8))
+        ));
+    }
+    if (matches(cmd.cwd, proc_Cwd_path)) {
+        return_(proc__windows_spawnImpl(
+            ctx,
+            cmd,
+            none$((O$S_const$u8)),
+            some$((O$S_const$u8)(union_to((cmd.cwd)(proc_Cwd_path))))
+        ));
+    }
+    let direct = ptrCast$((proc_Direct*)(ensureNonnull(ctx)));
+    var_(cwd, proc__windows_OwnedBuf) = try_(
+        proc__windows_dirPathAlloc(
+            direct->gpa,
+            union_to((cmd.cwd)(proc_Cwd_dir))
+        )
+    );
     defer_(proc__windows_OwnedBuf_fini(&cwd));
     let child = try_(proc__windows_spawnImpl(
         ctx,
@@ -491,10 +618,12 @@ $static fn_((proc__windows_spawn(P$raw ctx, proc_Cmd cmd))(proc_Spawn_E$proc_Chi
 } $unguarded(fn);
 
 $static fn_((proc__windows_spawnPath(P$raw ctx, fs_Dir dir, proc_Cmd cmd))(proc_Spawn_E$proc_Child) $guard) {
+    let direct = ptrCast$((proc_Direct*)(ensureNonnull(ctx)));
     if (cmd.argv.len == 0) return_err(E_cause$proc_InvalidName());
-    var_(base, proc__windows_OwnedBuf) = try_(proc__windows_dirPathAlloc(dir));
+    var_(base, proc__windows_OwnedBuf) = try_(proc__windows_dirPathAlloc(direct->gpa, dir));
     defer_(proc__windows_OwnedBuf_fini(&base));
     var_(exe_path, proc__windows_OwnedBuf) = try_(proc__windows_resolvePathAlloc(
+        direct->gpa,
         P_prefix$((S$u8)(unwrap_(base.ptr))(base.len)).as_const,
         *S_at((cmd.argv)[0])
     ));
@@ -507,20 +636,116 @@ $static fn_((proc__windows_spawnPath(P$raw ctx, fs_Dir dir, proc_Cmd cmd))(proc_
     ));
     return_ok(child);
 } $unguarded(fn);
+
+$static fn_((proc__windows_childWait(
+    P$raw ctx,
+    proc_Child* self
+))(proc_Child_Wait_E$proc_Child_Ter) $scope) {
+    claim_assert_nonnull(ctx);
+    claim_assert_nonnull(self);
+    let handle = orelse_((self->handle)(
+        return_err(E_cause$proc_ProcessAlreadyExited())
+    ));
+    switch (WaitForSingleObject(as$(HANDLE)(handle), INFINITE)) {
+    case WAIT_OBJECT_0: break;
+    case WAIT_ABANDONED: $fallthrough;
+    case WAIT_TIMEOUT: $fallthrough;
+    case WAIT_FAILED: {
+        if (GetLastError() == ERROR_ACCESS_DENIED) {
+            return_err(E_cause$proc_AccessDenied());
+        }
+        return_err(E_cause$proc_SystemResources());
+    };
+    default_() return_err(E_cause$proc_SystemResources()) $end(default);
+    }
+    var_(exit_code, DWORD) = 0;
+    if (!GetExitCodeProcess(as$(HANDLE)(handle), &exit_code)) {
+        return_err(E_cause$proc_SystemResources());
+    }
+    claim_assert(CloseHandle(as$(HANDLE)(handle)));
+    asg_l((&self->handle)(none()));
+    self->id = 0;
+    return_ok(union_of$(
+        (proc_Child_Ter)
+        (proc_Child_Ter_exited)
+        (as$(u8)(exit_code))
+    ));
+} $unscoped(fn);
+
+$static fn_((proc__windows_childKill(P$raw ctx, proc_Child* self))(void)) {
+    claim_assert_nonnull(ctx);
+    claim_assert_nonnull(self);
+    if_some((self->handle)(handle)) {
+        let_ignore = TerminateProcess(as$(HANDLE)(handle), 1);
+        let_ignore = catch_((proc__windows_childWait(ctx, self))(
+            $ignore,
+            $do_nothing
+        ));
+    };
+};
 #endif /* plat_is_windows */
 
 #if plat_is_linux
 #define proc__linux_arg_max 64
 #define proc__linux_arg_len_max 1024
 #define proc__linux_path_len_max 4096
+#define proc__linux_default_path u8_l("/usr/local/bin:/bin:/usr/bin")
 
 $static fn_((proc__linux_mapErr(sys_call_linux_word err))(EAny)) {
     switch (err) {
-    case 2: return E_cause$proc_FileNotFound().any;
-    case 13: return E_cause$proc_AccessDenied().any;
-    case 20: return E_cause$proc_NotDir().any;
-    case 24: return E_cause$proc_ResourceLimitReached().any;
-    case 36: return E_cause$proc_InvalidName().any;
+    case sys_call_linux_ENOENT: return E_cause$proc_FileNotFound().any;
+    case sys_call_linux_EACCES: return E_cause$proc_AccessDenied().any;
+    case sys_call_linux_EPERM: return E_cause$proc_PermissionDenied().any;
+    case sys_call_linux_ENOTDIR: return E_cause$proc_NotDir().any;
+    case sys_call_linux_EIO: $fallthrough;
+    case sys_call_linux_ELOOP: return E_cause$proc_FileSystem().any;
+    case sys_call_linux_ENOEXEC: $fallthrough;
+    case sys_call_linux_EINVAL: $fallthrough;
+    case sys_call_linux_ELIBBAD: return E_cause$proc_InvalidExe().any;
+    case sys_call_linux_EISDIR: return E_cause$proc_IsDir().any;
+    case sys_call_linux_ETXTBSY: return E_cause$proc_FileBusy().any;
+    case sys_call_linux_EMFILE: return E_cause$proc_ProcessFdQuotaExceeded().any;
+    case sys_call_linux_ENFILE: return E_cause$proc_SystemFdQuotaExceeded().any;
+    case sys_call_linux_ENODEV: return E_cause$proc_NoDevice().any;
+    case sys_call_linux_ENAMETOOLONG: return E_cause$proc_NameTooLong().any;
+    case sys_call_linux_E2BIG: $fallthrough;
+    case sys_call_linux_ENOMEM: return E_cause$proc_SystemResources().any;
+    default_() return E_cause$proc_SystemResources().any $end(default);
+    }
+};
+
+$static fn_((proc__linux_mapExePathErr(sys_call_linux_word err))(EAny)) {
+    switch (err) {
+    case sys_call_linux_ENOENT: $fallthrough;
+    case sys_call_linux_ENOTDIR: return E_cause$proc_FileNotFound().any;
+    case sys_call_linux_EACCES: return E_cause$proc_AccessDenied().any;
+    case sys_call_linux_EIO: return E_cause$proc_FileSystem().any;
+    case sys_call_linux_ELOOP: return E_cause$proc_SymLinkLoop().any;
+    case sys_call_linux_ERANGE: $fallthrough;
+    case sys_call_linux_ENAMETOOLONG: return E_cause$proc_ResourceLimitReached().any;
+    default_() return E_cause$proc_SystemResources().any $end(default);
+    }
+};
+
+$static fn_((proc__linux_mapCurrPathErr(sys_call_linux_word err))(EAny)) {
+    switch (err) {
+    case sys_call_linux_ENOENT: $fallthrough;
+    case sys_call_linux_ENOTDIR: return E_cause$proc_FileNotFound().any;
+    case sys_call_linux_EACCES: return E_cause$proc_AccessDenied().any;
+    case sys_call_linux_ERANGE: $fallthrough;
+    case sys_call_linux_ENAMETOOLONG: return E_cause$proc_ResourceLimitReached().any;
+    default_() return E_cause$proc_SystemResources().any $end(default);
+    }
+};
+
+$static fn_((proc__linux_mapSetPathErr(sys_call_linux_word err))(EAny)) {
+    switch (err) {
+    case sys_call_linux_ENOENT: return E_cause$proc_FileNotFound().any;
+    case sys_call_linux_EACCES: return E_cause$proc_AccessDenied().any;
+    case sys_call_linux_ENOTDIR: return E_cause$proc_NotDir().any;
+    case sys_call_linux_ELOOP: return E_cause$proc_SymLinkLoop().any;
+    case sys_call_linux_ENAMETOOLONG: return E_cause$proc_NameTooLong().any;
+    case sys_call_linux_EIO: return E_cause$proc_FileSystem().any;
     default_() return E_cause$proc_SystemResources().any $end(default);
     }
 };
@@ -553,29 +778,58 @@ typedef struct proc__linux_SpawnScratch {
     char* envp[proc__linux_arg_max];
     char env_bufs[proc__linux_arg_max][proc__linux_arg_len_max];
     char exe_buf[proc__linux_path_len_max];
+    char cwd_buf[proc__linux_path_len_max];
     char path_buf[proc__linux_path_len_max];
+    char path_env_buf[proc__linux_path_len_max];
 } proc__linux_SpawnScratch;
 T_use_E$(proc__linux_SpawnScratch);
 
-$static fn_((proc__linux_allocScratch(void))(E$P$raw) $scope) {
-    let mapped = sys_call_linux_mmap(
-        null,
-        sizeOf$(proc__linux_SpawnScratch),
-        sys_call_linux_PROT_READ | sys_call_linux_PROT_WRITE,
-        sys_call_linux_MAP_PRIVATE | sys_call_linux_MAP_ANONYMOUS,
-        -1,
-        0
-    );
-    if (sys_call_linux_syscall_isErr(mapped)) return_err(E_cause$proc_SystemResources());
-    return_ok(intToPtr$((P$raw)(mapped)));
+$static fn_((proc__linux_allocScratch(mem_Alctr gpa))(E$P$raw) $scope) {
+    let ptr = orelse_((
+        mem_Alctr_rawAlloc(
+            $trace gpa,
+            sizeOf$(proc__linux_SpawnScratch),
+            alignOfLog2$(proc__linux_SpawnScratch)
+        )
+    )(return_err(E_cause$OutOfMemory())));
+    return_ok(ptr);
 } $unscoped(fn);
 
-$static fn_((proc__linux_freeScratch(P$raw scratch))(void)) {
-    if (scratch != null) let_ignore = sys_call_linux_munmap(scratch, sizeof(proc__linux_SpawnScratch));
+$static fn_((proc__linux_freeScratch(mem_Alctr gpa, P$raw scratch))(void)) {
+    claim_assert_nonnull(scratch);
+    mem_Alctr_rawFree(
+        $trace gpa,
+        P_prefix$((S$u8)(ptrCast$((P$u8)(scratch)))(sizeOf$(proc__linux_SpawnScratch))),
+        alignOfLog2$(proc__linux_SpawnScratch)
+    );
 };
 
 $static fn_((proc__linux_closeIf(sys_call_linux_fd_t fd))(void)) {
     if (fd >= 0) let_ignore = sys_call_linux_close(fd);
+};
+
+$static fn_((proc__linux_discardStdIO(proc__linux_StdIO std_io))(void)) {
+    if (std_io.needs_close_child) proc__linux_closeIf(std_io.child_fd);
+    if_some((std_io.parent_)(file)) fs_File_close(file);
+};
+
+$static fn_((proc__linux_discardParent(O$fs_File parent_))(void)) {
+    if_some((parent_)(file)) fs_File_close(file);
+};
+
+$static fn_((proc__linux_readExecErr(
+    sys_call_linux_fd_t fd,
+    sys_call_linux_word* err
+))(sys_call_linux_word)) {
+    claim_assert_nonnull(err);
+    var_(read, sys_call_linux_word) = 0;
+    do {
+        read = sys_call_linux_read(fd, err, sizeOf$(sys_call_linux_word));
+    } while (
+        sys_call_linux_syscall_isErr(read)
+        && sys_call_linux_syscall_err(read) == sys_call_linux_EINTR
+    );
+    return read;
 };
 
 $static fn_((proc__linux_resolveStdIO(proc_std_IO spec, O$fs_File inherited, sys_call_linux_fd_t std_fd))(E$proc__linux_StdIO) $scope) {
@@ -598,7 +852,14 @@ $static fn_((proc__linux_resolveStdIO(proc_std_IO spec, O$fs_File inherited, sys
             .needs_close_child = false,
         });
     }
-    if (matches(spec, proc_std_IO_ignore) || matches(spec, proc_std_IO_close)) {
+    if (matches(spec, proc_std_IO_close)) {
+        return_ok({
+            .child_fd = -1,
+            .parent_ = none(),
+            .needs_close_child = false,
+        });
+    }
+    if (matches(spec, proc_std_IO_ignore)) {
         let flags = for_read ? sys_call_linux_O_RDONLY : sys_call_linux_O_WRONLY;
         let fd = sys_call_linux_openat(sys_call_linux_AT_FDCWD, "/dev/null", flags, 0);
         if (sys_call_linux_syscall_isErr(fd)) return_err(proc__linux_mapErr(sys_call_linux_syscall_err(fd)));
@@ -627,30 +888,139 @@ $static fn_((proc__linux_resolveStdIO(proc_std_IO spec, O$fs_File inherited, sys
     });
 } $unscoped(fn);
 
-$static fn_((proc__linux_dupTo(sys_call_linux_fd_t src, sys_call_linux_fd_t dst))(void)) {
-    if (src == dst) return;
-    let_ignore = sys_call_linux_dup3(src, dst, 0);
+$static fn_((proc__linux_dupTo(
+    sys_call_linux_fd_t src,
+    sys_call_linux_fd_t dst
+))(sys_call_linux_word)) {
+    if (src < 0) {
+        proc__linux_closeIf(dst);
+        return 0;
+    }
+    if (src == dst) return 0;
+    let rc = sys_call_linux_dup3(src, dst, 0);
+    if (sys_call_linux_syscall_isErr(rc)) {
+        return sys_call_linux_syscall_err(rc);
+    }
     proc__linux_closeIf(src);
+    return 0;
+};
+
+$static fn_((proc__linux_execPath(
+    const char* path,
+    char* const* argv,
+    char* const* envp
+))(sys_call_linux_word)) {
+    let rc = sys_call_linux_execve(path, argv, envp);
+    claim_assert(sys_call_linux_syscall_isErr(rc));
+    return sys_call_linux_syscall_err(rc);
+};
+
+$static fn_((proc__linux_exec(
+    proc_ArgExpsn expand_arg0,
+    const char* file,
+    char** argv,
+    char* const* envp,
+    S_const$u8 path_env,
+    S$u8 path_buf
+))(sys_call_linux_word)) {
+    let file_s = mem_spanZ0$u8(as$(P_const$u8)(file));
+    if (mem_containsUnitBytes(file_s, u8_c('/'))) {
+        return proc__linux_execPath(file, argv, envp);
+    }
+
+    var paths = mem_tokzUnitBytes(path_env, u8_c(':'));
+    var_(saw_access_denied, bool) = false;
+    while_some((mem_TokzIter_nextBytes(&paths)), path) {
+        let required = path.len + 1 + file_s.len + 1;
+        if (required > path_buf.len) return sys_call_linux_ENAMETOOLONG;
+        mem_copyBytes(S_prefix((path_buf)(path.len)), path);
+        *S_at((path_buf)[path.len]) = u8_c('/');
+        mem_copyBytes(
+            S_slice((path_buf)$r(path.len + 1, required - 1)),
+            file_s
+        );
+        *S_at((path_buf)[required - 1]) = 0;
+
+        let previous_arg0 = argv[0];
+        if (expand_arg0 == proc_ArgExpsn_expand) {
+            argv[0] = as$(char*)(path_buf.ptr);
+        }
+        let err = proc__linux_execPath(as$(const char*)(path_buf.ptr), argv, envp);
+        argv[0] = previous_arg0;
+
+        if (err == sys_call_linux_EACCES) {
+            saw_access_denied = true;
+            continue;
+        }
+        if (err == sys_call_linux_ENOENT || err == sys_call_linux_ENOTDIR) {
+            continue;
+        }
+        return err;
+    }
+    return saw_access_denied ? sys_call_linux_EACCES : sys_call_linux_ENOENT;
+};
+
+$attr($no_return)
+$static fn_((proc__linux_childFail(
+    sys_call_linux_fd_t err_fd,
+    sys_call_linux_word err
+))(void)) {
+    var_(wrote, sys_call_linux_word) = 0;
+    do {
+        wrote = sys_call_linux_write(err_fd, &err, sizeOf$(sys_call_linux_word));
+    } while (
+        sys_call_linux_syscall_isErr(wrote)
+        && sys_call_linux_syscall_err(wrote) == sys_call_linux_EINTR
+    );
+    sys_call_linux_exit(127);
 };
 
 $attr($no_return)
 $static fn_((proc__linux_childExec(
     proc_Cmd cmd,
+    const char* cwd_path,
     const char* exe,
-    char* const* argv,
+    char** argv,
     char* const* envp,
+    S_const$u8 path_env,
+    S$u8 path_buf,
     proc__linux_StdIO std_in,
     proc__linux_StdIO std_out,
-    proc__linux_StdIO std_err
+    proc__linux_StdIO std_err,
+    sys_call_linux_fd_t err_fd
 ))(void)) {
-    if_some((cmd.cwd)(cwd)) {
-        let_ignore = sys_call_linux_fchdir(fs_Dir_handle(cwd));
+    if (matches(cmd.cwd, proc_Cwd_dir)) {
+        let rc = sys_call_linux_fchdir(
+            fs_Dir_handle(union_to((cmd.cwd)(proc_Cwd_dir)))
+        );
+        if (sys_call_linux_syscall_isErr(rc)) {
+            proc__linux_childFail(err_fd, sys_call_linux_syscall_err(rc));
+        }
+    } else if (matches(cmd.cwd, proc_Cwd_path)) {
+        claim_assert_nonnull(cwd_path);
+        let rc = sys_call_linux_chdir(cwd_path);
+        if (sys_call_linux_syscall_isErr(rc)) {
+            proc__linux_childFail(err_fd, sys_call_linux_syscall_err(rc));
+        }
     }
-    proc__linux_dupTo(std_in.child_fd, 0);
-    proc__linux_dupTo(std_out.child_fd, 1);
-    proc__linux_dupTo(std_err.child_fd, 2);
-    let_ignore = sys_call_linux_execve(exe, argv, envp);
-    sys_call_linux_exit(127);
+    let err_in = proc__linux_dupTo(std_in.child_fd, 0);
+    if (err_in != 0) proc__linux_childFail(err_fd, err_in);
+    let err_out = proc__linux_dupTo(std_out.child_fd, 1);
+    if (err_out != 0) proc__linux_childFail(err_fd, err_out);
+    let err_err = proc__linux_dupTo(std_err.child_fd, 2);
+    if (err_err != 0) proc__linux_childFail(err_fd, err_err);
+
+    proc__linux_childFail(
+        err_fd,
+        proc__linux_exec(
+            cmd.expand_arg0,
+            exe,
+            argv,
+            envp,
+            path_env,
+            path_buf
+        )
+    );
 };
 
 $static fn_((proc__linux_buildArgv(S$S_const$u8 args, char* argv[proc__linux_arg_max], char arg_bufs[proc__linux_arg_max][proc__linux_arg_len_max]))(E$void) $scope) {
@@ -697,12 +1067,22 @@ $static fn_((proc__linux_spawnImpl(P$raw ctx, proc_Cmd cmd, O$S_const$u8 exe_pat
     if (cmd.start_suspended) return_err(E_cause$proc_OperationUnsupported());
     let_ignore = cmd.create_no_window;
 
-    let scratch_raw = try_(proc__linux_allocScratch());
-    defer_(proc__linux_freeScratch(scratch_raw));
+    let scratch_raw = try_(proc__linux_allocScratch(direct->gpa));
+    defer_(proc__linux_freeScratch(direct->gpa, scratch_raw));
     let scratch = ptrAlignCast$((proc__linux_SpawnScratch*)(scratch_raw));
 
     try_(proc__linux_buildArgv(cmd.argv, scratch->argv, scratch->arg_bufs));
     let child_env = try_(proc__linux_buildEnv(inherited_env, cmd.env, scratch->envp, scratch->env_bufs));
+    let path_env = orelse_((
+        try_(proc_Env_by(
+            inherited_env,
+            u8_l("PATH"),
+            (S$u8){
+                .ptr = as$(P$u8)(scratch->path_env_buf),
+                .len = proc__linux_path_len_max,
+            }
+        ))
+    )(proc__linux_default_path));
 
     let exe = eval_(const char* $scope)({
         if_some((exe_path)(path)) {
@@ -710,32 +1090,100 @@ $static fn_((proc__linux_spawnImpl(P$raw ctx, proc_Cmd cmd, O$S_const$u8 exe_pat
         }
         $break_(as$(const char*)(scratch->argv[0]));
     }) $unscoped(eval);
+    let cwd_path = eval_(const char* $scope)({
+        if (matches(cmd.cwd, proc_Cwd_path)) {
+            $break_(as$(const char*)(try_(proc__linux_copyZ(
+                union_to((cmd.cwd)(proc_Cwd_path)),
+                (S$u8){
+                    .ptr = as$(P$u8)(scratch->cwd_buf),
+                    .len = proc__linux_path_len_max,
+                }
+            ))));
+        }
+        $break_(as$(const char*)(null));
+    }) $unscoped(eval);
 
-    var_(std_in, proc__linux_StdIO) = try_(proc__linux_resolveStdIO(cmd.std_in, some$((O$fs_File)(proc_std_in())), 0));
-    var_(std_out, proc__linux_StdIO) = catch_((proc__linux_resolveStdIO(cmd.std_out, some$((O$fs_File)(proc_std_out())), 1))(err, {
-        if (std_in.needs_close_child) proc__linux_closeIf(std_in.child_fd);
+    var_(std_in, proc__linux_StdIO) = try_(proc__linux_resolveStdIO(
+        cmd.std_in, some$((O$fs_File)(proc_std_in(direct->std))), 0
+    ));
+    var_(std_out, proc__linux_StdIO) = catch_((proc__linux_resolveStdIO(
+        cmd.std_out, some$((O$fs_File)(proc_std_out(direct->std))), 1
+    ))(err, {
+        proc__linux_discardStdIO(std_in);
         return_err(err);
     }));
-    var_(std_err, proc__linux_StdIO) = catch_((proc__linux_resolveStdIO(cmd.std_err, some$((O$fs_File)(proc_std_err())), 2))(err, {
-        if (std_in.needs_close_child) proc__linux_closeIf(std_in.child_fd);
-        if (std_out.needs_close_child) proc__linux_closeIf(std_out.child_fd);
+    var_(std_err, proc__linux_StdIO) = catch_((proc__linux_resolveStdIO(
+        cmd.std_err, some$((O$fs_File)(proc_std_err(direct->std))), 2
+    ))(err, {
+        proc__linux_discardStdIO(std_in);
+        proc__linux_discardStdIO(std_out);
         return_err(err);
     }));
+
+    int err_fds[2] = { -1, -1 };
+    let err_pipe_rc = sys_call_linux_pipe2(err_fds, sys_call_linux_O_CLOEXEC);
+    if (sys_call_linux_syscall_isErr(err_pipe_rc)) {
+        proc__linux_discardStdIO(std_in);
+        proc__linux_discardStdIO(std_out);
+        proc__linux_discardStdIO(std_err);
+        return_err(proc__linux_mapErr(sys_call_linux_syscall_err(err_pipe_rc)));
+    }
 
     let pid = sys_call_linux_fork();
     if (sys_call_linux_syscall_isErr(pid)) {
-        if (std_in.needs_close_child) proc__linux_closeIf(std_in.child_fd);
-        if (std_out.needs_close_child) proc__linux_closeIf(std_out.child_fd);
-        if (std_err.needs_close_child) proc__linux_closeIf(std_err.child_fd);
+        proc__linux_closeIf(err_fds[1]);
+        proc__linux_closeIf(err_fds[0]);
+        proc__linux_discardStdIO(std_in);
+        proc__linux_discardStdIO(std_out);
+        proc__linux_discardStdIO(std_err);
         return_err(proc__linux_mapErr(sys_call_linux_syscall_err(pid)));
     }
     if (pid == 0) {
-        proc__linux_childExec(cmd, exe, scratch->argv, child_env, std_in, std_out, std_err);
+        proc__linux_closeIf(err_fds[0]);
+        proc__linux_childExec(
+            cmd,
+            cwd_path,
+            exe,
+            scratch->argv,
+            child_env,
+            path_env,
+            (S$u8){
+                .ptr = as$(P$u8)(scratch->path_buf),
+                .len = proc__linux_path_len_max,
+            },
+            std_in,
+            std_out,
+            std_err,
+            err_fds[1]
+        );
     }
 
+    proc__linux_closeIf(err_fds[1]);
     if (std_in.needs_close_child) proc__linux_closeIf(std_in.child_fd);
     if (std_out.needs_close_child) proc__linux_closeIf(std_out.child_fd);
     if (std_err.needs_close_child) proc__linux_closeIf(std_err.child_fd);
+
+    var_(exec_err, sys_call_linux_word) = 0;
+    let exec_err_read = proc__linux_readExecErr(err_fds[0], &exec_err);
+    proc__linux_closeIf(err_fds[0]);
+    if (sys_call_linux_syscall_isErr(exec_err_read)) {
+        let_ignore = sys_call_linux_kill(as$(sys_call_linux_pid_t)(pid), 9);
+        var_(status, i32) = 0;
+        let_ignore = sys_call_linux_wait4(as$(sys_call_linux_pid_t)(pid), &status, 0, null);
+        proc__linux_discardParent(std_in.parent_);
+        proc__linux_discardParent(std_out.parent_);
+        proc__linux_discardParent(std_err.parent_);
+        return_err(E_cause$proc_SystemResources());
+    }
+    if (exec_err_read != 0) {
+        claim_assert(as$(usize)(exec_err_read) == sizeOf$(sys_call_linux_word));
+        var_(status, i32) = 0;
+        let_ignore = sys_call_linux_wait4(as$(sys_call_linux_pid_t)(pid), &status, 0, null);
+        proc__linux_discardParent(std_in.parent_);
+        proc__linux_discardParent(std_out.parent_);
+        proc__linux_discardParent(std_err.parent_);
+        return_err(proc__linux_mapErr(exec_err));
+    }
 
     return_ok({
         .handle = none(),
@@ -748,29 +1196,45 @@ $static fn_((proc__linux_spawnImpl(P$raw ctx, proc_Cmd cmd, O$S_const$u8 exe_pat
     });
 } $unguarded(fn);
 
-$static fn_((proc__linux_executablePath(S$u8 out_buf))(proc_Path_E$S$u8) $scope) {
+$static fn_((proc__linux_exePath(S$u8 out_buf))(proc_ExecutablePath_E$S$u8) $scope) {
     let read = sys_call_linux_readlinkat(sys_call_linux_AT_FDCWD, "/proc/self/exe", as$(char*)(out_buf.ptr), out_buf.len);
-    if (sys_call_linux_syscall_isErr(read)) return_err(proc__linux_mapErr(sys_call_linux_syscall_err(read)));
+    if (sys_call_linux_syscall_isErr(read)) {
+        return_err(proc__linux_mapExePathErr(sys_call_linux_syscall_err(read)));
+    }
     if (as$(usize)(read) >= out_buf.len) return_err(E_cause$proc_ResourceLimitReached());
     return_ok(S_prefix((out_buf)(as$(usize)(read))));
 } $unscoped(fn);
 
-$static fn_((proc__linux_currentPath(S$u8 out_buf))(proc_Path_E$S$u8) $scope) {
+$static fn_((proc__linux_currPath(S$u8 out_buf))(proc_CurrentPath_E$S$u8) $scope) {
     let rc = sys_call_linux_getcwd(as$(char*)(out_buf.ptr), out_buf.len);
-    if (sys_call_linux_syscall_isErr(rc)) return_err(proc__linux_mapErr(sys_call_linux_syscall_err(rc)));
+    if (sys_call_linux_syscall_isErr(rc)) {
+        return_err(proc__linux_mapCurrPathErr(sys_call_linux_syscall_err(rc)));
+    }
     let len = mem_lenZ0$u8(out_buf.ptr);
     return_ok(S_prefix((out_buf)(len)));
 } $unscoped(fn);
 
-$static fn_((proc__linux_setCurrentPath(S_const$u8 path))(proc_Path_E$void) $guard) {
-    let scratch_raw = try_(proc__linux_allocScratch());
-    defer_(proc__linux_freeScratch(scratch_raw));
+$static fn_((proc__linux_setCurrPath(P$raw ctx, S_const$u8 path))(proc_SetCurrentPath_E$void) $guard) {
+    let direct = ptrCast$((proc_Direct*)(ensureNonnull(ctx)));
+    let scratch_raw = try_(proc__linux_allocScratch(direct->gpa));
+    defer_(proc__linux_freeScratch(direct->gpa, scratch_raw));
     let scratch = ptrAlignCast$((proc__linux_SpawnScratch*)(scratch_raw));
     let raw = try_(proc__linux_copyZ(path, (S$u8){ .ptr = as$(P$u8)(scratch->path_buf), .len = proc__linux_path_len_max }));
     let rc = sys_call_linux_chdir(as$(const char*)(raw));
-    if (sys_call_linux_syscall_isErr(rc)) return_err(proc__linux_mapErr(sys_call_linux_syscall_err(rc)));
+    if (sys_call_linux_syscall_isErr(rc)) {
+        return_err(proc__linux_mapSetPathErr(sys_call_linux_syscall_err(rc)));
+    }
     return_ok({});
 } $unguarded(fn);
+
+$static fn_((proc__linux_setCurrDir(P$raw ctx, fs_Dir dir))(proc_SetCurrentDir_E$void) $scope) {
+    claim_assert_nonnull(ctx);
+    let rc = sys_call_linux_fchdir(fs_Dir_handle(dir));
+    if (sys_call_linux_syscall_isErr(rc)) {
+        return_err(proc__linux_mapErr(sys_call_linux_syscall_err(rc)));
+    }
+    return_ok({});
+} $unscoped(fn);
 
 $static fn_((proc__linux_spawn(P$raw ctx, proc_Cmd cmd))(proc_Spawn_E$proc_Child)) {
     return proc__linux_spawnImpl(ctx, cmd, none$((O$S_const$u8)));
@@ -790,43 +1254,216 @@ $static fn_((proc__linux_appendU64(S$u8 out, usize* pos, u64 value))(bool)) {
     return true;
 };
 
-$static fn_((proc__linux_spawnPath(P$raw ctx, fs_Dir dir, proc_Cmd cmd))(proc_Spawn_E$proc_Child) $guard) {
-    if (cmd.argv.len == 0) return_err(E_cause$proc_InvalidName());
-    let scratch_raw = try_(proc__linux_allocScratch());
-    defer_(proc__linux_freeScratch(scratch_raw));
-    let scratch = ptrAlignCast$((proc__linux_SpawnScratch*)(scratch_raw));
-    let out = (S$u8){ .ptr = as$(P$u8)(scratch->path_buf), .len = proc__linux_path_len_max };
+$static fn_((proc__linux_dirExePath(
+    fs_Dir dir,
+    S_const$u8 arg0,
+    S$u8 out
+))(E$S_const$u8) $scope) {
     let prefix = u8_l("/proc/self/fd/");
     var_(pos, usize) = 0;
+    if (prefix.len > out.len) return_err(E_cause$proc_ResourceLimitReached());
     mem_copyBytes(S_prefix((out)(prefix.len)), prefix);
     pos += prefix.len;
-    if (!proc__linux_appendU64(out, &pos, as$(u64)(fs_Dir_handle(dir)))) return_err(E_cause$proc_ResourceLimitReached());
-    if (pos + 1 > out.len) return_err(E_cause$proc_ResourceLimitReached());
+    if (!proc__linux_appendU64(out, &pos, as$(u64)(fs_Dir_handle(dir)))) {
+        return_err(E_cause$proc_ResourceLimitReached());
+    }
+    if (pos + 1 + arg0.len + 1 > out.len) {
+        return_err(E_cause$proc_ResourceLimitReached());
+    }
     *S_at((out)[pos++]) = u8_c('/');
-    let arg0 = *S_at((cmd.argv)[0]);
-    if (pos + arg0.len + 1 > out.len) return_err(E_cause$proc_ResourceLimitReached());
     mem_copyBytes(S_slice((out)$r(pos, pos + arg0.len)), arg0);
     pos += arg0.len;
     *S_at((out)[pos]) = 0;
-    return proc__linux_spawnImpl(ctx, cmd, some$((O$S_const$u8)(S_prefix((out.as_const)(pos)))));
+    return_ok(S_prefix((out.as_const)(pos)));
+} $unscoped(fn);
+
+$static fn_((proc__linux_spawnPath(P$raw ctx, fs_Dir dir, proc_Cmd cmd))(proc_Spawn_E$proc_Child) $guard) {
+    let direct = ptrCast$((proc_Direct*)(ensureNonnull(ctx)));
+    if (cmd.argv.len == 0) return_err(E_cause$proc_InvalidName());
+    let scratch_raw = try_(proc__linux_allocScratch(direct->gpa));
+    defer_(proc__linux_freeScratch(direct->gpa, scratch_raw));
+    let scratch = ptrAlignCast$((proc__linux_SpawnScratch*)(scratch_raw));
+    let out = (S$u8){ .ptr = as$(P$u8)(scratch->path_buf), .len = proc__linux_path_len_max };
+    let exe_path = try_(proc__linux_dirExePath(dir, *S_at((cmd.argv)[0]), out));
+    return proc__linux_spawnImpl(ctx, cmd, some$((O$S_const$u8)(exe_path)));
 } $unguarded(fn);
+
+$static fn_((proc__linux_replaceImpl(
+    P$raw ctx,
+    proc_Replace_Opts opts,
+    O$S_const$u8 exe_path
+))(proc_Replace_E$void) $guard) {
+    let direct = ptrCast$((proc_Direct*)(ensureNonnull(ctx)));
+    let inherited_env = direct->env;
+    let scratch_raw = try_(proc__linux_allocScratch(direct->gpa));
+    defer_(proc__linux_freeScratch(direct->gpa, scratch_raw));
+    let scratch = ptrAlignCast$((proc__linux_SpawnScratch*)(scratch_raw));
+
+    try_(proc__linux_buildArgv(opts.argv, scratch->argv, scratch->arg_bufs));
+    let env = try_(proc__linux_buildEnv(
+        inherited_env,
+        opts.env,
+        scratch->envp,
+        scratch->env_bufs
+    ));
+    let path_env = orelse_((
+        try_(proc_Env_by(
+            inherited_env,
+            u8_l("PATH"),
+            (S$u8){
+                .ptr = as$(P$u8)(scratch->path_env_buf),
+                .len = proc__linux_path_len_max,
+            }
+        ))
+    )(proc__linux_default_path));
+    let exe = eval_(const char* $scope)({
+        if_some((exe_path)(path)) {
+            $break_(as$(const char*)(try_(proc__linux_copyZ(
+                path,
+                (S$u8){
+                    .ptr = as$(P$u8)(scratch->exe_buf),
+                    .len = proc__linux_path_len_max,
+                }
+            ))));
+        }
+        $break_(as$(const char*)(scratch->argv[0]));
+    }) $unscoped(eval);
+
+    return_err(proc__linux_mapErr(proc__linux_exec(
+        opts.expand_arg0,
+        exe,
+        scratch->argv,
+        env,
+        path_env,
+        (S$u8){
+            .ptr = as$(P$u8)(scratch->path_buf),
+            .len = proc__linux_path_len_max,
+        }
+    )));
+} $unguarded(fn);
+
+$static fn_((proc__linux_replace(
+    P$raw ctx,
+    proc_Replace_Opts opts
+))(proc_Replace_E$void)) {
+    return proc__linux_replaceImpl(ctx, opts, none$((O$S_const$u8)));
+};
+
+$static fn_((proc__linux_replacePath(
+    P$raw ctx,
+    fs_Dir dir,
+    proc_Replace_Opts opts
+))(proc_Replace_E$void) $guard) {
+    let direct = ptrCast$((proc_Direct*)(ensureNonnull(ctx)));
+    if (opts.argv.len == 0) return_err(E_cause$proc_InvalidName());
+    let scratch_raw = try_(proc__linux_allocScratch(direct->gpa));
+    defer_(proc__linux_freeScratch(direct->gpa, scratch_raw));
+    let scratch = ptrAlignCast$((proc__linux_SpawnScratch*)(scratch_raw));
+    let exe_path = try_(proc__linux_dirExePath(
+        dir,
+        *S_at((opts.argv)[0]),
+        (S$u8){
+            .ptr = as$(P$u8)(scratch->path_buf),
+            .len = proc__linux_path_len_max,
+        }
+    ));
+    return proc__linux_replaceImpl(
+        ctx,
+        opts,
+        some$((O$S_const$u8)(exe_path))
+    );
+} $unguarded(fn);
+
+$static fn_((proc__linux_childWait(
+    P$raw ctx,
+    proc_Child* self
+))(proc_Child_Wait_E$proc_Child_Ter) $scope) {
+    claim_assert_nonnull(ctx);
+    claim_assert_nonnull(self);
+    if (self->id == 0) {
+        return_err(E_cause$proc_ProcessAlreadyExited());
+    }
+    var_(status, int) = 0;
+    var_(waited, sys_call_linux_word) = 0;
+    do {
+        waited = sys_call_linux_wait4(
+            as$(sys_call_linux_pid_t)(self->id),
+            &status,
+            0,
+            null
+        );
+    } while (
+        sys_call_linux_syscall_isErr(waited)
+        && sys_call_linux_syscall_err(waited) == sys_call_linux_EINTR
+    );
+    if (sys_call_linux_syscall_isErr(waited)) {
+        if (sys_call_linux_syscall_err(waited) == sys_call_linux_ECHILD) {
+            self->id = 0;
+            return_err(E_cause$proc_ProcessAlreadyExited());
+        }
+        return_err(E_cause$proc_SystemResources());
+    }
+    self->id = 0;
+    if ((status & 0x7f) == 0) {
+        return_ok(union_of$(
+            (proc_Child_Ter)
+            (proc_Child_Ter_exited)
+            (as$(u8)((status >> 8) & 0xff))
+        ));
+    }
+    if ((status & 0x7f) != 0x7f) {
+        return_ok(union_of$(
+            (proc_Child_Ter)
+            (proc_Child_Ter_signal)
+            (as$(proc_Child_Sig)(status & 0x7f))
+        ));
+    }
+    return_ok(union_of$(
+        (proc_Child_Ter)
+        (proc_Child_Ter_stopped)
+        (as$(proc_Child_Sig)((status >> 8) & 0xff))
+    ));
+} $unscoped(fn);
+
+$static fn_((proc__linux_childKill(P$raw ctx, proc_Child* self))(void)) {
+    claim_assert_nonnull(ctx);
+    claim_assert_nonnull(self);
+    if (self->id != 0) {
+        let_ignore = sys_call_linux_kill(
+            as$(sys_call_linux_pid_t)(self->id),
+            9
+        );
+        let_ignore = catch_((proc__linux_childWait(ctx, self))(
+            $ignore,
+            $do_nothing
+        ));
+    }
+};
 #endif /* plat_is_linux */
 
 $attr($maybe_unused)
-$static fn_((proc__unsupported_executablePath(S$u8 out_buf))(proc_Path_E$S$u8) $scope) {
+$static fn_((proc__unsupported_exePath(S$u8 out_buf))(proc_ExecutablePath_E$S$u8) $scope) {
     let_ignore = out_buf;
     return_err(E_cause$proc_OperationUnsupported());
 } $unscoped(fn);
 
 $attr($maybe_unused)
-$static fn_((proc__unsupported_currentPath(S$u8 out_buf))(proc_Path_E$S$u8) $scope) {
+$static fn_((proc__unsupported_currPath(S$u8 out_buf))(proc_CurrentPath_E$S$u8) $scope) {
     let_ignore = out_buf;
     return_err(E_cause$proc_OperationUnsupported());
 } $unscoped(fn);
 
 $attr($maybe_unused)
-$static fn_((proc__unsupported_setCurrentPath(S_const$u8 path))(proc_Path_E$void) $scope) {
+$static fn_((proc__unsupported_setCurrPath(P$raw ctx, S_const$u8 path))(proc_SetCurrentPath_E$void) $scope) {
+    let_ignore = ctx;
     let_ignore = path;
+    return_err(E_cause$proc_OperationUnsupported());
+} $unscoped(fn);
+
+$attr($maybe_unused)
+$static fn_((proc__unsupported_setCurrDir(P$raw ctx, fs_Dir dir))(proc_SetCurrentDir_E$void) $scope) {
+    let_ignore = ctx;
+    let_ignore = dir;
     return_err(E_cause$proc_OperationUnsupported());
 } $unscoped(fn);
 
@@ -847,23 +1484,73 @@ $static fn_((proc__unsupported_spawnPath(P$raw ctx, fs_Dir dir, proc_Cmd cmd))(p
     return_err(E_cause$proc_OperationUnsupported());
 } $unscoped(fn);
 
-$static let proc__executablePath = pp_if_(plat_is_windows)(
-    pp_then_(proc__windows_executablePath),
+$attr($maybe_unused)
+$static fn_((proc__unsupported_replace(P$raw ctx, proc_Replace_Opts opts))(proc_Replace_E$void) $scope) {
+    claim_assert_nonnull(ctx);
+    let_ignore = ctx;
+    let_ignore = opts;
+    return_err(E_cause$proc_OperationUnsupported());
+} $unscoped(fn);
+
+$attr($maybe_unused)
+$static fn_((proc__unsupported_replacePath(
+    P$raw ctx,
+    fs_Dir dir,
+    proc_Replace_Opts opts
+))(proc_Replace_E$void) $scope) {
+    claim_assert_nonnull(ctx);
+    let_ignore = ctx;
+    let_ignore = dir;
+    let_ignore = opts;
+    return_err(E_cause$proc_OperationUnsupported());
+} $unscoped(fn);
+
+$attr($maybe_unused)
+$static fn_((proc__unsupported_childWait(
+    P$raw ctx,
+    proc_Child* self
+))(proc_Child_Wait_E$proc_Child_Ter) $scope) {
+    claim_assert_nonnull(ctx);
+    claim_assert_nonnull(self);
+    let_ignore = ctx;
+    let_ignore = self;
+    return_err(E_cause$proc_OperationUnsupported());
+} $unscoped(fn);
+
+$attr($maybe_unused)
+$static fn_((proc__unsupported_childKill(
+    P$raw ctx,
+    proc_Child* self
+))(void)) {
+    claim_assert_nonnull(ctx);
+    claim_assert_nonnull(self);
+    let_ignore = ctx;
+    let_ignore = self;
+};
+
+$static let proc__exePath = pp_if_(plat_is_windows)(
+    pp_then_(proc__windows_exePath),
     pp_else_(pp_if_(plat_is_linux)(
-        pp_then_(proc__linux_executablePath),
-        pp_else_(proc__unsupported_executablePath)
+        pp_then_(proc__linux_exePath),
+        pp_else_(proc__unsupported_exePath)
     )));
-$static let proc__currentPath = pp_if_(plat_is_windows)(
-    pp_then_(proc__windows_currentPath),
+$static let proc__currPath = pp_if_(plat_is_windows)(
+    pp_then_(proc__windows_currPath),
     pp_else_(pp_if_(plat_is_linux)(
-        pp_then_(proc__linux_currentPath),
-        pp_else_(proc__unsupported_currentPath)
+        pp_then_(proc__linux_currPath),
+        pp_else_(proc__unsupported_currPath)
     )));
-$static let proc__setCurrentPath = pp_if_(plat_is_windows)(
-    pp_then_(proc__windows_setCurrentPath),
+$static let proc__setCurrPath = pp_if_(plat_is_windows)(
+    pp_then_(proc__windows_setCurrPath),
     pp_else_(pp_if_(plat_is_linux)(
-        pp_then_(proc__linux_setCurrentPath),
-        pp_else_(proc__unsupported_setCurrentPath)
+        pp_then_(proc__linux_setCurrPath),
+        pp_else_(proc__unsupported_setCurrPath)
+    )));
+$static let proc__setCurrDir = pp_if_(plat_is_windows)(
+    pp_then_(proc__windows_setCurrDir),
+    pp_else_(pp_if_(plat_is_linux)(
+        pp_then_(proc__linux_setCurrDir),
+        pp_else_(proc__unsupported_setCurrDir)
     )));
 $static let proc__spawn = pp_if_(plat_is_windows)(
     pp_then_(proc__windows_spawn),
@@ -877,20 +1564,45 @@ $static let proc__spawnPath = pp_if_(plat_is_windows)(
         pp_then_(proc__linux_spawnPath),
         pp_else_(proc__unsupported_spawnPath)
     )));
+$static let proc__replace = pp_if_(plat_is_linux)(
+    pp_then_(proc__linux_replace),
+    pp_else_(proc__unsupported_replace)
+);
+$static let proc__replacePath = pp_if_(plat_is_linux)(
+    pp_then_(proc__linux_replacePath),
+    pp_else_(proc__unsupported_replacePath)
+);
+$static let proc__childWait = pp_if_(plat_is_windows)(
+    pp_then_(proc__windows_childWait),
+    pp_else_(pp_if_(plat_is_linux)(
+        pp_then_(proc__linux_childWait),
+        pp_else_(proc__unsupported_childWait)
+    )));
+$static let proc__childKill = pp_if_(plat_is_windows)(
+    pp_then_(proc__windows_childKill),
+    pp_else_(pp_if_(plat_is_linux)(
+        pp_then_(proc__linux_childKill),
+        pp_else_(proc__unsupported_childKill)
+    )));
 
-$static fn_((proc__native_executablePath(P$raw ctx, S$u8 out_buf))(proc_Path_E$S$u8)) {
+$static fn_((proc__native_exePath(P$raw ctx, S$u8 out_buf))(proc_ExecutablePath_E$S$u8)) {
     claim_assert_nonnull(ctx);
-    return proc__executablePath(out_buf);
+    return proc__exePath(out_buf);
 };
 
-$static fn_((proc__native_currentPath(P$raw ctx, S$u8 out_buf))(proc_Path_E$S$u8)) {
+$static fn_((proc__native_currPath(P$raw ctx, S$u8 out_buf))(proc_CurrentPath_E$S$u8)) {
     claim_assert_nonnull(ctx);
-    return proc__currentPath(out_buf);
+    return proc__currPath(out_buf);
 };
 
-$static fn_((proc__native_setCurrentPath(P$raw ctx, S_const$u8 path))(proc_Path_E$void)) {
+$static fn_((proc__native_setCurrPath(P$raw ctx, S_const$u8 path))(proc_SetCurrentPath_E$void)) {
     claim_assert_nonnull(ctx);
-    return proc__setCurrentPath(path);
+    return proc__setCurrPath(ctx, path);
+};
+
+$static fn_((proc__native_setCurrDir(P$raw ctx, fs_Dir dir))(proc_SetCurrentDir_E$void)) {
+    claim_assert_nonnull(ctx);
+    return proc__setCurrDir(ctx, dir);
 };
 
 $static fn_((proc__native_spawn(P$raw ctx, proc_Cmd cmd))(proc_Spawn_E$proc_Child)) {
@@ -903,34 +1615,49 @@ $static fn_((proc__native_spawnPath(P$raw ctx, fs_Dir dir, proc_Cmd cmd))(proc_S
     return proc__spawnPath(ctx, dir, cmd);
 };
 
-$static fn_((proc__native_replace(P$raw ctx, proc_Cmd cmd))(proc_Spawn_E$void) $scope) {
+$static fn_((proc__native_replace(P$raw ctx, proc_Replace_Opts opts))(proc_Replace_E$void)) {
     claim_assert_nonnull(ctx);
-    let_ignore = ctx;
-    let_ignore = cmd;
-    return_err(E_cause$proc_OperationUnsupported());
-} $unscoped(fn);
+    return proc__replace(ctx, opts);
+};
 
-$static fn_((proc__native_replacePath(P$raw ctx, fs_Dir dir, proc_Cmd cmd))(proc_Spawn_E$void) $scope) {
+$static fn_((proc__native_replacePath(
+    P$raw ctx,
+    fs_Dir dir,
+    proc_Replace_Opts opts
+))(proc_Replace_E$void)) {
     claim_assert_nonnull(ctx);
-    let_ignore = ctx;
-    let_ignore = dir;
-    let_ignore = cmd;
-    return_err(E_cause$proc_OperationUnsupported());
-} $unscoped(fn);
+    return proc__replacePath(ctx, dir, opts);
+};
+
+$static fn_((proc__native_childWait(
+    P$raw ctx,
+    proc_Child* self
+))(proc_Child_Wait_E$proc_Child_Ter)) {
+    claim_assert_nonnull(ctx);
+    return proc__childWait(ctx, self);
+};
+
+$static fn_((proc__native_childKill(P$raw ctx, proc_Child* self))(void)) {
+    claim_assert_nonnull(ctx);
+    proc__childKill(ctx, self);
+};
 
 $static let_(proc__direct_vtbl, proc_Self_VTbl) = {
-    .executablePathFn = proc__native_executablePath,
-    .currentPathFn = proc__native_currentPath,
-    .setCurrentPathFn = proc__native_setCurrentPath,
+    .exePathFn = proc__native_exePath,
+    .currPathFn = proc__native_currPath,
+    .setCurrDirFn = proc__native_setCurrDir,
+    .setCurrPathFn = proc__native_setCurrPath,
     .spawnFn = proc__native_spawn,
     .spawnPathFn = proc__native_spawnPath,
     .replaceFn = proc__native_replace,
     .replacePathFn = proc__native_replacePath,
+    .waitFn = proc__native_childWait,
+    .killFn = proc__native_childKill,
 };
 
 fn_((proc_Direct_self(proc_Direct* self))(proc_Direct_E$proc_Self) $scope) {
     claim_assert_nonnull(self);
-    pp_if_(proc_Direct_supported)(
+    pp_if_(pp_or(plat_is_windows, plat_is_linux))(
         pp_then_(
             return_ok(proc_ensureValid((proc_Self){
                 .ctx = self,
