@@ -148,8 +148,7 @@ fn_((debug_StackTrace__windows_print(void))(void) $guard) {
     let std = catch_((io_std_direct())($ignore, io_std_noop));
     let locked = io_std_lockErr(std);
     defer_(io_Locked_Writer_unlock(locked));
-    let writer = io_Locked_writer(locked);
-    {
+    using_(let writer = io_Locked_writer(locked)) {
         let process = GetCurrentProcess();
         SymSetOptions(SymGetOptions() | SYMOPT_LOAD_LINES | SYMOPT_UNDNAME | SYMOPT_DEFERRED_LOADS);
         SymInitialize(process, null, true);
@@ -212,22 +211,22 @@ fn_((debug_StackTrace__windows_print(void))(void) $guard) {
 #include "dh/sys/posix.h"
 
 $static fn_((debug_StackTrace__unix__handleSignal(i32 sig))(void) $guard) {
-    let std = catch_((io_std_direct())($ignore, io_std_noop));
-    let locked = io_std_lockErr(std);
-    defer_(io_Locked_Writer_unlock(locked));
-    let writer = io_Locked_writer(locked);
-    {
-        let reason = expr_(S_const$u8 $scope)(switch (sig) {
-            case_((sys_posix_SIGSEGV)) $break_(u8_l("segmentation fault")) $end(case);
-            case_((sys_posix_SIGABRT)) $break_(u8_l("aborted")) $end(case);
-            case_((sys_posix_SIGFPE)) $break_(u8_l("floating point exception")) $end(case);
-            case_((sys_posix_SIGILL)) $break_(u8_l("illegal instruction")) $end(case);
-            case_((sys_posix_SIGBUS)) $break_(u8_l("bus error")) $end(case);
-            default_() $break_(u8_l("unknown signal")) $end(default);
-        }) $unscoped(expr);
-        debug_StackTrace__printPanicHeader(writer, reason, 0); /* Signals usually don't have a code */
-        debug_StackTrace_print();
-    }
+    using_(let std = catch_((io_std_direct())($ignore, io_std_noop))) blk_defer {
+        let locked = io_std_lockErr(std);
+        defer_(io_Locked_Writer_unlock(locked));
+        using_(let writer = io_Locked_writer(locked)) {
+            let reason = expr_(S_const$u8 $scope)(switch (sig) {
+                case_((sys_posix_SIGSEGV)) $break_(u8_l("segmentation fault")) $end(case);
+                case_((sys_posix_SIGABRT)) $break_(u8_l("aborted")) $end(case);
+                case_((sys_posix_SIGFPE)) $break_(u8_l("floating point exception")) $end(case);
+                case_((sys_posix_SIGILL)) $break_(u8_l("illegal instruction")) $end(case);
+                case_((sys_posix_SIGBUS)) $break_(u8_l("bus error")) $end(case);
+                default_() $break_(u8_l("unknown signal")) $end(default);
+            }) $unscoped(expr);
+            debug_StackTrace__printPanicHeader(writer, reason, 0); /* Signals usually don't have a code */
+            debug_StackTrace_print();
+        }
+    } blk_deferral;
     _exit(1); /* Syscall exit */
 } $unguarded(fn);
 
@@ -248,8 +247,7 @@ fn_((debug_StackTrace__unix_print(void))(void) $guard) {
     let std = catch_((io_std_direct())($ignore, io_std_noop));
     let locked = io_std_lockErr(std);
     defer_(io_Locked_Writer_unlock(locked));
-    let writer = io_Locked_writer(locked);
-    {
+    using_(let writer = io_Locked_writer(locked)) {
         $static var_(stack, A$$(debug_StackTrace__max_frames, P$raw)) $undefined_static;
         let frames = as$(usize)(backtrace(A_ptr(stack), debug_StackTrace__max_frames));
         let tid = as$(u64)(thrd_currId());

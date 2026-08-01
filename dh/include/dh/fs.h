@@ -1,12 +1,11 @@
 /**
- * @copyright Copyright (c) 2025 Gyeongtae Kim
+ * @copyright Copyright (c) 2025-2026 Gyeongtae Kim
  * @license   MIT License - see LICENSE file for details
  *
  * @file    fs.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2025-02-23 (date of creation)
- * @updated 2025-02-23 (date of last update)
- * @version v0.1-alpha
+ * @updated 2026-08-02 (date of last update)
  * @ingroup dasae-headers(dh)
  * @prefix  fs
  *
@@ -28,7 +27,6 @@ extern "C" {
 
 #include "fs/Dir.h"
 #include "fs/File.h"
-
 #include "fs/path.h"
 
 #if defined(__cplusplus)
