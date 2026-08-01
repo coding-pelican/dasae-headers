@@ -34,7 +34,7 @@ typedef A$$(3 + uint_log10Ceil_static(u16_limit_max), u8) dansi_scroll_UpBuf;
 $attr($must_check)
 $extern fn_((dansi_scroll_up(u16 lines, dansi_scroll_UpBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_scroll_upWrite(u16 lines, io_Writer out))(E$void));
+$extern fn_((dansi_scroll_upWrite(u16 lines, io_Writer out))(io_PrintE$void));
 
 #define dansi_scroll_down_static(_lines_tok) \
     ____dansi_scroll_down_static(_lines_tok)
@@ -42,7 +42,7 @@ typedef A$$(3 + uint_log10Ceil_static(u16_limit_max), u8) dansi_scroll_DownBuf;
 $attr($must_check)
 $extern fn_((dansi_scroll_down(u16 lines, dansi_scroll_DownBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_scroll_downWrite(u16 lines, io_Writer out))(E$void));
+$extern fn_((dansi_scroll_downWrite(u16 lines, io_Writer out))(io_PrintE$void));
 
 /*========== Macros and Definitions =========================================*/
 

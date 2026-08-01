@@ -2,13 +2,12 @@
 #include "dh/io/TTY.h"
 #include "dh/fs/File.h"
 
-$static fn_((test_io_TTY__stdCfg(void))(io_TTY_Cfg)) {
-    var direct = proc_std_Direct_initNative();
-    return io_TTY_Cfg_std(proc_std_Direct_self(&direct));
+$static fn_((test_io_TTY__directCfg(void))(io_TTY_Cfg)) {
+    return unwrap_(io_TTY_Cfg_direct());
 };
 
-TEST_fn_("io/TTY: std config wraps stdio handles" $scope) {
-    let cfg = test_io_TTY__stdCfg();
+TEST_fn_("io/TTY: direct config wraps native terminal handles" $scope) {
+    let cfg = test_io_TTY__directCfg();
     var tty = io_TTY_init(cfg);
 
     try_(TEST_expect(fs_File_handle(tty.input_file) == fs_File_handle(cfg.input_file)));
@@ -43,15 +42,15 @@ TEST_fn_("io/TTY: mode patch presets expose raw byte and VT intent" $scope) {
     try_(TEST_expect((cbreak_vt.disable & io_TTY_ModeBit_line_input) != 0));
 } $unscoped(TEST_fn);
 
-TEST_fn_("io/TTY: stdio TTY queries match file queries" $scope) {
-    var tty = io_TTY_init(test_io_TTY__stdCfg());
+TEST_fn_("io/TTY: direct TTY queries match file queries" $scope) {
+    var tty = io_TTY_init(test_io_TTY__directCfg());
 
     try_(TEST_expect(try_(io_TTY_inputIsTTY(&tty)) == try_(fs_File_isTTY(tty.input_file))));
     try_(TEST_expect(try_(io_TTY_outputIsTTY(&tty)) == try_(fs_File_isTTY(tty.output_file))));
 } $unscoped(TEST_fn);
 
 TEST_fn_("io/TTY: enter and leave raw VT mode when stdin is a TTY" $guard) {
-    var tty = io_TTY_init(test_io_TTY__stdCfg());
+    var tty = io_TTY_init(test_io_TTY__directCfg());
     defer_(io_TTY_fini(&tty));
 
     catch_((io_TTY_enterMode(&tty, io_TTY_ModePatch_rawVT()))(err, {

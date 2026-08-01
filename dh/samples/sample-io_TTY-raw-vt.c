@@ -16,7 +16,7 @@
 
 fn_((main(proc_Entry entry))(E$void) $guard) {
     let_ignore = entry;
-    var tty = io_TTY_init(io_TTY_Cfg_std(entry.std));
+    var tty = io_TTY_init(unwrap_(io_TTY_Cfg_direct()));
     defer_(io_TTY_fini(&tty));
 
     try_(io_TTY_enterMode(&tty, io_TTY_ModePatch_rawVT()));

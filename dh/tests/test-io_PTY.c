@@ -1,6 +1,7 @@
 #include "dh-main.h"
 #include "dh/io/PTY.h"
 #include "dh/heap/Sys.h"
+#include "dh/start/Invoc/Env.h"
 
 TEST_fn_("io/PTY: default configuration is terminal-sized and blocking" $scope) {
     let size = io_PTY_Size_default();
@@ -51,45 +52,44 @@ TEST_fn_("io/PTY: open resize and close supported PTY" $guard) {
 TEST_fn_("io/PTY: spawn session waits for child termination" $guard) {
     var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
-    var std_direct = proc_std_Direct_initNative();
-    var direct = proc_Direct_init(
-        proc_Env_none,
-        heap_Sys_alctr(&heap),
-        proc_std_Direct_self(&std_direct)
-    );
-    let provider = catch_((proc_Direct_self(&direct))(
-        $ignore,
-        claim_unreachable
-    ));
-
 #if plat_is_windows
     var_(argv, A$$(4, S_const$u8)) = A_init({
         [0] = u8_l("cmd.exe"),
-        [1] = u8_l("/c"),
-        [2] = u8_l("exit"),
-        [3] = u8_l("5"),
+        [1] = u8_l("/D"),
+        [2] = u8_l("/C"),
+        [3] = u8_l("if \"%DH_PTY_SSO%\"==\"inherited\" (exit /b 0) else exit /b 9"),
     });
 #elif plat_is_linux
     var_(argv, A$$(4, S_const$u8)) = A_init({
         [0] = u8_l("/bin/sh"),
         [1] = u8_l("-c"),
-        [2] = u8_l("exit 5"),
-        [3] = u8_l(""),
+        [2] = u8_l("test \"$DH_PTY_SSO\" = inherited"),
+        [3] = u8_l("test-io-pty"),
     });
 #else
     try_(TEST_skipMsg(u8_l("PTY spawn is not supported on this platform")));
 #endif
 
+    let gpa = heap_Sys_alctr(&heap);
+    let proc = try_(proc_direct());
+    var_(env_items, A$$(1, P_const$u8)) = A_init({
+        [0] = as$(P_const$u8)("DH_PTY_SSO=inherited"),
+    });
+    var env_direct = start_Invoc_Env_initVecZ(
+        A_len(env_items),
+        as$(P_const$P_const$u8)(A_ptr(env_items))
+    );
     var cfg = io_PTY_SpawnCfg_default(
-        heap_Sys_alctr(&heap),
+        gpa,
+        start_Invoc_Env_self(&env_direct),
         (proc_Cmd){
             .argv = A_ref$((S$S_const$u8)(argv)),
             .env = none(),
-            .cwd = union_of((proc_Cwd_inherit){}),
-            .std_in = union_of((proc_std_IO_ignore){}),
-            .std_out = union_of((proc_std_IO_ignore){}),
-            .std_err = union_of((proc_std_IO_ignore){}),
-            .expand_arg0 = proc_ArgExpsn_no_expand,
+            .cwd = union_of((proc_Cmd_CWD_inherit){}),
+            .std_in = union_of((proc_Stream_ignore){}),
+            .std_out = union_of((proc_Stream_ignore){}),
+            .std_err = union_of((proc_Stream_ignore){}),
+            .expand_arg0 = proc_Cmd_ArgExpsn_no_expand,
             .start_suspended = false,
             .create_no_window = true,
         }
@@ -102,10 +102,10 @@ TEST_fn_("io/PTY: spawn session waits for child termination" $guard) {
         }
         return_err(err);
     }));
-    defer_(io_PTY_Session_close(provider, &session));
+    defer_(io_PTY_Session_close(&session, proc));
 
     try_(io_PTY_Session_resize(&session, (io_PTY_Size){ .cols = 100, .rows = 30 }));
-    let term = try_(io_PTY_Session_wait(provider, &session));
-    try_(TEST_expect(matches(term, proc_Child_Ter_exited)));
-    try_(TEST_expect(union_to((term)(proc_Child_Ter_exited)) == 5));
+    let term = try_(io_PTY_Session_wait(&session, proc));
+    try_(TEST_expect(matches(term, proc_Child_Trm_exited)));
+    try_(TEST_expect(union_to((term)(proc_Child_Trm_exited)) == 0));
 } $unguarded(TEST_fn);

@@ -87,27 +87,27 @@ T_use_E$($set(dansi_shell_osc633_E)(dansi_shell_osc633_Frame));
 $attr($must_check)
 $extern fn_((dansi_shell_osc633_mark(dansi_shell_osc633_Mark mark, S$u8 buf))(E$S$u8));
 $attr($must_check)
-$extern fn_((dansi_shell_osc633_markWrite(dansi_shell_osc633_Mark mark, io_Writer out))(E$void));
+$extern fn_((dansi_shell_osc633_markWrite(dansi_shell_osc633_Mark mark, io_Writer out))(io_PrintE$void));
 $attr($must_check)
 $extern fn_((dansi_shell_osc633_commandEnd(O$i32 exit_code, S$u8 buf))(E$S$u8));
 $attr($must_check)
-$extern fn_((dansi_shell_osc633_commandEndWrite(O$i32 exit_code, io_Writer out))(E$void));
+$extern fn_((dansi_shell_osc633_commandEndWrite(O$i32 exit_code, io_Writer out))(io_PrintE$void));
 $attr($must_check)
 $extern fn_((dansi_shell_osc633_commandLine(S_const$u8 command_line, S$u8 buf))(E$S$u8));
 $attr($must_check)
-$extern fn_((dansi_shell_osc633_commandLineWrite(S_const$u8 command_line, io_Writer out))(E$void));
+$extern fn_((dansi_shell_osc633_commandLineWrite(S_const$u8 command_line, io_Writer out))(io_PrintE$void));
 $attr($must_check)
 $extern fn_((dansi_shell_osc633_commandLineRaw(S_const$u8 command_line, S$u8 buf))(E$S$u8));
 $attr($must_check)
-$extern fn_((dansi_shell_osc633_commandLineRawWrite(S_const$u8 command_line, io_Writer out))(E$void));
+$extern fn_((dansi_shell_osc633_commandLineRawWrite(S_const$u8 command_line, io_Writer out))(io_PrintE$void));
 $attr($must_check)
 $extern fn_((dansi_shell_osc633_property(dansi_shell_osc633_Prop property, S$u8 buf))(E$S$u8));
 $attr($must_check)
-$extern fn_((dansi_shell_osc633_propertyWrite(dansi_shell_osc633_Prop property, io_Writer out))(E$void));
+$extern fn_((dansi_shell_osc633_propertyWrite(dansi_shell_osc633_Prop property, io_Writer out))(io_PrintE$void));
 $attr($must_check)
 $extern fn_((dansi_shell_osc633_propertyRaw(S_const$u8 property, S$u8 buf))(E$S$u8));
 $attr($must_check)
-$extern fn_((dansi_shell_osc633_propertyRawWrite(S_const$u8 property, io_Writer out))(E$void));
+$extern fn_((dansi_shell_osc633_propertyRawWrite(S_const$u8 property, io_Writer out))(io_PrintE$void));
 $attr($must_check)
 $extern fn_((dansi_shell_osc633_parse(dansi_osc_Frame frame))(dansi_shell_osc633_E$dansi_shell_osc633_Frame));
 

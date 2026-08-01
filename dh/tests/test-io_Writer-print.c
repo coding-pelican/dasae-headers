@@ -19,6 +19,7 @@
 #include "dh-main.h"
 #include "dh/io/Writer.h"
 #include "dh/fmt/common.h"
+#include "dh/mem/common.h"
 
 /*========== Test Helper - Buffer Writer ===================================*/
 

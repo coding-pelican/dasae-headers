@@ -1,14 +1,14 @@
 #include "dh-main.h"
 #include "dh/io/Buf.h"
-#include "dh/proc/std.h"
-#include "dh/fs/File/self.h"
+#include "dh/io/std.h"
 
 fn_((main(proc_Entry entry))(E$void) $guard) {
-    let out_file = proc_std_out(entry.std);
-    let unbufd = fs_File_writer(out_file);
+    let_ignore = entry;
+    let std = catch_((io_std_direct())($ignore, io_std_noop));
+    let unbufd = io_std_out(std);
 
     var_(buf, A$$(4096, u8)) $undefined;
-    var bufd = io_Buf_Writer_init(unbufd, A_ref$((S$u8)(buf)));
+    var bufd = io_Buf_Writer_from(unbufd, A_ref$((S$u8)(buf)));
     defer_(catch_((io_Buf_Writer_flush(&bufd))($ignore, claim_unreachable)));
 
     let out_writer = io_Buf_writer(&bufd);

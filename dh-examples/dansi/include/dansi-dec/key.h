@@ -225,7 +225,7 @@ typedef dansi_dec_mode_SetBuf dansi_dec_key_SetCursorBuf;
 $attr($must_check)
 $extern fn_((dansi_dec_key_setCursor(bool enabled, dansi_dec_key_SetCursorBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_dec_key_setCursorWrite(bool enabled, io_Writer out))(E$void));
+$extern fn_((dansi_dec_key_setCursorWrite(bool enabled, io_Writer out))(io_PrintE$void));
 
 #define dansi_dec_key_enableCursor_static() \
     ____dansi_dec_key_enableCursor_static()
@@ -233,7 +233,7 @@ typedef dansi_dec_mode_EnableBuf dansi_dec_key_EnableCursorBuf;
 $attr($must_check)
 $extern fn_((dansi_dec_key_enableCursor(dansi_dec_key_EnableCursorBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_dec_key_enableCursorWrite(io_Writer out))(E$void));
+$extern fn_((dansi_dec_key_enableCursorWrite(io_Writer out))(io_PrintE$void));
 
 #define dansi_dec_key_disableCursor_static() \
     ____dansi_dec_key_disableCursor_static()
@@ -241,7 +241,7 @@ typedef dansi_dec_mode_DisableBuf dansi_dec_key_DisableCursorBuf;
 $attr($must_check)
 $extern fn_((dansi_dec_key_disableCursor(dansi_dec_key_DisableCursorBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_dec_key_disableCursorWrite(io_Writer out))(E$void));
+$extern fn_((dansi_dec_key_disableCursorWrite(io_Writer out))(io_PrintE$void));
 
 #define dansi_dec_key_setKeypad_static(_pp_enabled) \
     ____dansi_dec_key_setKeypad_static(_pp_enabled)
@@ -249,19 +249,19 @@ typedef A$$(2, u8) dansi_dec_key_SetKeypadBuf;
 $attr($must_check)
 $extern fn_((dansi_dec_key_setKeypad(bool enabled, dansi_dec_key_SetKeypadBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_dec_key_setKeypadWrite(bool enabled, io_Writer out))(E$void));
+$extern fn_((dansi_dec_key_setKeypadWrite(bool enabled, io_Writer out))(io_WriteE$void));
 
 #define dansi_dec_key_enableKeypad_static() \
     ____dansi_dec_key_enableKeypad_static()
 $extern fn_((dansi_dec_key_enableKeypad(void))(S_const$u8));
 $attr($must_check)
-$extern fn_((dansi_dec_key_enableKeypadWrite(io_Writer out))(E$void));
+$extern fn_((dansi_dec_key_enableKeypadWrite(io_Writer out))(io_WriteE$void));
 
 #define dansi_dec_key_disableKeypad_static() \
     ____dansi_dec_key_disableKeypad_static()
 $extern fn_((dansi_dec_key_disableKeypad(void))(S_const$u8));
 $attr($must_check)
-$extern fn_((dansi_dec_key_disableKeypadWrite(io_Writer out))(E$void));
+$extern fn_((dansi_dec_key_disableKeypadWrite(io_Writer out))(io_WriteE$void));
 
 $extern fn_((dansi_dec_key_parseReport(dansi_Seq seq))(O$dansi_dec_key_Report));
 $attr($must_check)

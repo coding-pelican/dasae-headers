@@ -21,7 +21,7 @@
 TEST_fn_("io/Writer: nl writes logical LF byte" $scope) {
     T_use_A$(8, u8);
     var_(mem, A$8$u8) $undefined;
-    var writer_impl = io_Fixed_Writer_init(io_Fixed_writing(A_ref$((S$u8)(mem))));
+    var writer_impl = io_Fixed_Writer_from(io_Fixed_writing(A_ref$((S$u8)(mem))));
 
     try_(io_Writer_nl(io_Fixed_writer(&writer_impl)));
 
@@ -31,7 +31,7 @@ TEST_fn_("io/Writer: nl writes logical LF byte" $scope) {
 TEST_fn_("io/Writer: println appends logical LF byte" $scope) {
     T_use_A$(8, u8);
     var_(mem, A$8$u8) $undefined;
-    var writer_impl = io_Fixed_Writer_init(io_Fixed_writing(A_ref$((S$u8)(mem))));
+    var writer_impl = io_Fixed_Writer_from(io_Fixed_writing(A_ref$((S$u8)(mem))));
 
     try_(io_Writer_println(io_Fixed_writer(&writer_impl), u8_l("abc")));
 
@@ -41,7 +41,7 @@ TEST_fn_("io/Writer: println appends logical LF byte" $scope) {
 TEST_fn_("io/Writer: crlf writes explicit CRLF bytes" $scope) {
     T_use_A$(8, u8);
     var_(mem, A$8$u8) $undefined;
-    var writer_impl = io_Fixed_Writer_init(io_Fixed_writing(A_ref$((S$u8)(mem))));
+    var writer_impl = io_Fixed_Writer_from(io_Fixed_writing(A_ref$((S$u8)(mem))));
 
     try_(io_Writer_crlf(io_Fixed_writer(&writer_impl)));
 

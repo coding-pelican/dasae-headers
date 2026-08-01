@@ -40,7 +40,7 @@ typedef dansi_xterm_mode_SetBuf dansi_xterm_paste_SetBracketedBuf;
 $attr($must_check)
 $extern fn_((dansi_xterm_paste_setBracketed(bool enabled, dansi_xterm_paste_SetBracketedBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_paste_setBracketedWrite(bool enabled, io_Writer out))(E$void));
+$extern fn_((dansi_xterm_paste_setBracketedWrite(bool enabled, io_Writer out))(io_PrintE$void));
 
 #define dansi_xterm_paste_enableBracketed_static() \
     ____dansi_xterm_paste_enableBracketed_static()
@@ -48,7 +48,7 @@ typedef dansi_xterm_mode_EnableBuf dansi_xterm_paste_EnableBracketedBuf;
 $attr($must_check)
 $extern fn_((dansi_xterm_paste_enableBracketed(dansi_xterm_paste_EnableBracketedBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_paste_enableBracketedWrite(io_Writer out))(E$void));
+$extern fn_((dansi_xterm_paste_enableBracketedWrite(io_Writer out))(io_PrintE$void));
 
 #define dansi_xterm_paste_disableBracketed_static() \
     ____dansi_xterm_paste_disableBracketed_static()
@@ -56,7 +56,7 @@ typedef dansi_xterm_mode_DisableBuf dansi_xterm_paste_DisableBracketedBuf;
 $attr($must_check)
 $extern fn_((dansi_xterm_paste_disableBracketed(dansi_xterm_paste_DisableBracketedBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_paste_disableBracketedWrite(io_Writer out))(E$void));
+$extern fn_((dansi_xterm_paste_disableBracketedWrite(io_Writer out))(io_PrintE$void));
 $extern fn_((dansi_xterm_paste_parseBoundary(S_const$u8 report))(O$dansi_xterm_paste_Event));
 
 /*========== Macros and Definitions =========================================*/

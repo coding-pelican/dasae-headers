@@ -4,13 +4,16 @@
 
 $static fn_((io_Writer__mapPrintError(EAny err))(EAny));
 
-fn_((io_Writer__mapPrintError(EAny err))(EAny)) {
-    let write_err = (io_WriteE){ .any = err };
-    if (isSome(E_resolve$io_WriteE(write_err))) return err;
-    let fmt_err = (fmt_E){ .any = err };
-    if (isSome(E_resolve$fmt_E(fmt_err))) return err;
-    return *E_cause$io_PrintFailed().as_any;
+$static var_(io_Writer__ctx_noop, Void) $undefined_static;
+let_(io_Writer_noop, io_Writer) = {
+    .ctx = &io_Writer__ctx_noop,
+    .writeFn = io_Writer_noWrite
 };
+fn_((io_Writer_noWrite(P$raw ctx, S_const$u8 bytes))(io_WriteE$usize) $scope) {
+    let_ignore = ctx;
+    let_ignore = bytes;
+    return_ok(0);
+} $unscoped(fn);
 
 $static var_(io_Writer__ctx_failing, Void) $undefined_static;
 let_(io_Writer_failing, io_Writer) = {
@@ -82,8 +85,7 @@ fn_((io_Writer_print(io_Writer self, S_const$u8 fmt, ...))(io_PrintE$void) $guar
 
 fn_((io_Writer_printVaArgs(io_Writer self, S_const$u8 fmt, va_list va_args))(io_PrintE$void) $scope) {
     catch_((fmt_formatVaArgs(self, fmt, va_args))(
-        err,
-        return_err(io_Writer__mapPrintError(err))
+        err, return_err(io_Writer__mapPrintError(err))
     ));
     return_ok({});
 } $unscoped(fn);
@@ -97,9 +99,16 @@ fn_((io_Writer_println(io_Writer self, S_const$u8 fmt, ...))(io_PrintE$void) $gu
 
 fn_((io_Writer_printlnVaArgs(io_Writer self, S_const$u8 fmt, va_list va_args))(io_PrintE$void) $scope) {
     catch_((fmt_formatVaArgs(self, fmt, va_args))(
-        err,
-        return_err(io_Writer__mapPrintError(err))
+        err, return_err(io_Writer__mapPrintError(err))
     ));
     try_(io_Writer_nl(self));
     return_ok({});
 } $unscoped(fn);
+
+fn_((io_Writer__mapPrintError(EAny err))(EAny)) {
+    let write_err = (io_WriteE){ .any = err };
+    if (isSome(E_resolve$io_WriteE(write_err))) return err;
+    let fmt_err = (fmt_E){ .any = err };
+    if (isSome(E_resolve$fmt_E(fmt_err))) return err;
+    return *E_cause$io_PrintFailed().as_any;
+};

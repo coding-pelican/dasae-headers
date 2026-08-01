@@ -198,7 +198,7 @@ $extern fn_((dansi_xterm_mouse_setReportMode(
 $attr($must_check)
 $extern fn_((dansi_xterm_mouse_setReportModeWrite(
     dansi_xterm_mouse_ReportMode mode, bool enabled, io_Writer out
-))(E$void));
+))(io_PrintE$void));
 
 #define dansi_xterm_mouse_enableReportMode_static(_mode_tok) \
     ____dansi_xterm_mouse_enableReportMode_static(_mode_tok)
@@ -210,7 +210,7 @@ $extern fn_((dansi_xterm_mouse_enableReportMode(
 $attr($must_check)
 $extern fn_((dansi_xterm_mouse_enableReportModeWrite(
     dansi_xterm_mouse_ReportMode mode, io_Writer out
-))(E$void));
+))(io_PrintE$void));
 
 #define dansi_xterm_mouse_disableReportMode_static(_mode_tok) \
     ____dansi_xterm_mouse_disableReportMode_static(_mode_tok)
@@ -222,7 +222,7 @@ $extern fn_((dansi_xterm_mouse_disableReportMode(
 $attr($must_check)
 $extern fn_((dansi_xterm_mouse_disableReportModeWrite(
     dansi_xterm_mouse_ReportMode mode, io_Writer out
-))(E$void));
+))(io_PrintE$void));
 
 #define dansi_xterm_mouse_setEncoding_static(_encoding_tok, _pp_enabled) \
     ____dansi_xterm_mouse_setEncoding_static(_encoding_tok, _pp_enabled)
@@ -234,7 +234,7 @@ $extern fn_((dansi_xterm_mouse_setEncoding(
 $attr($must_check)
 $extern fn_((dansi_xterm_mouse_setEncodingWrite(
     dansi_xterm_mouse_Encoding encoding, bool enabled, io_Writer out
-))(E$void));
+))(io_PrintE$void));
 
 #define dansi_xterm_mouse_enableEncoding_static(_encoding_tok) \
     ____dansi_xterm_mouse_enableEncoding_static(_encoding_tok)
@@ -246,7 +246,7 @@ $extern fn_((dansi_xterm_mouse_enableEncoding(
 $attr($must_check)
 $extern fn_((dansi_xterm_mouse_enableEncodingWrite(
     dansi_xterm_mouse_Encoding encoding, io_Writer out
-))(E$void));
+))(io_PrintE$void));
 
 #define dansi_xterm_mouse_disableEncoding_static(_encoding_tok) \
     ____dansi_xterm_mouse_disableEncoding_static(_encoding_tok)
@@ -258,7 +258,7 @@ $extern fn_((dansi_xterm_mouse_disableEncoding(
 $attr($must_check)
 $extern fn_((dansi_xterm_mouse_disableEncodingWrite(
     dansi_xterm_mouse_Encoding encoding, io_Writer out
-))(E$void));
+))(io_PrintE$void));
 
 #define dansi_xterm_mouse_enableAny_static() \
     ____dansi_xterm_mouse_enableAny_static()
@@ -266,7 +266,7 @@ typedef dansi_xterm_mouse_EnableReportModeBuf dansi_xterm_mouse_EnableAnyBuf;
 $attr($must_check)
 $extern fn_((dansi_xterm_mouse_enableAny(dansi_xterm_mouse_EnableAnyBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_mouse_enableAnyWrite(io_Writer out))(E$void));
+$extern fn_((dansi_xterm_mouse_enableAnyWrite(io_Writer out))(io_PrintE$void));
 
 #define dansi_xterm_mouse_disableAny_static() \
     ____dansi_xterm_mouse_disableAny_static()
@@ -274,7 +274,7 @@ typedef dansi_xterm_mouse_DisableReportModeBuf dansi_xterm_mouse_DisableAnyBuf;
 $attr($must_check)
 $extern fn_((dansi_xterm_mouse_disableAny(dansi_xterm_mouse_DisableAnyBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_mouse_disableAnyWrite(io_Writer out))(E$void));
+$extern fn_((dansi_xterm_mouse_disableAnyWrite(io_Writer out))(io_PrintE$void));
 
 #define dansi_xterm_mouse_enableSGR_static(_mode_tok) \
     ____dansi_xterm_mouse_enableSGR_static(_mode_tok)
@@ -286,7 +286,7 @@ $extern fn_((dansi_xterm_mouse_enableSGR(
 $attr($must_check)
 $extern fn_((dansi_xterm_mouse_enableSGRWrite(
     dansi_xterm_mouse_ReportMode mode, io_Writer out
-))(E$void));
+))(io_PrintE$void));
 
 #define dansi_xterm_mouse_disableSGR_static(_mode_tok) \
     ____dansi_xterm_mouse_disableSGR_static(_mode_tok)
@@ -298,7 +298,7 @@ $extern fn_((dansi_xterm_mouse_disableSGR(
 $attr($must_check)
 $extern fn_((dansi_xterm_mouse_disableSGRWrite(
     dansi_xterm_mouse_ReportMode mode, io_Writer out
-))(E$void));
+))(io_PrintE$void));
 $extern fn_((dansi_xterm_mouse_parseSGRReport(S_const$u8 report))(O$dansi_xterm_mouse_SGRReport));
 $attr($must_check)
 $extern fn_((dansi_xterm_mouse_interpretSGR(

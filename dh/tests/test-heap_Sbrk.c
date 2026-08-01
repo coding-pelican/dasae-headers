@@ -16,26 +16,30 @@ claim_assert_static(
     heap_Sbrk_local_Large__size_class_count
     == uint_log2_static(heap_Sbrk_local_Large__bigpage_size) - heap_Sbrk__min_size_class
 );
-$static fn_((ignorePrintln(S_const$u8 fmt, ...))(void)) { let_ignore = fmt; };
+$static fn_((ignorePrintln(io_std_Self std, S_const$u8 fmt, ...))(void)) {
+    let_ignore = std;
+    let_ignore = fmt;
+};
 $static let test_println = pp_if_(test_heap_Sbrk__enabled_outstream)(
     pp_then_(io_stream_println),
     pp_else_(ignorePrintln));
-$static fn_((ignoreNL(void))(void)) $do_nothing;
+$static fn_((ignoreNL(io_std_Self std))(void)) { let_ignore = std; };
 $static let test_nl = pp_if_(test_heap_Sbrk__enabled_outstream)(
     pp_then_(io_stream_nl),
     pp_else_(ignoreNL));
 
 TEST_fn_("heap/Sbrk: size variants" $scope) {
+    let std = catch_((io_std_direct())($ignore, io_std_noop));
     let small_size = heap_Sbrk_local_Ref_calcSelfSize(union_of$((heap_Sbrk_local_Ref)(heap_Sbrk_local_Ref_small)cleared()));
     let medium_size = heap_Sbrk_local_Ref_calcSelfSize(union_of$((heap_Sbrk_local_Ref)(heap_Sbrk_local_Ref_medium)cleared()));
     let large_size = heap_Sbrk_local_Ref_calcSelfSize(union_of$((heap_Sbrk_local_Ref)(heap_Sbrk_local_Ref_large)cleared()));
 
-    test_nl();
-    test_println(u8_l("SbrkAlctr sizes:"));
-    test_println(u8_l("  .small:  {:uz} bytes"), small_size);
-    test_println(u8_l("  .medium: {:uz} bytes"), medium_size);
-    test_println(u8_l("  .large:  {:uz} bytes"), large_size);
-    test_nl();
+    test_nl(std);
+    test_println(std, u8_l("SbrkAlctr sizes:"));
+    test_println(std, u8_l("  .small:  {:uz} bytes"), small_size);
+    test_println(std, u8_l("  .medium: {:uz} bytes"), medium_size);
+    test_println(std, u8_l("  .large:  {:uz} bytes"), large_size);
+    test_nl(std);
 
     try_(TEST_expect(small_size < medium_size));
     try_(TEST_expect(medium_size < large_size));

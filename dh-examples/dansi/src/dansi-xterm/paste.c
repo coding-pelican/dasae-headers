@@ -4,7 +4,7 @@ fn_((dansi_xterm_paste_setBracketed(bool enabled, dansi_xterm_paste_SetBracketed
     return dansi_xterm_mode_set(dansi_xterm_mode_Code_bracketed_paste, enabled, buf);
 };
 
-fn_((dansi_xterm_paste_setBracketedWrite(bool enabled, io_Writer out))(E$void)) {
+fn_((dansi_xterm_paste_setBracketedWrite(bool enabled, io_Writer out))(io_PrintE$void)) {
     return dansi_xterm_mode_setWrite(dansi_xterm_mode_Code_bracketed_paste, enabled, out);
 };
 
@@ -12,7 +12,7 @@ fn_((dansi_xterm_paste_enableBracketed(dansi_xterm_paste_EnableBracketedBuf* buf
     return dansi_xterm_mode_enable(dansi_xterm_mode_Code_bracketed_paste, buf);
 };
 
-fn_((dansi_xterm_paste_enableBracketedWrite(io_Writer out))(E$void)) {
+fn_((dansi_xterm_paste_enableBracketedWrite(io_Writer out))(io_PrintE$void)) {
     return dansi_xterm_mode_enableWrite(dansi_xterm_mode_Code_bracketed_paste, out);
 };
 
@@ -20,7 +20,7 @@ fn_((dansi_xterm_paste_disableBracketed(dansi_xterm_paste_DisableBracketedBuf* b
     return dansi_xterm_mode_disable(dansi_xterm_mode_Code_bracketed_paste, buf);
 };
 
-fn_((dansi_xterm_paste_disableBracketedWrite(io_Writer out))(E$void)) {
+fn_((dansi_xterm_paste_disableBracketedWrite(io_Writer out))(io_PrintE$void)) {
     return dansi_xterm_mode_disableWrite(dansi_xterm_mode_Code_bracketed_paste, out);
 };
 

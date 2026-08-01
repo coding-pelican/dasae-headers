@@ -1,12 +1,11 @@
 /**
- * @copyright Copyright (c) 2025. Gyeongtae Kim.
+ * @copyright Copyright (c) 2025-2026 Gyeongtae Kim.
  * @license   MIT License - see LICENSE file for details
  *
  * @file    chain.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2025-11-26 (date of creation)
- * @updated 2025-11-26 (date of last update)
- * @version v0.1-alpha
+ * @updated 2026-08-01 (date of last update)
  * @ingroup dasae-headers(dh)/core
  * @prefix  (none)
  *
@@ -38,7 +37,7 @@ typedef enum_((chain__State $fits($packed))(
 #define each_(/*(_$p_e)_$body*/...) __step__each_(__step__each___capt __VA_ARGS__)
 #define filter_(/*(_$p_e)_$pred*/...) __step__filter_(__step__filter___capt __VA_ARGS__)
 #define map$(/*(_$T)(_$p_e)_$xform*/...) __step__map$(__step__map$__parse __VA_ARGS__)
-#define fold_(/*(_$default), (_$acc, _$p_e)_$combine*/...) __step__fold_(__VA_ARGS__)
+#define fold_(/*(_$default)(_$acc, _$p_e)_$combine*/...) __step__fold_(__step__fold___parse __VA_ARGS__)
 #define reduce_(/*(_$acc, _$p_e)_$combine*/...) __step__reduce_(__VA_ARGS__)
 #define all_(/*(_$p_e)_$pred*/...) __step__all_(__step__all___capt __VA_ARGS__)
 #define any_(/*(_$p_e)_$pred*/...) __step__any_(__step__any___capt __VA_ARGS__)
@@ -472,9 +471,8 @@ typedef enum_((chain__State $fits($packed))(
     }; \
 }) $unscoped(expr)
 
-#define __step__fold_(_$default, ...) __step__fold___emit( \
-    _$default, __step__fold___capt __VA_ARGS__ \
-)
+#define __step__fold_(...) __step__fold___emit(__VA_ARGS__)
+#define __step__fold___parse(_$default...) (_$default), __step__fold___capt
 #define __step__fold___default(_$default...) _$default
 #define __step__fold___capt(_$acc, _$p_e...) _$acc, _$p_e,
 #define __step__fold___emit(...) __fold_(__VA_ARGS__)

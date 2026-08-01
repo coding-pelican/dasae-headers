@@ -103,6 +103,8 @@ struct thrd_Mtx_Recur {
     var_(thrd_id, thrd_Id);
     var_(lock_count, usize);
 };
+#define thrd_Mtx_Recur_init_static(/*void*/) \
+    ____thrd_Mtx_Recur_init_static()
 $extern fn_((thrd_Mtx_Recur_init(void))(thrd_Mtx_Recur));
 $extern fn_((thrd_Mtx_Recur_fini(thrd_Mtx_Recur* self))(void));
 
@@ -128,6 +130,12 @@ $extern fn_((thrd_Mtx_Recur_unlock(thrd_Mtx_Recur* self))(void));
         pp_else_(l$((thrd_Mtx){ ._impl.state = atom_V_init(0) })) \
     )) \
 )
+
+#define ____thrd_Mtx_Recur_init_static() l$((thrd_Mtx_Recur){ \
+    .inner = thrd_Mtx_init_static(), \
+    .thrd_id = thrd_invalid_id, \
+    .lock_count = 0, \
+})
 
 #if defined(__cplusplus)
 } /* extern "C" */

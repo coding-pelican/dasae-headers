@@ -9,7 +9,7 @@
  * @ingroup dasae-headers(dh)/proc
  * @prefix  proc_Env
  *
- * @brief   Concrete borrowed process environment and iterator
+ * @brief   Injectable process environment source and iterator
  */
 #pragma once
 #ifndef proc_Env__included
@@ -24,27 +24,22 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-T_alias$((proc_Env_Posix)(struct proc_Env_Posix {
-    var_(count, usize);
-    var_(items, proc_Args_Vec);
+T_alias$((proc_Env_VTbl)(struct proc_Env_VTbl));
+T_alias$((proc_Env)(struct proc_Env {
+    var_(ctx, P$raw);
+    var_(vtbl, P_const$$(proc_Env_VTbl));
 }));
-T_alias$((proc_Env_Win32)(struct proc_Env_Win32 {
-    var_(block, S_const$u16);
-}));
-T_alias$((proc_Env)(variant_((proc_Env $fits($packed))(
-    (proc_Env_empty, Void),
-    (proc_Env_posix, proc_Env_Posix),
-    (proc_Env_win32, proc_Env_Win32)
-))));
 T_use_prl$(proc_Env);
 $attr($inline_always)
 $static fn_((proc_Env_isValid(proc_Env self))(bool));
+$attr($inline_always)
+$static fn_((proc_Env_assertValid(P$raw ctx, P_const$$(proc_Env_VTbl) vtbl))(void));
+$attr($inline_always)
+$static fn_((proc_Env_ensureValid(proc_Env self))(proc_Env));
 
-$static let_(proc_Env_none, proc_Env) = union_of((proc_Env_empty){});
-$attr($inline_always)
-$static fn_((proc_Env_fromPosix(usize count, proc_Args_Vec items))(proc_Env));
-$attr($inline_always)
-$static fn_((proc_Env_fromWin32(S_const$u16 block))(proc_Env));
+$extern let_(proc_Env_empty, proc_Env);
+$attr($must_check)
+$extern fn_((proc_Env_by(proc_Env self, S_const$u8 name, S$u8 scratch))(proc_Env_E$O$S_const$u8));
 
 T_alias$((proc_Env_Iter)(struct proc_Env_Iter {
     var_(src, proc_Env);
@@ -55,35 +50,31 @@ T_use_prl$(proc_Env_Iter);
 $extern fn_((proc_Env_iter(proc_Env self))(proc_Env_Iter));
 $attr($must_check)
 $extern fn_((proc_Env_Iter_next(proc_Env_Iter* self, S$u8 scratch))(proc_Env_E$O$S_const$u8));
-$attr($must_check)
-$extern fn_((proc_Env_by(proc_Env self, S_const$u8 name, S$u8 scratch))(proc_Env_E$O$S_const$u8));
+
+/**
+ * Iterator providers must leave `idx` and `offset` unchanged when returning
+ * `proc_ResourceLimitReached`, so callers can retry with a larger scratch slice.
+ */
+struct proc_Env_VTbl {
+    $attr($must_check)
+    fn_(((*nextFn)(P$raw ctx, usize* idx, usize* offset, S$u8 scratch))(proc_Env_E$O$S_const$u8));
+};
 
 /*========== Macros and Definitions =========================================*/
 
 #if in_analysis_active_only || in_comptime
 fn_((proc_Env_isValid(proc_Env self))(bool)) {
-    if (matches(self, proc_Env_empty)) return true;
-    if (matches(self, proc_Env_posix)) {
-        return isNonnull(union_to((self)(proc_Env_posix)).items);
-    }
-    if (matches(self, proc_Env_win32)) {
-        return isNonnullS(union_to((self)(proc_Env_win32)).block);
-    }
-    return false;
+    return isNonnull(self.ctx)
+        && isNonnull(self.vtbl)
+        && isNonnull(self.vtbl->nextFn);
 };
-
-fn_((proc_Env_fromPosix(usize count, proc_Args_Vec items))(proc_Env)) {
-    claim_assert_nonnull(items);
-    return union_of$((proc_Env)(proc_Env_posix){
-        .count = count,
-        .items = items,
-    });
+fn_((proc_Env_assertValid(P$raw ctx, P_const$$(proc_Env_VTbl) vtbl))(void)) {
+    claim_assert_nonnull(ctx);
+    claim_assert_nonnull(vtbl);
+    claim_assert_nonnull(vtbl->nextFn);
 };
-fn_((proc_Env_fromWin32(S_const$u16 block))(proc_Env)) {
-    claim_assert_nonnullS(block);
-    return union_of$((proc_Env)(proc_Env_win32){
-        .block = block,
-    });
+fn_((proc_Env_ensureValid(proc_Env self))(proc_Env)) {
+    return proc_Env_assertValid(self.ctx, self.vtbl), self;
 };
 #endif /* in_analysis_active_only || in_comptime */
 

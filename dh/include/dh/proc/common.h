@@ -25,7 +25,6 @@ errset_((proc_NotDir_E)(proc_NotDir));
 errset_((proc_OperationUnsupported_E)(proc_OperationUnsupported));
 errset_((proc_PermissionDenied_E)(proc_PermissionDenied));
 errset_((proc_ProcessFdQuotaExceeded_E)(proc_ProcessFdQuotaExceeded));
-errset_((proc_ProcessAlreadyExited_E)(proc_ProcessAlreadyExited));
 errset_((proc_ResourceLimitReached_E)(proc_ResourceLimitReached));
 errset_((proc_SymLinkLoop_E)(proc_SymLinkLoop));
 errset_((proc_SystemFdQuotaExceeded_E)(proc_SystemFdQuotaExceeded));
@@ -120,8 +119,6 @@ errset_((proc_Replace_E)() $union_errset_(
 
 errset_((proc_Child_Wait_E)() $union_errset_(
     proc_AccessDenied_E,
-    proc_OperationUnsupported_E,
-    proc_ProcessAlreadyExited_E,
     proc_SystemResources_E
 ));
 
@@ -131,19 +128,22 @@ T_useBy$(($spec(E, $set(proc_Args_E)))(O$S_const$u8, bool));
 errset_((proc_Env_E)() $union_errset_(proc_ResourceLimitReached_E));
 T_use_E$($set(proc_Env_E)(O$S_const$u8));
 
-errset_((proc_Direct_E)(proc_Direct_Unsupported));
+errset_((proc_Preopens_direct_E)(proc_Preopens_direct_Unsupported));
 
-errset_((proc_mem_Lock_E)(
-    proc_mem_Lock_Unsupported,
-    proc_mem_Lock_PermissionDenied,
-    proc_mem_Lock_LimitExceeded,
-    proc_mem_Lock_SystemResources
+errset_((proc_Mem_direct_E)(proc_Mem_direct_Unsupported));
+
+errset_((proc_Mem_Lock_E)(
+    proc_Mem_Lock_Unsupported,
+    proc_Mem_Lock_PermissionDenied,
+    proc_Mem_Lock_LimitExceeded,
+    proc_Mem_Lock_SystemResources
 ));
 
-errset_((proc_mem_Unlock_E)(
-    proc_mem_Unlock_PermissionDenied,
-    proc_mem_Unlock_OutOfMemory,
-    proc_mem_Unlock_SystemResources
+errset_((proc_Mem_Unlock_E)(
+    proc_Mem_Unlock_Unsupported,
+    proc_Mem_Unlock_PermissionDenied,
+    proc_Mem_Unlock_OutOfMemory,
+    proc_Mem_Unlock_SystemResources
 ));
 
 errset_((proc_E)() $union_errset_(
@@ -158,9 +158,11 @@ errset_((proc_E)() $union_errset_(
     proc_Child_Wait_E,
     proc_Args_E,
     proc_Env_E,
-    proc_Direct_E,
-    proc_mem_Lock_E,
-    proc_mem_Unlock_E
+    proc_Preopens_direct_E,
+    proc_direct_E,
+    proc_Mem_direct_E,
+    proc_Mem_Lock_E,
+    proc_Mem_Unlock_E
 ));
 
 #if defined(__cplusplus)

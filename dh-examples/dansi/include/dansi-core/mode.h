@@ -41,7 +41,7 @@ typedef A$$(4 + uint_log10Ceil_static(u16_limit_max), u8) dansi_mode_SetRawBuf;
 $attr($must_check)
 $extern fn_((dansi_mode_setRaw(u16 mode, bool enabled, dansi_mode_SetRawBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_mode_setRawWrite(u16 mode, bool enabled, io_Writer out))(E$void));
+$extern fn_((dansi_mode_setRawWrite(u16 mode, bool enabled, io_Writer out))(io_PrintE$void));
 
 #define dansi_mode_enableRaw_static(_mode_tok) \
     ____dansi_mode_enableRaw_static(_mode_tok)
@@ -49,7 +49,7 @@ typedef A$$(4 + uint_log10Ceil_static(u16_limit_max), u8) dansi_mode_EnableRawBu
 $attr($must_check)
 $extern fn_((dansi_mode_enableRaw(u16 mode, dansi_mode_EnableRawBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_mode_enableRawWrite(u16 mode, io_Writer out))(E$void));
+$extern fn_((dansi_mode_enableRawWrite(u16 mode, io_Writer out))(io_PrintE$void));
 
 #define dansi_mode_disableRaw_static(_mode_tok) \
     ____dansi_mode_disableRaw_static(_mode_tok)
@@ -57,12 +57,12 @@ typedef A$$(4 + uint_log10Ceil_static(u16_limit_max), u8) dansi_mode_DisableRawB
 $attr($must_check)
 $extern fn_((dansi_mode_disableRaw(u16 mode, dansi_mode_DisableRawBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_mode_disableRawWrite(u16 mode, io_Writer out))(E$void));
+$extern fn_((dansi_mode_disableRawWrite(u16 mode, io_Writer out))(io_PrintE$void));
 
 $attr($must_check)
 $extern fn_((dansi_mode_setMany(S_const$u16 modes, bool enabled, S$u8 buf))(E$S$u8));
 $attr($must_check)
-$extern fn_((dansi_mode_setManyWrite(S_const$u16 modes, bool enabled, io_Writer out))(E$void));
+$extern fn_((dansi_mode_setManyWrite(S_const$u16 modes, bool enabled, io_Writer out))(io_PrintE$void));
 
 #define dansi_mode_Code_staticParse(_mode_tok) \
     ____dansi_mode_Code_staticParse(_mode_tok)
@@ -72,7 +72,7 @@ typedef dansi_mode_SetRawBuf dansi_mode_SetBuf;
 $attr($must_check)
 $extern fn_((dansi_mode_set(dansi_mode_Code mode, bool enabled, dansi_mode_SetBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_mode_setWrite(dansi_mode_Code mode, bool enabled, io_Writer out))(E$void));
+$extern fn_((dansi_mode_setWrite(dansi_mode_Code mode, bool enabled, io_Writer out))(io_PrintE$void));
 
 #define dansi_mode_enable_static(_mode_tok) \
     dansi_mode_enableRaw_static(dansi_mode_Code_staticParse(_mode_tok))
@@ -80,7 +80,7 @@ typedef dansi_mode_EnableRawBuf dansi_mode_EnableBuf;
 $attr($must_check)
 $extern fn_((dansi_mode_enable(dansi_mode_Code mode, dansi_mode_EnableBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_mode_enableWrite(dansi_mode_Code mode, io_Writer out))(E$void));
+$extern fn_((dansi_mode_enableWrite(dansi_mode_Code mode, io_Writer out))(io_PrintE$void));
 
 #define dansi_mode_disable_static(_mode_tok) \
     dansi_mode_disableRaw_static(dansi_mode_Code_staticParse(_mode_tok))
@@ -88,7 +88,7 @@ typedef dansi_mode_DisableRawBuf dansi_mode_DisableBuf;
 $attr($must_check)
 $extern fn_((dansi_mode_disable(dansi_mode_Code mode, dansi_mode_DisableBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_mode_disableWrite(dansi_mode_Code mode, io_Writer out))(E$void));
+$extern fn_((dansi_mode_disableWrite(dansi_mode_Code mode, io_Writer out))(io_PrintE$void));
 
 /*========== Macros and Definitions =========================================*/
 

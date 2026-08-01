@@ -117,10 +117,11 @@ fn_((daterm_xterm_fetchCellPixels(
 
 /*========== Internal Definitions ===========================================*/
 
-fn_((daterm_xterm__cellPixelsRequestWrite(P$raw ctx, io_Writer out))(E$void)) {
+fn_((daterm_xterm__cellPixelsRequestWrite(P$raw ctx, io_Writer out))(E$void) $scope) {
     let_ignore = ctx;
-    return dansi_xterm_screen_requestCellPixelsWrite(out);
-};
+    try_(dansi_xterm_screen_requestCellPixelsWrite(out));
+    return_ok({});
+} $unscoped(fn);
 
 fn_((daterm_xterm__cellPixelsMatch(P$raw ctx, dansi_Seq seq, P$raw out))(E$daterm_TxnMatch) $scope) {
     let_ignore = ctx;

@@ -55,19 +55,14 @@ fn_((TEST_Framework_run(void))(void) $guard) {
     // Run each test case
     for_(($s(units->items))(unit)) {
         instance->stats.total++;
-        io_stream_println(
-            u8_l("Running test: {:s}{:s}{:s}"),
-            u8_l(TEST_color_yellow), unit->name, u8_l(TEST_color_reset)
-        );
+        io_stream_println(u8_l("Running test: {:s}{:s}{:s}"), u8_l(TEST_color_yellow), unit->name, u8_l(TEST_color_reset));
         // Run the test
         ETrace_reset();
         if_err((unit->fn())(err)) {
             switch (E_tag$TEST_E(*ptrCast$((const TEST_E*)(&err)))) {
             case_((E_Tag$TEST_Skip)) {
                 instance->stats.skipped++;
-                io_stream_println(
-                    u8_l("    {:s}"), u8_l(TEST_color_yellow "[SKIP]" TEST_color_reset)
-                );
+                io_stream_println(u8_l("    {:s}"), u8_l(TEST_color_yellow "[SKIP]" TEST_color_reset));
             } $end(case);
             case E_Tag$TEST_Fail: $fallthrough;
             case_((E_Tag$TEST_E_Any)) {

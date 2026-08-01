@@ -37,11 +37,11 @@ T_use_E$($set(dansi_shell_osc7_E)(dansi_shell_osc7_Cwd));
 $attr($must_check)
 $extern fn_((dansi_shell_osc7_set(dansi_shell_osc7_Cwd cwd, S$u8 buf))(E$S$u8));
 $attr($must_check)
-$extern fn_((dansi_shell_osc7_setWrite(dansi_shell_osc7_Cwd cwd, io_Writer out))(E$void));
+$extern fn_((dansi_shell_osc7_setWrite(dansi_shell_osc7_Cwd cwd, io_Writer out))(io_PrintE$void));
 $attr($must_check)
 $extern fn_((dansi_shell_osc7_setRaw(S_const$u8 file_uri, S$u8 buf))(E$S$u8));
 $attr($must_check)
-$extern fn_((dansi_shell_osc7_setRawWrite(S_const$u8 file_uri, io_Writer out))(E$void));
+$extern fn_((dansi_shell_osc7_setRawWrite(S_const$u8 file_uri, io_Writer out))(io_PrintE$void));
 $attr($must_check)
 $extern fn_((dansi_shell_osc7_parse(dansi_osc_Frame frame))(dansi_shell_osc7_E$dansi_shell_osc7_Cwd));
 

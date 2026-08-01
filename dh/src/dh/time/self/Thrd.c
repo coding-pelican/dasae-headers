@@ -43,15 +43,15 @@ let_(time_Thrd_VTbl_failing, time_Thrd_VTbl) = {
     .resolutionFn = time_Thrd_VTbl_failingResolution,
 };
 
-$static var_(time_Thrd_noop_ctx, Void) = cleared();
+$static var_(time_Thrd__ctx_noop, Void) = cleared();
 let_(time_Thrd_noop, time_Thrd) = {
-    .ctx = &time_Thrd_noop_ctx,
+    .ctx = &time_Thrd__ctx_noop,
     .vtbl = &time_Thrd_VTbl_noop,
 };
 
-$static var_(time_Thrd_failing_ctx, Void) = cleared();
+$static var_(time_Thrd__ctx_failing, Void) = cleared();
 let_(time_Thrd_failing, time_Thrd) = {
-    .ctx = &time_Thrd_failing_ctx,
+    .ctx = &time_Thrd__ctx_failing,
     .vtbl = &time_Thrd_VTbl_failing,
 };
 

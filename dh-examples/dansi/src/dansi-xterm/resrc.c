@@ -22,7 +22,7 @@ fn_((dansi_xterm_resrc_requestXResRaw(S_const$u8 names_hex, S$u8 buf))(E$S$u8)) 
     return dansi_dcs_make(u8_l(""), u8_l(dansi_xterm_resrc_dcs_intermediate), dansi_xterm_resrc_request_xres_final_byte, names_hex, buf);
 };
 
-fn_((dansi_xterm_resrc_requestXResRawWrite(S_const$u8 names_hex, io_Writer out))(E$void)) {
+fn_((dansi_xterm_resrc_requestXResRawWrite(S_const$u8 names_hex, io_Writer out))(io_PrintE$void)) {
     return dansi_dcs_write(u8_l(""), u8_l(dansi_xterm_resrc_dcs_intermediate), dansi_xterm_resrc_request_xres_final_byte, names_hex, out);
 };
 
@@ -36,7 +36,7 @@ fn_((dansi_xterm_resrc_setTermcapRaw(S_const$u8 name_hex, S$u8 buf))(E$S$u8)) {
     return dansi_dcs_make(u8_l(""), u8_l(dansi_xterm_resrc_dcs_intermediate), dansi_xterm_resrc_set_termcap_final_byte, name_hex, buf);
 };
 
-fn_((dansi_xterm_resrc_setTermcapRawWrite(S_const$u8 name_hex, io_Writer out))(E$void)) {
+fn_((dansi_xterm_resrc_setTermcapRawWrite(S_const$u8 name_hex, io_Writer out))(io_PrintE$void)) {
     return dansi_dcs_write(u8_l(""), u8_l(dansi_xterm_resrc_dcs_intermediate), dansi_xterm_resrc_set_termcap_final_byte, name_hex, out);
 };
 
@@ -44,7 +44,7 @@ fn_((dansi_xterm_resrc_requestTermcapRaw(S_const$u8 names_hex, S$u8 buf))(E$S$u8
     return dansi_dcs_make(u8_l(""), u8_l(dansi_xterm_resrc_dcs_intermediate), dansi_xterm_resrc_request_termcap_final_byte, names_hex, buf);
 };
 
-fn_((dansi_xterm_resrc_requestTermcapRawWrite(S_const$u8 names_hex, io_Writer out))(E$void)) {
+fn_((dansi_xterm_resrc_requestTermcapRawWrite(S_const$u8 names_hex, io_Writer out))(io_PrintE$void)) {
     return dansi_dcs_write(u8_l(""), u8_l(dansi_xterm_resrc_dcs_intermediate), dansi_xterm_resrc_request_termcap_final_byte, names_hex, out);
 };
 
@@ -58,7 +58,7 @@ fn_((dansi_xterm_resrc_queryAllowed(void))(S_const$u8)) {
     return u8_l(dansi_xterm_resrc_queryAllowed_static());
 };
 
-fn_((dansi_xterm_resrc_queryAllowedWrite(io_Writer out))(E$void)) {
+fn_((dansi_xterm_resrc_queryAllowedWrite(io_Writer out))(io_WriteE$void)) {
     return io_Writer_writeBytes(out, dansi_xterm_resrc_queryAllowed());
 };
 
@@ -66,6 +66,6 @@ fn_((dansi_xterm_resrc_queryAllowableRaw(S_const$u8 feature, S$u8 buf))(E$S$u8))
     return dansi_osc_make(dansi_xterm_resrc_allowed_cmd_u16, feature, buf);
 };
 
-fn_((dansi_xterm_resrc_queryAllowableRawWrite(S_const$u8 feature, io_Writer out))(E$void)) {
+fn_((dansi_xterm_resrc_queryAllowableRawWrite(S_const$u8 feature, io_Writer out))(io_PrintE$void)) {
     return dansi_osc_write(dansi_xterm_resrc_allowed_cmd_u16, feature, out);
 };

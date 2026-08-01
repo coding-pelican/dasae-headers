@@ -1,5 +1,6 @@
 #include "dh-main.h"
 #include "dh/log.h"
+#include "dh/mem/common.h"
 
 typedef struct test_log_Output {
     var_(buf, S$u8);

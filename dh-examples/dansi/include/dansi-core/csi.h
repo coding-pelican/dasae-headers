@@ -62,7 +62,7 @@ $extern fn_((dansi_csi_parse(S_const$u8 bytes))(dansi_csi_E$dansi_csi_Frame));
 $attr($must_check)
 $extern fn_((dansi_csi_make(S_const$u8 params, S_const$u8 intermediates, u8 final, S$u8 buf))(E$S$u8));
 $attr($must_check)
-$extern fn_((dansi_csi_write(S_const$u8 params, S_const$u8 intermediates, u8 final, io_Writer out))(E$void));
+$extern fn_((dansi_csi_write(S_const$u8 params, S_const$u8 intermediates, u8 final, io_Writer out))(io_PrintE$void));
 
 struct dansi_csi_Frame {
     var_(params, S_const$u8);

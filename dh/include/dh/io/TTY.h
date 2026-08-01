@@ -20,9 +20,8 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "Self.h"
+#include "common.h"
 #include "../fs/File/self.h"
-#include "../proc/std.h"
 
 /*========== Macros and Declarations ========================================*/
 
@@ -126,8 +125,8 @@ T_alias$((io_TTY_Cfg)(struct io_TTY_Cfg {
     var_(input_file, fs_File);
     var_(output_file, fs_File);
 }));
-$attr($inline_always)
-$static fn_((io_TTY_Cfg_std(proc_std_Self std))(io_TTY_Cfg));
+T_use_O$(io_TTY_Cfg);
+$extern fn_((io_TTY_Cfg_direct(void))(O$io_TTY_Cfg));
 
 T_alias$((io_TTY_Restore)(struct io_TTY_Restore {
     var_(snapshot, io_TTY_ModeSnapshot);
@@ -232,14 +231,6 @@ fn_((io_TTY_ModePatch_cbreakVT(void))(io_TTY_ModePatch)) {
         .set_min_time = true,
         .min_read = 1,
         .timeout_ds = 0,
-    };
-};
-
-fn_((io_TTY_Cfg_std(proc_std_Self std))(io_TTY_Cfg)) {
-    std = proc_std_ensureValid(std);
-    return (io_TTY_Cfg){
-        .input_file = proc_std_in(std),
-        .output_file = proc_std_out(std),
     };
 };
 #endif /* in_analysis_active_only || in_comptime */

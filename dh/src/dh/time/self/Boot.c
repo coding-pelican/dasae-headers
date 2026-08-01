@@ -48,15 +48,15 @@ let_(time_Boot_VTbl_failing, time_Boot_VTbl) = {
     .sleepFn = time_Boot_VTbl_failingSleep,
 };
 
-$static var_(time_Boot_noop_ctx, Void) = cleared();
+$static var_(time_Boot__ctx_noop, Void) = cleared();
 let_(time_Boot_noop, time_Boot) = {
-    .ctx = &time_Boot_noop_ctx,
+    .ctx = &time_Boot__ctx_noop,
     .vtbl = &time_Boot_VTbl_noop,
 };
 
-$static var_(time_Boot_failing_ctx, Void) = cleared();
+$static var_(time_Boot__ctx_failing, Void) = cleared();
 let_(time_Boot_failing, time_Boot) = {
-    .ctx = &time_Boot_failing_ctx,
+    .ctx = &time_Boot__ctx_failing,
     .vtbl = &time_Boot_VTbl_failing,
 };
 

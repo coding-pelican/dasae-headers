@@ -178,6 +178,42 @@ fn_((io_TTY__setMode(fs_File file, const io_TTY_ModeState* state))(io_TTY_ModeE$
 
 /*========== External Definitions ===========================================*/
 
+fn_((io_TTY_Cfg_direct(void))(O$io_TTY_Cfg)) {
+#if plat_is_windows
+    let input = GetStdHandle(STD_INPUT_HANDLE);
+    let output = GetStdHandle(STD_OUTPUT_HANDLE);
+    if (input == null || input == INVALID_HANDLE_VALUE) {
+        return none$((O$io_TTY_Cfg));
+    }
+    if (output == null || output == INVALID_HANDLE_VALUE) {
+        return none$((O$io_TTY_Cfg));
+    }
+    return some$((O$io_TTY_Cfg)(io_TTY_Cfg){
+        .input_file = fs_File_Handle_promote(
+            input,
+            fs_File_Flags_default
+        ),
+        .output_file = fs_File_Handle_promote(
+            output,
+            fs_File_Flags_default
+        ),
+    });
+#elif plat_is_posix
+    return some$((O$io_TTY_Cfg)(io_TTY_Cfg){
+        .input_file = fs_File_Handle_promote(
+            sys_posix_STDIN_FILENO,
+            fs_File_Flags_default
+        ),
+        .output_file = fs_File_Handle_promote(
+            sys_posix_STDOUT_FILENO,
+            fs_File_Flags_default
+        ),
+    });
+#else
+    return none$((O$io_TTY_Cfg));
+#endif
+};
+
 /*---------- Lifecycle ------------------------------------------------------*/
 
 fn_((io_TTY_init(io_TTY_Cfg cfg))(io_TTY)) {

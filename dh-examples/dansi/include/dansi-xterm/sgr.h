@@ -60,7 +60,7 @@ typedef A$$(5, u8) dansi_xterm_sgr_PushBuf;
 $attr($must_check)
 $extern fn_((dansi_xterm_sgr_push(dansi_xterm_sgr_PushBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_sgr_pushWrite(io_Writer out))(E$void));
+$extern fn_((dansi_xterm_sgr_pushWrite(io_Writer out))(io_WriteE$void));
 
 #define dansi_xterm_sgr_pop_static() \
     ____dansi_xterm_sgr_pop_static()
@@ -68,7 +68,7 @@ typedef A$$(5, u8) dansi_xterm_sgr_PopBuf;
 $attr($must_check)
 $extern fn_((dansi_xterm_sgr_pop(dansi_xterm_sgr_PopBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_sgr_popWrite(io_Writer out))(E$void));
+$extern fn_((dansi_xterm_sgr_popWrite(io_Writer out))(io_WriteE$void));
 
 /*========== Macros and Definitions =========================================*/
 

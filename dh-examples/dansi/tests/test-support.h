@@ -2,7 +2,7 @@
 #ifndef dansi_test_support__included
 #define dansi_test_support__included 1
 
-#include <dh/io/common.h>
+#include <dh/io/Reader.h>
 #include <dh/mem/common.h>
 
 typedef struct dansi_test_ChunkReader {
@@ -11,7 +11,7 @@ typedef struct dansi_test_ChunkReader {
     var_(chunk, usize);
 } dansi_test_ChunkReader;
 
-$static fn_((dansi_test_ChunkReader__read(P$raw ctx, S$u8 out))(E$usize) $scope) {
+$static fn_((dansi_test_ChunkReader__read(P$raw ctx, S$u8 out))(io_ReadE$usize) $scope) {
     let self = ptrAlignCast$((dansi_test_ChunkReader*)(ctx));
     let available = self->bytes.len - self->pos;
     if (available == 0) return_ok(0);

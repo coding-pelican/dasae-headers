@@ -18,12 +18,12 @@ fn_((dansi_xterm_color_RGB8_toRGB16(dansi_xterm_color_RGB8 rgb))(dansi_xterm_col
 };
 
 fn_((dansi_xterm_color_fg4bit(dansi_xterm_Palette4bit color, dansi_xterm_color_Fg4bitBuf* buf))(S$u8)) {
-    var writing = io_Fixed_Writer_init(io_Fixed_writing(A_ref$((S$u8)(*buf))));
+    var writing = io_Fixed_Writer_from(io_Fixed_writing(A_ref$((S$u8)(*buf))));
     catch_((dansi_xterm_color_fg4bitWrite(color, io_Fixed_writer(&writing)))($ignore, claim_unreachable));
     return io_Fixed_written(writing.stream);
 };
 
-fn_((dansi_xterm_color_fg4bitWrite(dansi_xterm_Palette4bit color, io_Writer out))(E$void)) {
+fn_((dansi_xterm_color_fg4bitWrite(dansi_xterm_Palette4bit color, io_Writer out))(io_PrintE$void)) {
     let code = as$(u8)(color < dansi_xterm_color_4bit_normal_count
                        ? dansi_xterm_color_fg_normal_base + as$(u8)(color)
                        : dansi_xterm_color_fg_bright_base + as$(u8)(color)-dansi_xterm_color_4bit_normal_count);
@@ -31,12 +31,12 @@ fn_((dansi_xterm_color_fg4bitWrite(dansi_xterm_Palette4bit color, io_Writer out)
 };
 
 fn_((dansi_xterm_color_bg4bit(dansi_xterm_Palette4bit color, dansi_xterm_color_Bg4bitBuf* buf))(S$u8)) {
-    var writing = io_Fixed_Writer_init(io_Fixed_writing(A_ref$((S$u8)(*buf))));
+    var writing = io_Fixed_Writer_from(io_Fixed_writing(A_ref$((S$u8)(*buf))));
     catch_((dansi_xterm_color_bg4bitWrite(color, io_Fixed_writer(&writing)))($ignore, claim_unreachable));
     return io_Fixed_written(writing.stream);
 };
 
-fn_((dansi_xterm_color_bg4bitWrite(dansi_xterm_Palette4bit color, io_Writer out))(E$void)) {
+fn_((dansi_xterm_color_bg4bitWrite(dansi_xterm_Palette4bit color, io_Writer out))(io_PrintE$void)) {
     let code = as$(u8)(color < dansi_xterm_color_4bit_normal_count
                        ? dansi_xterm_color_bg_normal_base + as$(u8)(color)
                        : dansi_xterm_color_bg_bright_base + as$(u8)(color)-dansi_xterm_color_4bit_normal_count);
@@ -44,60 +44,60 @@ fn_((dansi_xterm_color_bg4bitWrite(dansi_xterm_Palette4bit color, io_Writer out)
 };
 
 fn_((dansi_xterm_color_fgBright(dansi_color_Std color, dansi_xterm_color_FgBrightBuf* buf))(S$u8)) {
-    var writing = io_Fixed_Writer_init(io_Fixed_writing(A_ref$((S$u8)(*buf))));
+    var writing = io_Fixed_Writer_from(io_Fixed_writing(A_ref$((S$u8)(*buf))));
     catch_((dansi_xterm_color_fgBrightWrite(color, io_Fixed_writer(&writing)))($ignore, claim_unreachable));
     return io_Fixed_written(writing.stream);
 };
 
-fn_((dansi_xterm_color_fgBrightWrite(dansi_color_Std color, io_Writer out))(E$void)) {
+fn_((dansi_xterm_color_fgBrightWrite(dansi_color_Std color, io_Writer out))(io_PrintE$void)) {
     return io_Writer_print(
         out, u8_l(dansi_sgr_setRaw_static("{:uhh}")), as$(u8)(dansi_xterm_color_fg_bright_base + as$(u8)(color))
     );
 };
 
 fn_((dansi_xterm_color_bgBright(dansi_color_Std color, dansi_xterm_color_BgBrightBuf* buf))(S$u8)) {
-    var writing = io_Fixed_Writer_init(io_Fixed_writing(A_ref$((S$u8)(*buf))));
+    var writing = io_Fixed_Writer_from(io_Fixed_writing(A_ref$((S$u8)(*buf))));
     catch_((dansi_xterm_color_bgBrightWrite(color, io_Fixed_writer(&writing)))($ignore, claim_unreachable));
     return io_Fixed_written(writing.stream);
 };
 
-fn_((dansi_xterm_color_bgBrightWrite(dansi_color_Std color, io_Writer out))(E$void)) {
+fn_((dansi_xterm_color_bgBrightWrite(dansi_color_Std color, io_Writer out))(io_PrintE$void)) {
     return io_Writer_print(
         out, u8_l(dansi_sgr_setRaw_static("{:uhh}")), as$(u8)(dansi_xterm_color_bg_bright_base + as$(u8)(color))
     );
 };
 
 fn_((dansi_xterm_color_fg8bit(dansi_xterm_Palette8bit color, dansi_xterm_color_Fg8bitBuf* buf))(S$u8)) {
-    var writing = io_Fixed_Writer_init(io_Fixed_writing(A_ref$((S$u8)(*buf))));
+    var writing = io_Fixed_Writer_from(io_Fixed_writing(A_ref$((S$u8)(*buf))));
     catch_((dansi_xterm_color_fg8bitWrite(color, io_Fixed_writer(&writing)))($ignore, claim_unreachable));
     return io_Fixed_written(writing.stream);
 };
 
-fn_((dansi_xterm_color_fg8bitWrite(dansi_xterm_Palette8bit color, io_Writer out))(E$void)) {
+fn_((dansi_xterm_color_fg8bitWrite(dansi_xterm_Palette8bit color, io_Writer out))(io_PrintE$void)) {
     return io_Writer_print(
         out, u8_l(dansi_sgr_setRaw_static(dansi_xterm_color_fg8bit_prefix "{:uhh}")), as$(u8)(color)
     );
 };
 
 fn_((dansi_xterm_color_bg8bit(dansi_xterm_Palette8bit color, dansi_xterm_color_Bg8bitBuf* buf))(S$u8)) {
-    var writing = io_Fixed_Writer_init(io_Fixed_writing(A_ref$((S$u8)(*buf))));
+    var writing = io_Fixed_Writer_from(io_Fixed_writing(A_ref$((S$u8)(*buf))));
     catch_((dansi_xterm_color_bg8bitWrite(color, io_Fixed_writer(&writing)))($ignore, claim_unreachable));
     return io_Fixed_written(writing.stream);
 };
 
-fn_((dansi_xterm_color_bg8bitWrite(dansi_xterm_Palette8bit color, io_Writer out))(E$void)) {
+fn_((dansi_xterm_color_bg8bitWrite(dansi_xterm_Palette8bit color, io_Writer out))(io_PrintE$void)) {
     return io_Writer_print(
         out, u8_l(dansi_sgr_setRaw_static(dansi_xterm_color_bg8bit_prefix "{:uhh}")), as$(u8)(color)
     );
 };
 
 fn_((dansi_xterm_color_fg24bit(dansi_xterm_color_RGB8 color, dansi_xterm_color_FgRGBBuf* buf))(S$u8)) {
-    var writing = io_Fixed_Writer_init(io_Fixed_writing(A_ref$((S$u8)(*buf))));
+    var writing = io_Fixed_Writer_from(io_Fixed_writing(A_ref$((S$u8)(*buf))));
     catch_((dansi_xterm_color_fg24bitWrite(color, io_Fixed_writer(&writing)))($ignore, claim_unreachable));
     return io_Fixed_written(writing.stream);
 };
 
-fn_((dansi_xterm_color_fg24bitWrite(dansi_xterm_color_RGB8 color, io_Writer out))(E$void)) {
+fn_((dansi_xterm_color_fg24bitWrite(dansi_xterm_color_RGB8 color, io_Writer out))(io_PrintE$void)) {
     return io_Writer_print(
         out,
         u8_l(dansi_sgr_setRaw_static(
@@ -108,12 +108,12 @@ fn_((dansi_xterm_color_fg24bitWrite(dansi_xterm_color_RGB8 color, io_Writer out)
 };
 
 fn_((dansi_xterm_color_bg24bit(dansi_xterm_color_RGB8 color, dansi_xterm_color_BgRGBBuf* buf))(S$u8)) {
-    var writing = io_Fixed_Writer_init(io_Fixed_writing(A_ref$((S$u8)(*buf))));
+    var writing = io_Fixed_Writer_from(io_Fixed_writing(A_ref$((S$u8)(*buf))));
     catch_((dansi_xterm_color_bg24bitWrite(color, io_Fixed_writer(&writing)))($ignore, claim_unreachable));
     return io_Fixed_written(writing.stream);
 };
 
-fn_((dansi_xterm_color_bg24bitWrite(dansi_xterm_color_RGB8 color, io_Writer out))(E$void)) {
+fn_((dansi_xterm_color_bg24bitWrite(dansi_xterm_color_RGB8 color, io_Writer out))(io_PrintE$void)) {
     return io_Writer_print(
         out,
         u8_l(dansi_sgr_setRaw_static(

@@ -72,7 +72,7 @@ T_use_E$($set(dansi_xterm_resrc_E)(dansi_xterm_resrc_Response));
 $attr($must_check)
 $extern fn_((dansi_xterm_resrc_requestXResRaw(S_const$u8 names_hex, S$u8 buf))(E$S$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_resrc_requestXResRawWrite(S_const$u8 names_hex, io_Writer out))(E$void));
+$extern fn_((dansi_xterm_resrc_requestXResRawWrite(S_const$u8 names_hex, io_Writer out))(io_PrintE$void));
 $attr($must_check)
 $extern fn_((dansi_xterm_resrc_parseXResResponse(
     dansi_dcs_Frame frame
@@ -83,14 +83,14 @@ $extern fn_((dansi_xterm_resrc_parseXResResponse(
 $attr($must_check)
 $extern fn_((dansi_xterm_resrc_setTermcapRaw(S_const$u8 name_hex, S$u8 buf))(E$S$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_resrc_setTermcapRawWrite(S_const$u8 name_hex, io_Writer out))(E$void));
+$extern fn_((dansi_xterm_resrc_setTermcapRawWrite(S_const$u8 name_hex, io_Writer out))(io_PrintE$void));
 
 #define dansi_xterm_resrc_requestTermcapRaw_static(_names_hex_tok) \
     ____dansi_xterm_resrc_requestTermcapRaw_static(_names_hex_tok)
 $attr($must_check)
 $extern fn_((dansi_xterm_resrc_requestTermcapRaw(S_const$u8 names_hex, S$u8 buf))(E$S$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_resrc_requestTermcapRawWrite(S_const$u8 names_hex, io_Writer out))(E$void));
+$extern fn_((dansi_xterm_resrc_requestTermcapRawWrite(S_const$u8 names_hex, io_Writer out))(io_PrintE$void));
 $attr($must_check)
 $extern fn_((dansi_xterm_resrc_parseTermcapResponse(
     dansi_dcs_Frame frame
@@ -100,14 +100,14 @@ $extern fn_((dansi_xterm_resrc_parseTermcapResponse(
     ____dansi_xterm_resrc_queryAllowed_static()
 $extern fn_((dansi_xterm_resrc_queryAllowed(void))(S_const$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_resrc_queryAllowedWrite(io_Writer out))(E$void));
+$extern fn_((dansi_xterm_resrc_queryAllowedWrite(io_Writer out))(io_WriteE$void));
 
 #define dansi_xterm_resrc_queryAllowableRaw_static(_feature_tok) \
     ____dansi_xterm_resrc_queryAllowableRaw_static(_feature_tok)
 $attr($must_check)
 $extern fn_((dansi_xterm_resrc_queryAllowableRaw(S_const$u8 feature, S$u8 buf))(E$S$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_resrc_queryAllowableRawWrite(S_const$u8 feature, io_Writer out))(E$void));
+$extern fn_((dansi_xterm_resrc_queryAllowableRawWrite(S_const$u8 feature, io_Writer out))(io_PrintE$void));
 
 /*========== Macros and Definitions =========================================*/
 

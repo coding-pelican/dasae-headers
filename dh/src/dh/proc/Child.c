@@ -1,15 +1,36 @@
 #include "dh/proc/Self.h"
 
-fn_((proc_Child_wait(
-    proc_Self provider,
-    proc_Child* self
-))(proc_Child_Wait_E$proc_Child_Ter)) {
-    proc_ensureValid(provider);
+/*========== External Definitions ===========================================*/
+
+fn_((proc_Child_wait(proc_Child* self, proc_Self proc))(proc_Child_Wait_E$proc_Child_Trm) $scope) {
     claim_assert_nonnull(self);
-    return provider.vtbl->waitFn(provider.ctx, self);
-};
-fn_((proc_Child_kill(proc_Self provider, proc_Child* self))(void)) {
-    proc_ensureValid(provider);
+    claim_assert(isSome(self->handle));
+    claim_assert(self->id != 0);
+    proc = proc_ensureValid(proc);
+    let terminated = try_(proc.vtbl->child.waitFn(proc.ctx, self));
+    claim_assert(isNone(self->handle));
+    claim_assert(self->id == 0);
+    claim_assert(isNone(self->io.in));
+    claim_assert(isNone(self->io.out));
+    claim_assert(isNone(self->io.err));
+    return_ok(terminated);
+} $unscoped(fn);
+
+fn_((proc_Child_kill(proc_Child* self, proc_Self proc))(void)) {
     claim_assert_nonnull(self);
-    provider.vtbl->killFn(provider.ctx, self);
+    if_none(self->handle) {
+        claim_assert(self->id == 0);
+        claim_assert(isNone(self->io.in));
+        claim_assert(isNone(self->io.out));
+        claim_assert(isNone(self->io.err));
+        return;
+    }
+    claim_assert(self->id != 0);
+    proc = proc_ensureValid(proc);
+    proc.vtbl->child.killFn(proc.ctx, self);
+    claim_assert(isNone(self->handle));
+    claim_assert(self->id == 0);
+    claim_assert(isNone(self->io.in));
+    claim_assert(isNone(self->io.out));
+    claim_assert(isNone(self->io.err));
 };

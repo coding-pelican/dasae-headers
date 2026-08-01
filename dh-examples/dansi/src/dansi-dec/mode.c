@@ -4,71 +4,71 @@
 #include <dh/io/Fixed.h>
 
 fn_((dansi_dec_mode_set(dansi_dec_mode_Code mode, bool enabled, dansi_dec_mode_SetBuf* buf))(S$u8)) {
-    var writing = io_Fixed_Writer_init(io_Fixed_writing(A_ref$((S$u8)(*buf))));
+    var writing = io_Fixed_Writer_from(io_Fixed_writing(A_ref$((S$u8)(*buf))));
     catch_((dansi_dec_mode_setWrite(mode, enabled, io_Fixed_writer(&writing)))($ignore, claim_unreachable));
     return io_Fixed_written(writing.stream);
 };
 
-fn_((dansi_dec_mode_setWrite(dansi_dec_mode_Code mode, bool enabled, io_Writer out))(E$void)) {
+fn_((dansi_dec_mode_setWrite(dansi_dec_mode_Code mode, bool enabled, io_Writer out))(io_PrintE$void)) {
     return enabled ? dansi_dec_mode_enableWrite(mode, out)
                    : dansi_dec_mode_disableWrite(mode, out);
 };
 
 fn_((dansi_dec_mode_enable(dansi_dec_mode_Code mode, dansi_dec_mode_EnableBuf* buf))(S$u8)) {
-    var writing = io_Fixed_Writer_init(io_Fixed_writing(A_ref$((S$u8)(*buf))));
+    var writing = io_Fixed_Writer_from(io_Fixed_writing(A_ref$((S$u8)(*buf))));
     catch_((dansi_dec_mode_enableWrite(mode, io_Fixed_writer(&writing)))($ignore, claim_unreachable));
     return io_Fixed_written(writing.stream);
 };
 
-fn_((dansi_dec_mode_enableWrite(dansi_dec_mode_Code mode, io_Writer out))(E$void)) {
+fn_((dansi_dec_mode_enableWrite(dansi_dec_mode_Code mode, io_Writer out))(io_PrintE$void)) {
     return io_Writer_print(
         out, u8_l(dansi_csi_makePrivate1_static("{:uhh}", dansi_dec_mode_enable_final)), as$(u8)(mode)
     );
 };
 
 fn_((dansi_dec_mode_disable(dansi_dec_mode_Code mode, dansi_dec_mode_DisableBuf* buf))(S$u8)) {
-    var writing = io_Fixed_Writer_init(io_Fixed_writing(A_ref$((S$u8)(*buf))));
+    var writing = io_Fixed_Writer_from(io_Fixed_writing(A_ref$((S$u8)(*buf))));
     catch_((dansi_dec_mode_disableWrite(mode, io_Fixed_writer(&writing)))($ignore, claim_unreachable));
     return io_Fixed_written(writing.stream);
 };
 
-fn_((dansi_dec_mode_disableWrite(dansi_dec_mode_Code mode, io_Writer out))(E$void)) {
+fn_((dansi_dec_mode_disableWrite(dansi_dec_mode_Code mode, io_Writer out))(io_PrintE$void)) {
     return io_Writer_print(
         out, u8_l(dansi_csi_makePrivate1_static("{:uhh}", dansi_dec_mode_disable_final)), as$(u8)(mode)
     );
 };
 
 fn_((dansi_dec_mode_save(dansi_dec_mode_Code mode, dansi_dec_mode_SaveBuf* buf))(S$u8)) {
-    var writing = io_Fixed_Writer_init(io_Fixed_writing(A_ref$((S$u8)(*buf))));
+    var writing = io_Fixed_Writer_from(io_Fixed_writing(A_ref$((S$u8)(*buf))));
     catch_((dansi_dec_mode_saveWrite(mode, io_Fixed_writer(&writing)))($ignore, claim_unreachable));
     return io_Fixed_written(writing.stream);
 };
 
-fn_((dansi_dec_mode_saveWrite(dansi_dec_mode_Code mode, io_Writer out))(E$void)) {
+fn_((dansi_dec_mode_saveWrite(dansi_dec_mode_Code mode, io_Writer out))(io_PrintE$void)) {
     return io_Writer_print(
         out, u8_l(dansi_csi_makePrivate1_static("{:uhh}", dansi_dec_mode_save_final)), as$(u8)(mode)
     );
 };
 
 fn_((dansi_dec_mode_restore(dansi_dec_mode_Code mode, dansi_dec_mode_RestoreBuf* buf))(S$u8)) {
-    var writing = io_Fixed_Writer_init(io_Fixed_writing(A_ref$((S$u8)(*buf))));
+    var writing = io_Fixed_Writer_from(io_Fixed_writing(A_ref$((S$u8)(*buf))));
     catch_((dansi_dec_mode_restoreWrite(mode, io_Fixed_writer(&writing)))($ignore, claim_unreachable));
     return io_Fixed_written(writing.stream);
 };
 
-fn_((dansi_dec_mode_restoreWrite(dansi_dec_mode_Code mode, io_Writer out))(E$void)) {
+fn_((dansi_dec_mode_restoreWrite(dansi_dec_mode_Code mode, io_Writer out))(io_PrintE$void)) {
     return io_Writer_print(
         out, u8_l(dansi_csi_makePrivate1_static("{:uhh}", dansi_dec_mode_restore_final)), as$(u8)(mode)
     );
 };
 
 fn_((dansi_dec_mode_request(dansi_dec_mode_Code mode, dansi_dec_mode_RequestBuf* buf))(S$u8)) {
-    var writing = io_Fixed_Writer_init(io_Fixed_writing(A_ref$((S$u8)(*buf))));
+    var writing = io_Fixed_Writer_from(io_Fixed_writing(A_ref$((S$u8)(*buf))));
     catch_((dansi_dec_mode_requestWrite(mode, io_Fixed_writer(&writing)))($ignore, claim_unreachable));
     return io_Fixed_written(writing.stream);
 };
 
-fn_((dansi_dec_mode_requestWrite(dansi_dec_mode_Code mode, io_Writer out))(E$void)) {
+fn_((dansi_dec_mode_requestWrite(dansi_dec_mode_Code mode, io_Writer out))(io_PrintE$void)) {
     return io_Writer_print(
         out,
         u8_l(dansi_csi_make_static(

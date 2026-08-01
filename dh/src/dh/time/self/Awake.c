@@ -58,15 +58,15 @@ let_(time_Awake_VTbl_failing, time_Awake_VTbl) = {
     .sleepFn = time_Awake_VTbl_failingSleep,
 };
 
-$static var_(time_Awake_noop_ctx, Void) = cleared();
+$static var_(time_Awake__ctx_noop, Void) = cleared();
 let_(time_Awake_noop, time_Awake) = {
-    .ctx = &time_Awake_noop_ctx,
+    .ctx = &time_Awake__ctx_noop,
     .vtbl = &time_Awake_VTbl_noop,
 };
 
-$static var_(time_Awake_failing_ctx, Void) = cleared();
+$static var_(time_Awake__ctx_failing, Void) = cleared();
 let_(time_Awake_failing, time_Awake) = {
-    .ctx = &time_Awake_failing_ctx,
+    .ctx = &time_Awake__ctx_failing,
     .vtbl = &time_Awake_VTbl_failing,
 };
 

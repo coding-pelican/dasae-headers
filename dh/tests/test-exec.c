@@ -35,10 +35,7 @@ $static fn_((test_exec_EventLog_dumpMismatch(test_exec_EventLog* self, S_const$u
         let actual_event = i < self->len ? *S_at((actual)[i]) : u8_(0xFF);
         let expected_event = i < expected.len ? *S_at((expected)[i]) : u8_(0xFF);
         if (actual_event == expected_event) continue;
-        io_stream_println(
-            u8_l("    [{:uz}] actual={:d} expected={:d}"),
-            i, as$(u32)(actual_event), as$(u32)(expected_event)
-        );
+        io_stream_println(u8_l("    [{:uz}] actual={:d} expected={:d}"), i, as$(u32)(actual_event), as$(u32)(expected_event));
     } $end(for);
     io_stream_print(u8_l("    actual:   "));
     for_(($s(actual))(event)) { io_stream_print(u8_l("{:d} "), as$(u32)(*event)); } $end(for);
@@ -51,10 +48,7 @@ $static fn_((test_exec_EventLog_dumpInterleavingMismatch(
     test_exec_EventLog* self, S_const$u8 expected_a, S_const$u8 expected_b
 ))(void)) {
     let actual = A_prefix((self->items)(self->len));
-    io_stream_println(
-        u8_l("    event log len: actual={:uz} expected={:uz}"),
-        self->len, expected_a.len + expected_b.len
-    );
+    io_stream_println(u8_l("    event log len: actual={:uz} expected={:uz}"), self->len, expected_a.len + expected_b.len);
     io_stream_print(u8_l("    actual:     "));
     for_(($s(actual))(event)) { io_stream_print(u8_l("{:d} "), as$(u32)(*event)); } $end(for);
     io_stream_nl();

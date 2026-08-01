@@ -5,7 +5,7 @@ fn_((dansi_dec_device_requestPrimaryAttrs(void))(S_const$u8)) {
     return u8_l(dansi_dec_device_requestPrimaryAttrs_static());
 };
 
-fn_((dansi_dec_device_requestPrimaryAttrsWrite(io_Writer out))(E$void)) {
+fn_((dansi_dec_device_requestPrimaryAttrsWrite(io_Writer out))(io_WriteE$void)) {
     return io_Writer_writeBytes(out, dansi_dec_device_requestPrimaryAttrs());
 };
 
@@ -23,7 +23,7 @@ fn_((dansi_dec_device_requestSecondaryAttrs(void))(S_const$u8)) {
     return u8_l(dansi_dec_device_requestSecondaryAttrs_static());
 };
 
-fn_((dansi_dec_device_requestSecondaryAttrsWrite(io_Writer out))(E$void)) {
+fn_((dansi_dec_device_requestSecondaryAttrsWrite(io_Writer out))(io_WriteE$void)) {
     return io_Writer_writeBytes(out, dansi_dec_device_requestSecondaryAttrs());
 };
 
@@ -41,7 +41,7 @@ fn_((dansi_dec_device_requestTertiaryAttrs(void))(S_const$u8)) {
     return u8_l(dansi_dec_device_requestTertiaryAttrs_static());
 };
 
-fn_((dansi_dec_device_requestTertiaryAttrsWrite(io_Writer out))(E$void)) {
+fn_((dansi_dec_device_requestTertiaryAttrsWrite(io_Writer out))(io_WriteE$void)) {
     return io_Writer_writeBytes(out, dansi_dec_device_requestTertiaryAttrs());
 };
 
@@ -59,7 +59,7 @@ fn_((dansi_dec_device_identify(void))(S_const$u8)) {
     return u8_l(dansi_dec_device_identify_static());
 };
 
-fn_((dansi_dec_device_identifyWrite(io_Writer out))(E$void)) {
+fn_((dansi_dec_device_identifyWrite(io_Writer out))(io_WriteE$void)) {
     return io_Writer_writeBytes(out, dansi_dec_device_identify());
 };
 

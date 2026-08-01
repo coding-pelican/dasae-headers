@@ -59,8 +59,8 @@ $static fn_((Sched_preem__idle(P$raw ctx))(Sched_Cancelable$void));
 let_(Sched_VTbl_noop, Sched_VTbl) = {
     .asyncFn = Sched_VTbl_noAsync,
     .spawnFn = Sched_VTbl_failingSpawn,
-    .awaitFn = Sched_VTbl_noAwait,
-    .cancelFn = Sched_VTbl_noCancel,
+    .future.awaitFn = Sched_VTbl_noFutureAwait,
+    .future.cancelFn = Sched_VTbl_noFutureCancel,
     .recancelFn = Sched_VTbl_noRecancel,
     .swapCancelProtcnFn = Sched_VTbl_noSwapCancelProtcn,
     .idleFn = Sched_VTbl_failingIdle,
@@ -69,22 +69,22 @@ let_(Sched_VTbl_noop, Sched_VTbl) = {
 let_(Sched_VTbl_failing, Sched_VTbl) = {
     .asyncFn = Sched_VTbl_noAsync,
     .spawnFn = Sched_VTbl_failingSpawn,
-    .awaitFn = Sched_VTbl_unreachableAwait,
-    .cancelFn = Sched_VTbl_unreachableCancel,
+    .future.awaitFn = Sched_VTbl_unreachableFutureAwait,
+    .future.cancelFn = Sched_VTbl_unreachableFutureCancel,
     .recancelFn = Sched_VTbl_unreachableRecancel,
     .swapCancelProtcnFn = Sched_VTbl_unreachableSwapCancelProtcn,
     .idleFn = Sched_VTbl_failingIdle,
 };
 
-$static var_(Sched_noop__ctx, Void) = cleared();
+$static var_(Sched__ctx_noop, Void) $undefined_static;
 let_(Sched_noop, Sched) = {
-    .ctx = &Sched_noop__ctx,
+    .ctx = &Sched__ctx_noop,
     .vtbl = &Sched_VTbl_noop,
 };
 
-$static var_(Sched_failing__ctx, Void) = cleared();
+$static var_(Sched__ctx_failing, Void) $undefined_static;
 let_(Sched_failing, Sched) = {
-    .ctx = &Sched_failing__ctx,
+    .ctx = &Sched__ctx_failing,
     .vtbl = &Sched_VTbl_failing,
 };
 
@@ -127,8 +127,8 @@ fn_((Sched_seq(exec_Seq* self))(Sched)) {
     $static let_(vtbl, Sched_VTbl) $like_ref = { {
         .asyncFn = Sched_seq__async,
         .spawnFn = Sched_seq__spawn,
-        .awaitFn = Sched_seq__await,
-        .cancelFn = Sched_seq__cancel,
+        .future.awaitFn = Sched_seq__await,
+        .future.cancelFn = Sched_seq__cancel,
         .recancelFn = Sched_seq__recancel,
         .swapCancelProtcnFn = Sched_seq__swapCancelProtcn,
         .idleFn = Sched_seq__idle,
@@ -143,8 +143,8 @@ fn_((Sched_coop(exec_Coop* loop))(Sched)) {
     $static let_(vtbl, Sched_VTbl) $like_ref = { {
         .asyncFn = Sched_coop__async,
         .spawnFn = Sched_coop__spawn,
-        .awaitFn = Sched_coop__await,
-        .cancelFn = Sched_coop__cancel,
+        .future.awaitFn = Sched_coop__await,
+        .future.cancelFn = Sched_coop__cancel,
         .recancelFn = Sched_coop__recancel,
         .swapCancelProtcnFn = Sched_coop__swapCancelProtcn,
         .idleFn = Sched_coop__idle,
@@ -159,8 +159,8 @@ fn_((Sched_preem(exec_Preem* preem))(Sched)) {
     $static let_(vtbl, Sched_VTbl) $like_ref = { {
         .asyncFn = Sched_preem__async,
         .spawnFn = Sched_preem__spawn,
-        .awaitFn = Sched_preem__await,
-        .cancelFn = Sched_preem__cancel,
+        .future.awaitFn = Sched_preem__await,
+        .future.cancelFn = Sched_preem__cancel,
         .recancelFn = Sched_preem__recancel,
         .idleFn = Sched_preem__idle,
         .swapCancelProtcnFn = Sched_preem__swapCancelProtcn,
@@ -175,8 +175,8 @@ fn_((Sched_para(exec_Para* para))(Sched)) {
     $static let_(vtbl, Sched_VTbl) $like_ref = { {
         .asyncFn = Sched_VTbl_noAsync,
         .spawnFn = Sched_VTbl_failingSpawn,
-        .awaitFn = Sched_VTbl_unreachableAwait,
-        .cancelFn = Sched_VTbl_unreachableCancel,
+        .future.awaitFn = Sched_VTbl_unreachableFutureAwait,
+        .future.cancelFn = Sched_VTbl_unreachableFutureCancel,
         .recancelFn = Sched_VTbl_unreachableRecancel,
         .idleFn = Sched_VTbl_failingIdle,
         .swapCancelProtcnFn = Sched_VTbl_unreachableSwapCancelProtcn,
@@ -201,26 +201,26 @@ fn_((Sched_VTbl_failingSpawn(P$raw ctx, u_P$raw result, P$$(Clsr$raw) inner))(Sc
     return_err(E_cause$Sched_ConcUnavailable());
 } $unscoped(fn);
 
-fn_((Sched_VTbl_noAwait(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void)) {
+fn_((Sched_VTbl_noFutureAwait(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void)) {
     let_ignore = ctx;
     let_ignore = any_future;
     let_ignore = result;
 };
 
-fn_((Sched_VTbl_unreachableAwait(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void)) {
+fn_((Sched_VTbl_unreachableFutureAwait(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void)) {
     let_ignore = ctx;
     let_ignore = any_future;
     let_ignore = result;
     claim_unreachable;
 };
 
-fn_((Sched_VTbl_noCancel(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void)) {
+fn_((Sched_VTbl_noFutureCancel(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void)) {
     let_ignore = ctx;
     let_ignore = any_future;
     let_ignore = result;
 };
 
-fn_((Sched_VTbl_unreachableCancel(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void)) {
+fn_((Sched_VTbl_unreachableFutureCancel(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void)) {
     let_ignore = ctx;
     let_ignore = any_future;
     let_ignore = result;

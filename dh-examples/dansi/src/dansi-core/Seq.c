@@ -11,7 +11,7 @@
 
 $static fn_((dansi_Seq__readable(io_Buf_Reader* reader))(S_const$u8));
 $attr($must_check)
-$static fn_((dansi_Seq__ensure(io_Buf_Reader* reader, usize len))(E$void));
+$static fn_((dansi_Seq__ensure(io_Buf_Reader* reader, usize len))(io_ReadE$void));
 $attr($must_check)
 $static fn_((dansi_Seq__complete(io_Buf_Reader* reader, dansi_Seq_Kind kind, usize len))(dansi_Seq_E$dansi_Seq));
 $attr($must_check)
@@ -29,13 +29,13 @@ $static fn_((dansi_Seq__receiveCsi7Or8(io_Reader in, S$u8 buf, S_const$u8 prefix
 $attr($must_check)
 $static fn_((dansi_Seq__receiveCtrlString7Or8(io_Reader in, S$u8 buf, S_const$u8 prefix, u8 c1))(E$S$u8));
 
-fn_((dansi_Seq_EOS_write(dansi_Seq_EOS self, io_Writer out))(E$void) $scope) {
+fn_((dansi_Seq_EOS_write(dansi_Seq_EOS self, io_Writer out))(io_WriteE$void) $scope) {
     switch (self) {
     case_((dansi_Seq_EOS_none)) return_ok({}) $end(case);
-    case_((dansi_Seq_EOS_bel)) return io_Writer_writeByte(out, dansi_Seq_bel_byte) $end(case);
-    case_((dansi_Seq_EOS_st_7bit)) return io_Writer_writeBytes(out, u8_l(dansi_Seq_st_7bit)) $end(case);
-    case_((dansi_Seq_EOS_st_8bit)) return io_Writer_writeByte(out, dansi_Seq_st_8bit_byte) $end(case);
-    default_() return_err(E_cause$Unexpected()) $end(default);
+    case_((dansi_Seq_EOS_bel)) return_ok(try_(io_Writer_writeByte(out, dansi_Seq_bel_byte))) $end(case);
+    case_((dansi_Seq_EOS_st_7bit)) return_ok(try_(io_Writer_writeBytes(out, u8_l(dansi_Seq_st_7bit)))) $end(case);
+    case_((dansi_Seq_EOS_st_8bit)) return_ok(try_(io_Writer_writeByte(out, dansi_Seq_st_8bit_byte))) $end(case);
+    default_() claim_unreachable $end(default);
     }
 } $unscoped(fn);
 
@@ -90,7 +90,7 @@ fn_((dansi_Seq_extract(io_Buf_Reader* reader))(dansi_Seq_E$dansi_Seq) $scope) {
 
 fn_((dansi_Seq_receive(io_Reader in, S$u8 buf))(dansi_Seq_E$dansi_Seq)) {
     claim_assert_nonnullS(buf);
-    var reader = io_Buf_Reader_init(in, buf);
+    var reader = io_Buf_Reader_from(in, buf);
     return dansi_Seq_extract(&reader);
 };
 
@@ -163,7 +163,7 @@ fn_((dansi_Seq__readable(io_Buf_Reader* reader))(S_const$u8)) {
     return S_slice((reader->buf)$r(reader->start, reader->end)).as_const;
 };
 
-fn_((dansi_Seq__ensure(io_Buf_Reader* reader, usize len))(E$void) $scope) {
+fn_((dansi_Seq__ensure(io_Buf_Reader* reader, usize len))(io_ReadE$void) $scope) {
     while (reader->end - reader->start < len) {
         let old_end = reader->end;
         catch_((io_Buf_Reader_fill(reader))($ignore, return_err(E_cause$UnexpectedEOF())));

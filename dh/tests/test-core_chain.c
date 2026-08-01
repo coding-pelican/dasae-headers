@@ -6,7 +6,7 @@ TEST_fn_("core/chain: fold_sum" $scope) {
     let slice = A_ref(data);
 
     let sum = chain$((i32)(slice)(
-        fold_((0), (acc, item)(acc + *item))
+        fold_((0)(acc, item)(acc + *item))
     ));
 
     try_(TEST_expect(sum == 15));
@@ -18,7 +18,7 @@ TEST_fn_("core/chain: fold_with_initial" $scope) {
     let slice = A_ref(data);
 
     let sum = chain$((i32)(slice)(
-        fold_((100), (acc, item)(acc + *item))
+        fold_((100)(acc, item)(acc + *item))
     ));
 
     try_(TEST_expect(sum == 115));
@@ -56,7 +56,7 @@ TEST_fn_("core/chain: filter" $scope) {
 
     let sum = chain$((i32)(slice)(
         filter_((item)(*item % 2 == 0)),
-        fold_((0), (acc, item)(acc + *item))
+        fold_((0)(acc, item)(acc + *item))
     ));
 
     try_(TEST_expect(sum == 6)); // 2 + 4 = 6
@@ -69,7 +69,7 @@ TEST_fn_("core/chain: map" $scope) {
 
     let sum = chain$((i32)(slice)(
         map$((i32)(item)(*item * 2)),
-        fold_((0), (acc, item)(acc + *item))
+        fold_((0)(acc, item)(acc + *item))
     ));
 
     try_(TEST_expect(sum == 30)); // (1+2+3+4+5)*2 = 30
@@ -83,7 +83,7 @@ TEST_fn_("core/chain: filter_map" $scope) {
     let result = chain$((i32)(slice)(
         filter_((item)(*item % 2 == 0)),
         map$((i32)(item)(*item * *item)),
-        fold_((0), (acc, item)(acc + *item))
+        fold_((0)(acc, item)(acc + *item))
     ));
 
     try_(TEST_expect(result == 20)); // 2^2 + 4^2 = 4 + 16 = 20
@@ -112,7 +112,7 @@ TEST_fn_("core/chain: each" $scope) {
     var_(sum, i32) = 0;
     chain$((i32)(slice)(
         each_((item) { sum += *item; }),
-        fold_((0), (acc, $ignore)(acc))
+        fold_((0)(acc, $ignore)(acc))
     ));
 
     try_(TEST_expect(sum == 15));
@@ -127,7 +127,7 @@ TEST_fn_("core/chain: complex" $scope) {
         filter_((item)(*item > 0)),
         filter_((item)(*item % 2 == 0)),
         map$((i32)(item)(*item * 10)),
-        fold_((0), (acc, item)(acc + *item))
+        fold_((0)(acc, item)(acc + *item))
     ));
 
     try_(TEST_expect(result == 120)); // (2 + 4 + 6) * 10 = 120

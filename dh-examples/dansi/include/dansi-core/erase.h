@@ -47,7 +47,7 @@ typedef A$$(3 + uint_log10Ceil_static(u8_limit_max), u8) dansi_erase_InDisplayBu
 $attr($must_check)
 $extern fn_((dansi_erase_inDisplay(dansi_erase_Area area, dansi_erase_InDisplayBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_erase_inDisplayWrite(dansi_erase_Area area, io_Writer out))(E$void));
+$extern fn_((dansi_erase_inDisplayWrite(dansi_erase_Area area, io_Writer out))(io_PrintE$void));
 
 #define dansi_erase_inLine_static(_area_tok) \
     ____dansi_erase_inLine_static(_area_tok)
@@ -55,7 +55,7 @@ typedef A$$(3 + uint_log10Ceil_static(u8_limit_max), u8) dansi_erase_InLineBuf;
 $attr($must_check)
 $extern fn_((dansi_erase_inLine(dansi_erase_Area area, dansi_erase_InLineBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_erase_inLineWrite(dansi_erase_Area area, io_Writer out))(E$void));
+$extern fn_((dansi_erase_inLineWrite(dansi_erase_Area area, io_Writer out))(io_PrintE$void));
 
 #define dansi_erase_chars_static(_count_tok) \
     ____dansi_erase_chars_static(_count_tok)
@@ -63,7 +63,7 @@ typedef A$$(3 + uint_log10Ceil_static(u16_limit_max), u8) dansi_erase_CharsBuf;
 $attr($must_check)
 $extern fn_((dansi_erase_chars(u16 count, dansi_erase_CharsBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_erase_charsWrite(u16 count, io_Writer out))(E$void));
+$extern fn_((dansi_erase_charsWrite(u16 count, io_Writer out))(io_PrintE$void));
 
 /*========== Macros and Definitions =========================================*/
 

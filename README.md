@@ -1033,8 +1033,8 @@ allocator contracts. Compiler primitives remain in `builtin/mem.h`;
   `mem_alignToLog2`, `mem_log2ToAlign`, and `mem_emptyAddr` validate and
   construct aligned addresses.
 - **Representation conversion:**
-  `mem_idxZ$u8`, `mem_lenZ0$u8`, `mem_spanZ0$u8`, and
-  `mem_spanZ0Mut$u8` bridge sentinel-terminated bytes and counted slices.
+  `mem_idxZ$u8`, `mem_lenZ0Bytes`, `mem_spanZ0Bytes`, and
+  `mem_spanZ0MutBytes` bridge sentinel-terminated bytes and counted slices.
   `mem_asBytes*` views objects and slices as bytes; `mem_bytesAs*` validates a
   byte span as typed storage; `mem_Bytes$`, `mem_toBytes`, and `mem_bytesTo`
   copy value representations through caller-provided storage.

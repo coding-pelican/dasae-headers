@@ -43,15 +43,15 @@ let_(time_Real_VTbl_failing, time_Real_VTbl) = {
     .resolutionFn = time_Real_VTbl_failingResolution,
 };
 
-$static var_(time_Real_noop_ctx, Void) = cleared();
+$static var_(time_Real__ctx_noop, Void) = cleared();
 let_(time_Real_noop, time_Real) = {
-    .ctx = &time_Real_noop_ctx,
+    .ctx = &time_Real__ctx_noop,
     .vtbl = &time_Real_VTbl_noop,
 };
 
-$static var_(time_Real_failing_ctx, Void) = cleared();
+$static var_(time_Real__ctx_failing, Void) = cleared();
 let_(time_Real_failing, time_Real) = {
-    .ctx = &time_Real_failing_ctx,
+    .ctx = &time_Real__ctx_failing,
     .vtbl = &time_Real_VTbl_failing,
 };
 

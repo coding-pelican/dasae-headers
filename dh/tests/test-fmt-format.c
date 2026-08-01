@@ -4,14 +4,14 @@
 #include "dh/mem/common.h"
 
 $static fn_((test_fmt_format_toFixed(S$u8 buf, S_const$u8 fmt, S_const$u8 arg))(E$S_const$u8) $scope) {
-    var fixed_writer = io_Fixed_Writer_init(io_Fixed_writing(buf));
+    var fixed_writer = io_Fixed_Writer_from(io_Fixed_writing(buf));
     try_(fmt_format(io_Fixed_writer(&fixed_writer), fmt, arg));
     return_ok(io_Fixed_written(fixed_writer.stream).as_const);
 } $unscoped(fn);
 
 TEST_fn_("fmt: format writes literal without collecting varargs" $scope) {
     var buf = u8_a("................................");
-    var fixed_writer = io_Fixed_Writer_init(io_Fixed_writing(A_ref$((S$u8)(buf))));
+    var fixed_writer = io_Fixed_Writer_from(io_Fixed_writing(A_ref$((S$u8)(buf))));
 
     try_(fmt_format(io_Fixed_writer(&fixed_writer), u8_l("literal only")));
 

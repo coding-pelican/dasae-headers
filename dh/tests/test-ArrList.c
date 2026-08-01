@@ -48,7 +48,7 @@ T_use$((u32)(
     ArrList_shift
 ));
 
-$static var_(test_ArrList_failing_ctx, Void) $undefined_static;
+$static var_(test_ArrList__ctx_failing, Void) $undefined_static;
 $static let_(test_ArrList_failing_vtbl, mem_Alctr_VTbl) = {
     .allocFn = mem_Alctr_VTbl_noAlloc,
     .resizeFn = mem_Alctr_VTbl_noResize,
@@ -56,7 +56,7 @@ $static let_(test_ArrList_failing_vtbl, mem_Alctr_VTbl) = {
     .freeFn = mem_Alctr_VTbl_noFree,
 };
 $static let_(test_ArrList_failing_alctr, mem_Alctr) = {
-    .ctx = &test_ArrList_failing_ctx,
+    .ctx = &test_ArrList__ctx_failing,
     .vtbl = &test_ArrList_failing_vtbl,
 };
 

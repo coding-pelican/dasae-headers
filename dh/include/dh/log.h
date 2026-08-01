@@ -20,25 +20,24 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "io/Self.h"
 #include "io/Writer.h"
-#include "proc/std.h"
+#include "io/std.h"
 
 /*========== Macros and Declarations ========================================*/
 
 typedef enum_((log_Level $fits($packed))(
-    log_Level_err,
+    log_Level_err = 0,
     log_Level_warn,
     log_Level_info,
     log_Level_debug
 )) log_Level;
 $extern fn_((log_Level_asText(log_Level self))(S_const$u8));
 
-#define log_scope_default u8_l("")
 #define log_level_default pp_if_(debug_enabled)( \
     pp_then_(log_Level_debug), \
     pp_else_(log_Level_info) \
 )
+#define log_scope_default u8_l("")
 
 T_alias$((log_Self_VTbl)(struct log_Self_VTbl));
 /// Copyable logging capability. The provider owns filtering and output policy.
@@ -47,8 +46,6 @@ T_alias$((log_Self)(struct log_Self {
     var_(vtbl, P_const$$(log_Self_VTbl));
 }));
 T_use_prl$(log_Self);
-$extern let_(log_Self_noop, log_Self);
-$extern let_(log_Self_failing, log_Self);
 $attr($inline_always)
 $static fn_((log_isValid(log_Self self))(bool));
 $attr($inline_always)
@@ -56,6 +53,20 @@ $static fn_((log_assertValid(P$raw ctx, P_const$$(log_Self_VTbl) vtbl))(void));
 $attr($inline_always)
 $static fn_((log_ensureValid(log_Self self))(log_Self));
 
+$extern let_(log_Self_noop, log_Self);
+$extern let_(log_Self_failing, log_Self);
+/// Default logger backed by an explicitly supplied standard-I/O capability.
+T_alias$((log_Default)(struct log_Default {
+    var_(std, io_std_Self);
+    var_(max_level, log_Level);
+}));
+T_use_O$(log_Default);
+$attr($must_check)
+$extern fn_((log_Default_init(io_std_Self std, log_Level max_level))(log_Default));
+$attr($must_check)
+$extern fn_((log_Default_self(log_Default* self))(log_Self));
+
+$attr($must_check)
 $extern fn_((log_enabled(log_Self self, log_Level level, S_const$u8 scope))(bool));
 $extern fn_((log_stamp(log_Self self, log_Level level, S_const$u8 scope, S_const$u8 fmt, ...))(void));
 $extern fn_((log_stampVaArgs(log_Self self, log_Level level, S_const$u8 scope, S_const$u8 fmt, va_list args))(void));
@@ -71,10 +82,13 @@ $extern fn_((log_scopedInfo(log_Self self, S_const$u8 scope, S_const$u8 fmt, ...
 $extern fn_((log_scopedDebug(log_Self self, S_const$u8 scope, S_const$u8 fmt, ...))(void));
 
 struct log_Self_VTbl {
+    $attr($must_check)
     fn_(((*enabledFn)(P$raw ctx, log_Level level, S_const$u8 scope))(bool));
     fn_(((*stampFn)(P$raw ctx, log_Level level, S_const$u8 scope, S_const$u8 fmt, va_list args))(void));
 };
+$attr($must_check)
 $extern fn_((log_Self_VTbl_noEnabled(P$raw ctx, log_Level level, S_const$u8 scope))(bool));
+$attr($must_check)
 $extern fn_((log_Self_VTbl_unreachableEnabled(P$raw ctx, log_Level level, S_const$u8 scope))(bool));
 $extern fn_((log_Self_VTbl_noStamp(P$raw ctx, log_Level level, S_const$u8 scope, S_const$u8 fmt, va_list args))(void));
 $extern fn_((log_Self_VTbl_unreachableStamp(P$raw ctx, log_Level level, S_const$u8 scope, S_const$u8 fmt, va_list args))(void));
@@ -85,22 +99,11 @@ T_alias$((log_Writer)(struct log_Writer {
     var_(output, io_Writer);
     var_(max_level, log_Level);
 }));
+$attr($must_check)
 $extern fn_((log_Writer_init(io_Writer output, log_Level max_level))(log_Writer));
+$attr($must_check)
 $extern fn_((log_Writer_self(log_Writer* self))(log_Self));
 
-/// Default logger backed by the explicitly supplied process stderr
-/// and standard-I/O coordination capabilities.
-T_alias$((log_Default)(struct log_Default {
-    var_(io, io_Self);
-    var_(err_io, fs_File_IO);
-    var_(max_level, log_Level);
-}));
-$extern fn_((log_Default_init(
-    io_Self io,
-    proc_std_Self std,
-    log_Level max_level
-))(log_Default));
-$extern fn_((log_Default_self(log_Default* self))(log_Self));
 
 /*========== Macros and Definitions =========================================*/
 

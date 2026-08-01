@@ -55,7 +55,7 @@ T_use_E$($set(dansi_dec_report_E)(dansi_dec_report_KeyboardStatus));
     ____dansi_dec_report_requestPrinterStatus_static()
 $extern fn_((dansi_dec_report_requestPrinterStatus(void))(S_const$u8));
 $attr($must_check)
-$extern fn_((dansi_dec_report_requestPrinterStatusWrite(io_Writer out))(E$void));
+$extern fn_((dansi_dec_report_requestPrinterStatusWrite(io_Writer out))(io_WriteE$void));
 $attr($must_check)
 $extern fn_((dansi_dec_report_receivePrinterStatusReport(io_Reader in, S$u8 buf))(E$S$u8));
 $attr($must_check)
@@ -71,7 +71,7 @@ $extern fn_((dansi_dec_report_fetchPrinterStatus(
     ____dansi_dec_report_requestKeyboardStatus_static()
 $extern fn_((dansi_dec_report_requestKeyboardStatus(void))(S_const$u8));
 $attr($must_check)
-$extern fn_((dansi_dec_report_requestKeyboardStatusWrite(io_Writer out))(E$void));
+$extern fn_((dansi_dec_report_requestKeyboardStatusWrite(io_Writer out))(io_WriteE$void));
 $attr($must_check)
 $extern fn_((dansi_dec_report_receiveKeyboardStatusReport(io_Reader in, S$u8 buf))(E$S$u8));
 $attr($must_check)

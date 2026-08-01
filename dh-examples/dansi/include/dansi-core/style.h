@@ -29,7 +29,7 @@ typedef A$$(3 + uint_log10Ceil_static(u8_limit_max), u8) dansi_style_BoldBuf;
 $attr($must_check)
 $extern fn_((dansi_style_bold(bool enabled, dansi_style_BoldBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_style_boldWrite(bool enabled, io_Writer out))(E$void));
+$extern fn_((dansi_style_boldWrite(bool enabled, io_Writer out))(io_PrintE$void));
 
 #define dansi_style_faint_static(_pp_enabled) \
     ____dansi_style_faint_static(_pp_enabled)
@@ -37,7 +37,7 @@ typedef A$$(3 + uint_log10Ceil_static(u8_limit_max), u8) dansi_style_FaintBuf;
 $attr($must_check)
 $extern fn_((dansi_style_faint(bool enabled, dansi_style_FaintBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_style_faintWrite(bool enabled, io_Writer out))(E$void));
+$extern fn_((dansi_style_faintWrite(bool enabled, io_Writer out))(io_PrintE$void));
 
 #define dansi_style_italic_static(_pp_enabled) \
     ____dansi_style_italic_static(_pp_enabled)
@@ -45,7 +45,7 @@ typedef A$$(3 + uint_log10Ceil_static(u8_limit_max), u8) dansi_style_ItalicBuf;
 $attr($must_check)
 $extern fn_((dansi_style_italic(bool enabled, dansi_style_ItalicBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_style_italicWrite(bool enabled, io_Writer out))(E$void));
+$extern fn_((dansi_style_italicWrite(bool enabled, io_Writer out))(io_PrintE$void));
 
 #define dansi_style_underline_static(_pp_enabled) \
     ____dansi_style_underline_static(_pp_enabled)
@@ -53,7 +53,7 @@ typedef A$$(3 + uint_log10Ceil_static(u8_limit_max), u8) dansi_style_UnderlineBu
 $attr($must_check)
 $extern fn_((dansi_style_underline(bool enabled, dansi_style_UnderlineBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_style_underlineWrite(bool enabled, io_Writer out))(E$void));
+$extern fn_((dansi_style_underlineWrite(bool enabled, io_Writer out))(io_PrintE$void));
 
 #define dansi_style_blink_static(_pp_enabled) \
     ____dansi_style_blink_static(_pp_enabled)
@@ -61,7 +61,7 @@ typedef A$$(3 + uint_log10Ceil_static(u8_limit_max), u8) dansi_style_BlinkBuf;
 $attr($must_check)
 $extern fn_((dansi_style_blink(bool enabled, dansi_style_BlinkBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_style_blinkWrite(bool enabled, io_Writer out))(E$void));
+$extern fn_((dansi_style_blinkWrite(bool enabled, io_Writer out))(io_PrintE$void));
 
 #define dansi_style_reverse_static(_pp_enabled) \
     ____dansi_style_reverse_static(_pp_enabled)
@@ -69,7 +69,7 @@ typedef A$$(3 + uint_log10Ceil_static(u8_limit_max), u8) dansi_style_ReverseBuf;
 $attr($must_check)
 $extern fn_((dansi_style_reverse(bool enabled, dansi_style_ReverseBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_style_reverseWrite(bool enabled, io_Writer out))(E$void));
+$extern fn_((dansi_style_reverseWrite(bool enabled, io_Writer out))(io_PrintE$void));
 
 #define dansi_style_conceal_static(_pp_enabled) \
     ____dansi_style_conceal_static(_pp_enabled)
@@ -77,7 +77,7 @@ typedef A$$(3 + uint_log10Ceil_static(u8_limit_max), u8) dansi_style_ConcealBuf;
 $attr($must_check)
 $extern fn_((dansi_style_conceal(bool enabled, dansi_style_ConcealBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_style_concealWrite(bool enabled, io_Writer out))(E$void));
+$extern fn_((dansi_style_concealWrite(bool enabled, io_Writer out))(io_PrintE$void));
 
 #define dansi_style_crossedOut_static(_pp_enabled) \
     ____dansi_style_crossedOut_static(_pp_enabled)
@@ -85,7 +85,7 @@ typedef A$$(3 + uint_log10Ceil_static(u8_limit_max), u8) dansi_style_CrossedOutB
 $attr($must_check)
 $extern fn_((dansi_style_crossedOut(bool enabled, dansi_style_CrossedOutBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_style_crossedOutWrite(bool enabled, io_Writer out))(E$void));
+$extern fn_((dansi_style_crossedOutWrite(bool enabled, io_Writer out))(io_PrintE$void));
 
 #define dansi_style_resetIntensity_static() \
     ____dansi_style_resetIntensity_static()
@@ -93,7 +93,7 @@ typedef dansi_style_BoldBuf dansi_style_ResetIntensityBuf;
 $attr($must_check)
 $extern fn_((dansi_style_resetIntensity(dansi_style_ResetIntensityBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_style_resetIntensityWrite(io_Writer out))(E$void));
+$extern fn_((dansi_style_resetIntensityWrite(io_Writer out))(io_PrintE$void));
 
 #define dansi_style_resetItalic_static() \
     ____dansi_style_resetItalic_static()
@@ -101,7 +101,7 @@ typedef dansi_style_ItalicBuf dansi_style_ResetItalicBuf;
 $attr($must_check)
 $extern fn_((dansi_style_resetItalic(dansi_style_ResetItalicBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_style_resetItalicWrite(io_Writer out))(E$void));
+$extern fn_((dansi_style_resetItalicWrite(io_Writer out))(io_PrintE$void));
 
 #define dansi_style_resetUnderline_static() \
     ____dansi_style_resetUnderline_static()
@@ -109,7 +109,7 @@ typedef dansi_style_UnderlineBuf dansi_style_ResetUnderlineBuf;
 $attr($must_check)
 $extern fn_((dansi_style_resetUnderline(dansi_style_ResetUnderlineBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_style_resetUnderlineWrite(io_Writer out))(E$void));
+$extern fn_((dansi_style_resetUnderlineWrite(io_Writer out))(io_PrintE$void));
 
 #define dansi_style_resetBlink_static() \
     ____dansi_style_resetBlink_static()
@@ -117,7 +117,7 @@ typedef dansi_style_BlinkBuf dansi_style_ResetBlinkBuf;
 $attr($must_check)
 $extern fn_((dansi_style_resetBlink(dansi_style_ResetBlinkBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_style_resetBlinkWrite(io_Writer out))(E$void));
+$extern fn_((dansi_style_resetBlinkWrite(io_Writer out))(io_PrintE$void));
 
 #define dansi_style_resetReverse_static() \
     ____dansi_style_resetReverse_static()
@@ -125,7 +125,7 @@ typedef dansi_style_ReverseBuf dansi_style_ResetReverseBuf;
 $attr($must_check)
 $extern fn_((dansi_style_resetReverse(dansi_style_ResetReverseBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_style_resetReverseWrite(io_Writer out))(E$void));
+$extern fn_((dansi_style_resetReverseWrite(io_Writer out))(io_PrintE$void));
 
 #define dansi_style_resetConceal_static() \
     ____dansi_style_resetConceal_static()
@@ -133,7 +133,7 @@ typedef dansi_style_ConcealBuf dansi_style_ResetConcealBuf;
 $attr($must_check)
 $extern fn_((dansi_style_resetConceal(dansi_style_ResetConcealBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_style_resetConcealWrite(io_Writer out))(E$void));
+$extern fn_((dansi_style_resetConcealWrite(io_Writer out))(io_PrintE$void));
 
 #define dansi_style_resetCrossedOut_static() \
     ____dansi_style_resetCrossedOut_static()
@@ -141,7 +141,7 @@ typedef dansi_style_CrossedOutBuf dansi_style_ResetCrossedOutBuf;
 $attr($must_check)
 $extern fn_((dansi_style_resetCrossedOut(dansi_style_ResetCrossedOutBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_style_resetCrossedOutWrite(io_Writer out))(E$void));
+$extern fn_((dansi_style_resetCrossedOutWrite(io_Writer out))(io_PrintE$void));
 
 /*========== Macros and Definitions =========================================*/
 

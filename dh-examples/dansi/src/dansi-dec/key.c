@@ -86,7 +86,7 @@ fn_((dansi_dec_key_setCursor(bool enabled, dansi_dec_key_SetCursorBuf* buf))(S$u
     return dansi_dec_mode_set(dansi_dec_mode_Code_cursor_keys, enabled, buf);
 };
 
-fn_((dansi_dec_key_setCursorWrite(bool enabled, io_Writer out))(E$void)) {
+fn_((dansi_dec_key_setCursorWrite(bool enabled, io_Writer out))(io_PrintE$void)) {
     return dansi_dec_mode_setWrite(dansi_dec_mode_Code_cursor_keys, enabled, out);
 };
 
@@ -94,7 +94,7 @@ fn_((dansi_dec_key_enableCursor(dansi_dec_key_EnableCursorBuf* buf))(S$u8)) {
     return dansi_dec_mode_enable(dansi_dec_mode_Code_cursor_keys, buf);
 };
 
-fn_((dansi_dec_key_enableCursorWrite(io_Writer out))(E$void)) {
+fn_((dansi_dec_key_enableCursorWrite(io_Writer out))(io_PrintE$void)) {
     return dansi_dec_mode_enableWrite(dansi_dec_mode_Code_cursor_keys, out);
 };
 
@@ -102,17 +102,17 @@ fn_((dansi_dec_key_disableCursor(dansi_dec_key_DisableCursorBuf* buf))(S$u8)) {
     return dansi_dec_mode_disable(dansi_dec_mode_Code_cursor_keys, buf);
 };
 
-fn_((dansi_dec_key_disableCursorWrite(io_Writer out))(E$void)) {
+fn_((dansi_dec_key_disableCursorWrite(io_Writer out))(io_PrintE$void)) {
     return dansi_dec_mode_disableWrite(dansi_dec_mode_Code_cursor_keys, out);
 };
 
 fn_((dansi_dec_key_setKeypad(bool enabled, dansi_dec_key_SetKeypadBuf* buf))(S$u8)) {
-    var writing = io_Fixed_Writer_init(io_Fixed_writing(A_ref$((S$u8)(*buf))));
+    var writing = io_Fixed_Writer_from(io_Fixed_writing(A_ref$((S$u8)(*buf))));
     catch_((dansi_dec_key_setKeypadWrite(enabled, io_Fixed_writer(&writing)))($ignore, claim_unreachable));
     return io_Fixed_written(writing.stream);
 };
 
-fn_((dansi_dec_key_setKeypadWrite(bool enabled, io_Writer out))(E$void)) {
+fn_((dansi_dec_key_setKeypadWrite(bool enabled, io_Writer out))(io_WriteE$void)) {
     return enabled ? dansi_dec_key_enableKeypadWrite(out)
                    : dansi_dec_key_disableKeypadWrite(out);
 };
@@ -121,7 +121,7 @@ fn_((dansi_dec_key_enableKeypad(void))(S_const$u8)) {
     return u8_l(dansi_dec_key_enableKeypad_static());
 };
 
-fn_((dansi_dec_key_enableKeypadWrite(io_Writer out))(E$void)) {
+fn_((dansi_dec_key_enableKeypadWrite(io_Writer out))(io_WriteE$void)) {
     return io_Writer_writeBytes(out, dansi_dec_key_enableKeypad());
 };
 
@@ -129,7 +129,7 @@ fn_((dansi_dec_key_disableKeypad(void))(S_const$u8)) {
     return u8_l(dansi_dec_key_disableKeypad_static());
 };
 
-fn_((dansi_dec_key_disableKeypadWrite(io_Writer out))(E$void)) {
+fn_((dansi_dec_key_disableKeypadWrite(io_Writer out))(io_WriteE$void)) {
     return io_Writer_writeBytes(out, dansi_dec_key_disableKeypad());
 };
 

@@ -22,10 +22,8 @@ extern "C" {
 
 #include "dh/prl.h"
 #include "dh/start.h"
-#include "dh/TEST.h"
-#include "dh/heap/Sys.h"
-#include "dh/proc/Direct.h"
 #include "dh/proc/Entry.h"
+#include "dh/TEST.h"
 
 /*========== Macros and Declarations ========================================*/
 
@@ -112,8 +110,14 @@ $static fn_((main__runDHMain(void))(start_ExitCode)) {
 
 #else /* !main_no_entry */
 $attr($maybe_unused $inline)
-$static fn_((main__runDHMain(proc_Entry entry))(start_ExitCode)) {
+$static fn_((main__runDHMain(start_Invoc* start))(start_ExitCode)) {
+    claim_assert_nonnull(start);
     debug_StackTrace_setupCrashHandler();
+    let_(entry, proc_Entry) = {
+        .args = start_Invoc_args(start),
+        .env = start_Invoc_env(start),
+        .preopens = start_Invoc_preopens(start),
+    };
     pp_if_(pp_not(main_no_return_err))(
         (let returned =),
         ($ignore_void)
@@ -129,68 +133,10 @@ $static fn_((main__runDHMain(proc_Entry entry))(start_ExitCode)) {
 };
 
 $attr($maybe_unused)
-$static fn_((main__runDHMainWithIo(
-    start_Invoc* start,
-    heap_Sys* heap,
-    proc_std_Direct* std_direct,
-    io_Direct* io_direct
-))(start_ExitCode) $guard) {
-    claim_assert_nonnull(start);
-    claim_assert_nonnull(heap);
-    claim_assert_nonnull(std_direct);
-    claim_assert_nonnull(io_direct);
-    defer_(io_Direct_fini(io_direct));
-    var mem_direct = proc_mem_Direct_init(heap_Geom_default());
-    let io = io_Direct_self(io_direct);
-    let std = proc_std_Direct_self(std_direct);
-    let mem = proc_mem_Direct_self(&mem_direct);
-    let env = start_Invoc_env(start);
-    let gpa = heap_Sys_alctr(heap);
-    var direct = proc_Direct_init(env, gpa, std);
-    let proc = catch_((proc_Direct_self(&direct))(err, {
-        pp_if_(main_no_print_err)(
-            (let_ignore = err),
-            (E_printProgramFailed(&err.any), ETrace_print())
-        );
-        return_(($debug_point 1));
-    }));
-    return_(main__runDHMain((proc_Entry){
-        .proc = proc,
-        .gpa = gpa,
-        .io = io,
-        .std = std,
-        .mem = mem,
-        .args = start_Invoc_args(start),
-        .env = env,
-        .preopens = proc_Preopens_fromStd(std),
-    }));
-} $unguarded(fn);
-
-$attr($maybe_unused)
-$static fn_((main__runDHMainWithHeap(
-    start_Invoc* start,
-    heap_Sys* heap
-))(start_ExitCode) $guard) {
-    claim_assert_nonnull(start);
-    claim_assert_nonnull(heap);
-    defer_(heap_Sys_fini(heap));
-    var std_direct = proc_std_Direct_initNative();
-    var io_direct = io_Direct_init();
-    return_(main__runDHMainWithIo(start, heap, &std_direct, &io_direct));
-} $unguarded(fn);
-
-$attr($maybe_unused)
 $static fn_((main__runDHMainStart(start_Invoc* start))(start_ExitCode) $guard) {
     claim_assert_nonnull(start);
     defer_(start_Invoc_fini(start));
-    var heap = catch_((heap_Sys_init())(err, {
-        pp_if_(main_no_print_err)(
-            (let_ignore = err),
-            (E_printProgramFailed(&err.any), ETrace_print())
-        );
-        return_(($debug_point 1));
-    }));
-    return_(main__runDHMainWithHeap(start, &heap));
+    return_(main__runDHMain(start));
 } $unguarded(fn);
 #endif /* main_no_entry, !main_no_entry */
 
@@ -201,9 +147,7 @@ fn_((main(void))(int)) {
 };
 #else /* !main_no_entry */
 #if plat_is_windows
-fn_((main(int argc, const char* argv[]))(int)) {
-    let_ignore = argc;
-    let_ignore = argv;
+fn_((main(void))(int)) {
     var_(start, start_Invoc) $undefined;
     start_Invoc_initWin32(&start);
     return main__runDHMainStart(&start);
@@ -211,9 +155,9 @@ fn_((main(int argc, const char* argv[]))(int)) {
 #elif plat_is_linux || plat_is_darwin
 fn_((main(int argc, const char* argv[], const char* envp[]))(int)) {
     var_(start, start_Invoc) $undefined;
-    start_Invoc_initPosix(
+    start_Invoc_initArgsEnvZ(
         &start,
-        as$(usize)(argc),
+        intCast$((usize)(argc)),
         as$(P_const$P_const$u8)(argv),
         as$(P_const$P_const$u8)(envp)
     );
@@ -222,9 +166,9 @@ fn_((main(int argc, const char* argv[], const char* envp[]))(int)) {
 #else
 fn_((main(int argc, const char* argv[]))(int)) {
     var_(start, start_Invoc) $undefined;
-    start_Invoc_initClassic(
+    start_Invoc_initArgs(
         &start,
-        as$(usize)(argc),
+        intCast$((usize)(argc)),
         as$(P_const$P_const$u8)(argv)
     );
     return main__runDHMainStart(&start);

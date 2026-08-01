@@ -52,29 +52,39 @@ fn_((ETrace_captureFrame_debug(SrcLoc src_loc, P$raw ret_addr))(void)) {
     trace->depth++;
 };
 
-fn_((ETrace_print_debug(void))(void)) {
+fn_((ETrace_print_debug(void))(void) $guard) {
     let trace = ETrace__instance();
     if (!trace->is_enabled) return;
     if (trace->depth == 0) return;
-    let rest_frames = A_prefix((trace->rest_frames)(pri_min(A_len(trace->rest_frames), trace->depth)));
-    for_(($s(rest_frames))(frame)) io_stream_eprintln(
-        u8_l("    at {:z} ({:z}:{:u}:{:u})"),
-        frame->src_loc.fn_name,
-        frame->src_loc.file_name, frame->src_loc.line, frame->src_loc.column
-    ) $end(for);
-    untie_((let last_frame, let captured_frames)local_({
-        let last = orelse_((trace->last_frame)(return));
-        let captured = rest_frames.len + 1;
-        local_return_($tup((last), (captured)));
-    }));
-    let omitted_frames = trace->depth - captured_frames;
-    if (omitted_frames > 0) io_stream_eprintln(
-        u8_l("    ... {:uz} omitted frames ..."), omitted_frames
-    );
-    io_stream_eprintln(
-        u8_l("    at {:z} ({:z}:{:u}:{:u})"),
-        last_frame.src_loc.fn_name,
-        last_frame.src_loc.file_name, last_frame.src_loc.line, last_frame.src_loc.column
-    );
-};
+    let std = catch_((io_std_direct())($ignore, io_std_noop));
+    let locked = io_std_lockErr(std);
+    defer_(io_Locked_Writer_unlock(locked));
+    let writer = io_Locked_writer(locked);
+    {
+        let rest_frames = A_prefix((trace->rest_frames)(pri_min(A_len(trace->rest_frames), trace->depth)));
+        for_(($s(rest_frames))(frame)) catch_((io_Writer_println(
+            writer, u8_l("    at {:z} ({:z}:{:u}:{:u})"),
+            frame->src_loc.fn_name,
+            frame->src_loc.file_name,
+            frame->src_loc.line,
+            frame->src_loc.column
+        ))($ignore, $do_nothing)) $end(for);
+        untie_((let last_frame, let captured_frames)local_({
+            let last = orelse_((trace->last_frame)(return));
+            let captured = rest_frames.len + 1;
+            local_return_($tup((last), (captured)));
+        }));
+        let omitted_frames = trace->depth - captured_frames;
+        if (omitted_frames > 0) catch_((io_Writer_println(
+            writer, u8_l("    ... {:uz} omitted frames ..."), omitted_frames
+        ))($ignore, $do_nothing));
+        catch_((io_Writer_println(
+            writer, u8_l("    at {:z} ({:z}:{:u}:{:u})"),
+            last_frame.src_loc.fn_name,
+            last_frame.src_loc.file_name,
+            last_frame.src_loc.line,
+            last_frame.src_loc.column
+        ))($ignore, $do_nothing));
+    }
+} $unguarded(fn);
 #endif /* ETrace_comp_enabled */

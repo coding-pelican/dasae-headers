@@ -77,7 +77,7 @@ $extern fn_((dansi_xterm_color_fg4bit(
     dansi_xterm_Palette4bit color, dansi_xterm_color_Fg4bitBuf* buf
 ))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_color_fg4bitWrite(dansi_xterm_Palette4bit color, io_Writer out))(E$void));
+$extern fn_((dansi_xterm_color_fg4bitWrite(dansi_xterm_Palette4bit color, io_Writer out))(io_PrintE$void));
 
 #define dansi_xterm_color_bg4bit_staticParse(_color_tok) \
     ____dansi_xterm_color_bg4bit_staticParse(_color_tok)
@@ -89,7 +89,7 @@ $extern fn_((dansi_xterm_color_bg4bit(
     dansi_xterm_Palette4bit color, dansi_xterm_color_Bg4bitBuf* buf
 ))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_color_bg4bitWrite(dansi_xterm_Palette4bit color, io_Writer out))(E$void));
+$extern fn_((dansi_xterm_color_bg4bitWrite(dansi_xterm_Palette4bit color, io_Writer out))(io_PrintE$void));
 
 #define dansi_xterm_color_fgBright_static(_color_tok) \
     ____dansi_xterm_color_fgBright_static(_color_tok)
@@ -97,7 +97,7 @@ typedef A$$(3 + uint_log10Ceil_static(u8_limit_max), u8) dansi_xterm_color_FgBri
 $attr($must_check)
 $extern fn_((dansi_xterm_color_fgBright(dansi_color_Std color, dansi_xterm_color_FgBrightBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_color_fgBrightWrite(dansi_color_Std color, io_Writer out))(E$void));
+$extern fn_((dansi_xterm_color_fgBrightWrite(dansi_color_Std color, io_Writer out))(io_PrintE$void));
 
 #define dansi_xterm_color_bgBright_static(_color_tok) \
     ____dansi_xterm_color_bgBright_static(_color_tok)
@@ -105,7 +105,7 @@ typedef A$$(4 + uint_log10Ceil_static(u8_limit_max), u8) dansi_xterm_color_BgBri
 $attr($must_check)
 $extern fn_((dansi_xterm_color_bgBright(dansi_color_Std color, dansi_xterm_color_BgBrightBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_color_bgBrightWrite(dansi_color_Std color, io_Writer out))(E$void));
+$extern fn_((dansi_xterm_color_bgBrightWrite(dansi_color_Std color, io_Writer out))(io_PrintE$void));
 
 #define dansi_xterm_color_fg8bit_static(_index_tok) \
     ____dansi_xterm_color_fg8bit_static(_index_tok)
@@ -115,7 +115,7 @@ $extern fn_((dansi_xterm_color_fg8bit(
     dansi_xterm_Palette8bit color, dansi_xterm_color_Fg8bitBuf* buf
 ))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_color_fg8bitWrite(dansi_xterm_Palette8bit color, io_Writer out))(E$void));
+$extern fn_((dansi_xterm_color_fg8bitWrite(dansi_xterm_Palette8bit color, io_Writer out))(io_PrintE$void));
 
 #define dansi_xterm_color_bg8bit_static(_index_tok) \
     ____dansi_xterm_color_bg8bit_static(_index_tok)
@@ -125,7 +125,7 @@ $extern fn_((dansi_xterm_color_bg8bit(
     dansi_xterm_Palette8bit color, dansi_xterm_color_Bg8bitBuf* buf
 ))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_color_bg8bitWrite(dansi_xterm_Palette8bit color, io_Writer out))(E$void));
+$extern fn_((dansi_xterm_color_bg8bitWrite(dansi_xterm_Palette8bit color, io_Writer out))(io_PrintE$void));
 
 #define dansi_xterm_color_fg24bit_static(_r_tok, _g_tok, _b_tok) \
     ____dansi_xterm_color_fg24bit_static(_r_tok, _g_tok, _b_tok)
@@ -133,7 +133,7 @@ typedef A$$(9 + uint_log10Ceil_static(u8_limit_max) * 3, u8) dansi_xterm_color_F
 $attr($must_check)
 $extern fn_((dansi_xterm_color_fg24bit(dansi_xterm_color_RGB8 rgb, dansi_xterm_color_FgRGBBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_color_fg24bitWrite(dansi_xterm_color_RGB8 rgb, io_Writer out))(E$void));
+$extern fn_((dansi_xterm_color_fg24bitWrite(dansi_xterm_color_RGB8 rgb, io_Writer out))(io_PrintE$void));
 
 #define dansi_xterm_color_bg24bit_static(_r_tok, _g_tok, _b_tok) \
     ____dansi_xterm_color_bg24bit_static(_r_tok, _g_tok, _b_tok)
@@ -141,7 +141,7 @@ typedef A$$(9 + uint_log10Ceil_static(u8_limit_max) * 3, u8) dansi_xterm_color_B
 $attr($must_check)
 $extern fn_((dansi_xterm_color_bg24bit(dansi_xterm_color_RGB8 color, dansi_xterm_color_BgRGBBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_color_bg24bitWrite(dansi_xterm_color_RGB8 color, io_Writer out))(E$void));
+$extern fn_((dansi_xterm_color_bg24bitWrite(dansi_xterm_color_RGB8 color, io_Writer out))(io_PrintE$void));
 
 /*========== Macros and Definitions =========================================*/
 

@@ -4,7 +4,7 @@
 #include "dh/mem/common.h"
 
 $static fn_((test__pathInThisDir(S_const$u8 name, S$u8 out))(E$S$u8)) {
-    return fs_path_join2(fs_path_dirname(mem_spanZ0$u8(src_loc_fileName())), name, out);
+    return fs_path_join2(fs_path_dirname(mem_spanZ0Bytes(src_loc_fileName())), name, out);
 };
 
 TEST_fn_("fs/File: create, positioned IO, stat, rename, delete" $guard) {

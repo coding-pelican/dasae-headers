@@ -51,7 +51,7 @@ typedef struct io_Fixed_Reader {
     var_(stream, io_Fixed);
 } io_Fixed_Reader;
 /// Initialize fixed reader with fixed buffer
-$extern fn_((io_Fixed_Reader_init(io_Fixed stream))(io_Fixed_Reader));
+$extern fn_((io_Fixed_Reader_from(io_Fixed stream))(io_Fixed_Reader));
 /// Get io_Reader interface
 $extern fn_((io_Fixed_reader(io_Fixed_Reader* self))(io_Reader));
 
@@ -61,7 +61,7 @@ typedef struct io_Fixed_Writer {
     var_(stream, io_FixedMut);
 } io_Fixed_Writer;
 /// Initialize fixed writer with fixed buffer
-$extern fn_((io_Fixed_Writer_init(io_FixedMut stream))(io_Fixed_Writer));
+$extern fn_((io_Fixed_Writer_from(io_FixedMut stream))(io_Fixed_Writer));
 /// Get io_Writer interface
 $extern fn_((io_Fixed_writer(io_Fixed_Writer* self))(io_Writer));
 

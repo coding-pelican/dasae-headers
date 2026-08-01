@@ -16,7 +16,7 @@ fn_((dansi_dec_report_requestPrinterStatus(void))(S_const$u8)) {
     return u8_l(dansi_dec_report_requestPrinterStatus_static());
 };
 
-fn_((dansi_dec_report_requestPrinterStatusWrite(io_Writer out))(E$void)) {
+fn_((dansi_dec_report_requestPrinterStatusWrite(io_Writer out))(io_WriteE$void)) {
     return io_Writer_writeBytes(out, dansi_dec_report_requestPrinterStatus());
 };
 
@@ -46,7 +46,7 @@ fn_((dansi_dec_report_requestKeyboardStatus(void))(S_const$u8)) {
     return u8_l(dansi_dec_report_requestKeyboardStatus_static());
 };
 
-fn_((dansi_dec_report_requestKeyboardStatusWrite(io_Writer out))(E$void)) {
+fn_((dansi_dec_report_requestKeyboardStatusWrite(io_Writer out))(io_WriteE$void)) {
     return io_Writer_writeBytes(out, dansi_dec_report_requestKeyboardStatus());
 };
 

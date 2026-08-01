@@ -27,7 +27,7 @@ fn_((io_Fixed_reset(io_Fixed* self))(void)) {
 
 /*--- Fixed Stream Reader ---*/
 
-fn_((io_Fixed_Reader_init(io_Fixed stream))(io_Fixed_Reader)) {
+fn_((io_Fixed_Reader_from(io_Fixed stream))(io_Fixed_Reader)) {
     return (io_Fixed_Reader){
         .stream = stream,
     };
@@ -53,7 +53,7 @@ fn_((io_Fixed_reader(io_Fixed_Reader* self))(io_Reader)) {
 
 /*--- Fixed Stream Writer ---*/
 
-fn_((io_Fixed_Writer_init(io_FixedMut stream))(io_Fixed_Writer)) {
+fn_((io_Fixed_Writer_from(io_FixedMut stream))(io_Fixed_Writer)) {
     return (io_Fixed_Writer){
         .stream = stream,
     };

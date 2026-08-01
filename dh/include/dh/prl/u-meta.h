@@ -380,6 +380,24 @@ typedef struct u_E$raw {
     u_stride_static(__type); \
 })
 
+#define at$u_P u_atP
+#define u_atP(_$p, _$idx...) __u_atP(pp_uniqTok(p), pp_uniqTok(idx), pp_uniqTok(stride), _$p, _$idx)
+#define __u_atP(__p, __idx, __stride, _$p, _$idx...) $suppress_cast_qual(({ \
+    let_(__p, TypeOf(_$p)) = _$p; \
+    let_(__idx, usize) = _$idx; \
+    let_(__stride, usize) = u_stride_static(__p.type); \
+    T_switch$((TypeOf(__p))( \
+        T_case$((u_P_const$raw)(l$((u_P_const$raw){ \
+            .raw = as$(const u8*)(__p.raw) + (__idx * __stride), \
+            .type = __p.type, \
+        }))), \
+        T_case$((u_P$raw)(l$((u_P$raw){ \
+            .raw = as$(u8*)(__p.raw) + (__idx * __stride), \
+            .type = __p.type, \
+        }))) \
+    )); \
+}))
+
 #define at$u_S u_atS
 #define u_atS(_$s, _$idx...) __u_atS(pp_uniqTok(s), pp_uniqTok(idx), pp_uniqTok(stride), _$s, _$idx)
 #define __u_atS(__s, __idx, __stride, _$s, _$idx...) $suppress_cast_qual(({ \

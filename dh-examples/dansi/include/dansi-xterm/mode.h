@@ -64,7 +64,7 @@ typedef A$$(4 + uint_log10Ceil_static(u16_limit_max), u8) dansi_xterm_mode_SetRa
 $attr($must_check)
 $extern fn_((dansi_xterm_mode_setRaw(u16 mode, bool enabled, dansi_xterm_mode_SetRawBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_mode_setRawWrite(u16 mode, bool enabled, io_Writer out))(E$void));
+$extern fn_((dansi_xterm_mode_setRawWrite(u16 mode, bool enabled, io_Writer out))(io_PrintE$void));
 
 #define dansi_xterm_mode_enableRaw_static(_mode_tok) \
     ____dansi_xterm_mode_enableRaw_static(_mode_tok)
@@ -72,7 +72,7 @@ typedef dansi_xterm_mode_SetRawBuf dansi_xterm_mode_EnableRawBuf;
 $attr($must_check)
 $extern fn_((dansi_xterm_mode_enableRaw(u16 mode, dansi_xterm_mode_EnableRawBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_mode_enableRawWrite(u16 mode, io_Writer out))(E$void));
+$extern fn_((dansi_xterm_mode_enableRawWrite(u16 mode, io_Writer out))(io_PrintE$void));
 
 #define dansi_xterm_mode_disableRaw_static(_mode_tok) \
     ____dansi_xterm_mode_disableRaw_static(_mode_tok)
@@ -80,12 +80,12 @@ typedef dansi_xterm_mode_SetRawBuf dansi_xterm_mode_DisableRawBuf;
 $attr($must_check)
 $extern fn_((dansi_xterm_mode_disableRaw(u16 mode, dansi_xterm_mode_DisableRawBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_mode_disableRawWrite(u16 mode, io_Writer out))(E$void));
+$extern fn_((dansi_xterm_mode_disableRawWrite(u16 mode, io_Writer out))(io_PrintE$void));
 
 $attr($must_check)
 $extern fn_((dansi_xterm_mode_setMany(S_const$u16 modes, bool enabled, S$u8 buf))(E$S$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_mode_setManyWrite(S_const$u16 modes, bool enabled, io_Writer out))(E$void));
+$extern fn_((dansi_xterm_mode_setManyWrite(S_const$u16 modes, bool enabled, io_Writer out))(io_PrintE$void));
 
 #define dansi_xterm_mode_set_static(_mode_tok, _pp_enabled) \
     dansi_xterm_mode_setRaw_static(dansi_xterm_mode_Code_staticParse(_mode_tok), _pp_enabled)
@@ -93,7 +93,7 @@ typedef dansi_xterm_mode_SetRawBuf dansi_xterm_mode_SetBuf;
 $attr($must_check)
 $extern fn_((dansi_xterm_mode_set(dansi_xterm_mode_Code mode, bool enabled, dansi_xterm_mode_SetBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_mode_setWrite(dansi_xterm_mode_Code mode, bool enabled, io_Writer out))(E$void));
+$extern fn_((dansi_xterm_mode_setWrite(dansi_xterm_mode_Code mode, bool enabled, io_Writer out))(io_PrintE$void));
 
 #define dansi_xterm_mode_enable_static(_mode_tok) \
     dansi_xterm_mode_enableRaw_static(dansi_xterm_mode_Code_staticParse(_mode_tok))
@@ -101,7 +101,7 @@ typedef dansi_xterm_mode_EnableRawBuf dansi_xterm_mode_EnableBuf;
 $attr($must_check)
 $extern fn_((dansi_xterm_mode_enable(dansi_xterm_mode_Code mode, dansi_xterm_mode_EnableBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_mode_enableWrite(dansi_xterm_mode_Code mode, io_Writer out))(E$void));
+$extern fn_((dansi_xterm_mode_enableWrite(dansi_xterm_mode_Code mode, io_Writer out))(io_PrintE$void));
 
 #define dansi_xterm_mode_disable_static(_mode_tok) \
     dansi_xterm_mode_disableRaw_static(dansi_xterm_mode_Code_staticParse(_mode_tok))
@@ -109,31 +109,31 @@ typedef dansi_xterm_mode_DisableRawBuf dansi_xterm_mode_DisableBuf;
 $attr($must_check)
 $extern fn_((dansi_xterm_mode_disable(dansi_xterm_mode_Code mode, dansi_xterm_mode_DisableBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_mode_disableWrite(dansi_xterm_mode_Code mode, io_Writer out))(E$void));
+$extern fn_((dansi_xterm_mode_disableWrite(dansi_xterm_mode_Code mode, io_Writer out))(io_PrintE$void));
 
 #define dansi_xterm_mode_saveRaw_static(_modes_tok) \
     ____dansi_xterm_mode_saveRaw_static(_modes_tok)
 $attr($must_check)
 $extern fn_((dansi_xterm_mode_saveRaw(S_const$u16 modes, S$u8 buf))(E$S$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_mode_saveRawWrite(S_const$u16 modes, io_Writer out))(E$void));
+$extern fn_((dansi_xterm_mode_saveRawWrite(S_const$u16 modes, io_Writer out))(io_PrintE$void));
 
 #define dansi_xterm_mode_restoreRaw_static(_modes_tok) \
     ____dansi_xterm_mode_restoreRaw_static(_modes_tok)
 $attr($must_check)
 $extern fn_((dansi_xterm_mode_restoreRaw(S_const$u16 modes, S$u8 buf))(E$S$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_mode_restoreRawWrite(S_const$u16 modes, io_Writer out))(E$void));
+$extern fn_((dansi_xterm_mode_restoreRawWrite(S_const$u16 modes, io_Writer out))(io_PrintE$void));
 
 $attr($must_check)
 $extern fn_((dansi_xterm_mode_save(S_const$dansi_xterm_mode_Code modes, S$u8 buf))(E$S$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_mode_saveWrite(S_const$dansi_xterm_mode_Code modes, io_Writer out))(E$void));
+$extern fn_((dansi_xterm_mode_saveWrite(S_const$dansi_xterm_mode_Code modes, io_Writer out))(io_PrintE$void));
 
 $attr($must_check)
 $extern fn_((dansi_xterm_mode_restore(S_const$dansi_xterm_mode_Code modes, S$u8 buf))(E$S$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_mode_restoreWrite(S_const$dansi_xterm_mode_Code modes, io_Writer out))(E$void));
+$extern fn_((dansi_xterm_mode_restoreWrite(S_const$dansi_xterm_mode_Code modes, io_Writer out))(io_PrintE$void));
 
 #define dansi_xterm_mode_saveOne_static(_mode_tok) \
     dansi_xterm_mode_saveRaw_static(dansi_xterm_mode_Code_staticParse(_mode_tok))
@@ -141,7 +141,7 @@ typedef A$$(4 + uint_log10Ceil_static(u16_limit_max), u8) dansi_xterm_mode_SaveO
 $attr($must_check)
 $extern fn_((dansi_xterm_mode_saveOne(dansi_xterm_mode_Code mode, dansi_xterm_mode_SaveOneBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_mode_saveOneWrite(dansi_xterm_mode_Code mode, io_Writer out))(E$void));
+$extern fn_((dansi_xterm_mode_saveOneWrite(dansi_xterm_mode_Code mode, io_Writer out))(io_PrintE$void));
 
 #define dansi_xterm_mode_restoreOne_static(_mode_tok) \
     dansi_xterm_mode_restoreRaw_static(dansi_xterm_mode_Code_staticParse(_mode_tok))
@@ -149,7 +149,7 @@ typedef dansi_xterm_mode_SaveOneBuf dansi_xterm_mode_RestoreOneBuf;
 $attr($must_check)
 $extern fn_((dansi_xterm_mode_restoreOne(dansi_xterm_mode_Code mode, dansi_xterm_mode_RestoreOneBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_mode_restoreOneWrite(dansi_xterm_mode_Code mode, io_Writer out))(E$void));
+$extern fn_((dansi_xterm_mode_restoreOneWrite(dansi_xterm_mode_Code mode, io_Writer out))(io_PrintE$void));
 
 /*========== Macros and Definitions =========================================*/
 

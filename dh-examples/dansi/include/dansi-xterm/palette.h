@@ -80,7 +80,7 @@ T_use_E$($set(dansi_xterm_palette_E)(dansi_xterm_palette_ColorReport));
     ____dansi_xterm_palette_push_static()
 $extern fn_((dansi_xterm_palette_push(void))(S_const$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_palette_pushWrite(io_Writer out))(E$void));
+$extern fn_((dansi_xterm_palette_pushWrite(io_Writer out))(io_WriteE$void));
 
 #define dansi_xterm_palette_pushAt_static(_index_tok) \
     ____dansi_xterm_palette_pushAt_static(_index_tok)
@@ -88,33 +88,33 @@ typedef A$$(4 + uint_log10Ceil_static(u8_limit_max), u8) dansi_xterm_palette_Sta
 $attr($must_check)
 $extern fn_((dansi_xterm_palette_pushAt(u8 index, dansi_xterm_palette_StackBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_palette_pushAtWrite(u8 index, io_Writer out))(E$void));
+$extern fn_((dansi_xterm_palette_pushAtWrite(u8 index, io_Writer out))(io_PrintE$void));
 
 #define dansi_xterm_palette_pop_static() \
     ____dansi_xterm_palette_pop_static()
 $extern fn_((dansi_xterm_palette_pop(void))(S_const$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_palette_popWrite(io_Writer out))(E$void));
+$extern fn_((dansi_xterm_palette_popWrite(io_Writer out))(io_WriteE$void));
 
 #define dansi_xterm_palette_popAt_static(_index_tok) \
     ____dansi_xterm_palette_popAt_static(_index_tok)
 $attr($must_check)
 $extern fn_((dansi_xterm_palette_popAt(u8 index, dansi_xterm_palette_StackBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_palette_popAtWrite(u8 index, io_Writer out))(E$void));
+$extern fn_((dansi_xterm_palette_popAtWrite(u8 index, io_Writer out))(io_PrintE$void));
 
 #define dansi_xterm_palette_reportStack_static() \
     ____dansi_xterm_palette_reportStack_static()
 $extern fn_((dansi_xterm_palette_reportStack(void))(S_const$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_palette_reportStackWrite(io_Writer out))(E$void));
+$extern fn_((dansi_xterm_palette_reportStackWrite(io_Writer out))(io_WriteE$void));
 
 #define dansi_xterm_palette_reportStackAt_static(_index_tok) \
     ____dansi_xterm_palette_reportStackAt_static(_index_tok)
 $attr($must_check)
 $extern fn_((dansi_xterm_palette_reportStackAt(u8 index, dansi_xterm_palette_StackBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_palette_reportStackAtWrite(u8 index, io_Writer out))(E$void));
+$extern fn_((dansi_xterm_palette_reportStackAtWrite(u8 index, io_Writer out))(io_PrintE$void));
 
 #define dansi_xterm_palette_setColor16_static(_index_tok, _r_tok, _g_tok, _b_tok) \
     ____dansi_xterm_palette_setColor16_static(_index_tok, _r_tok, _g_tok, _b_tok)
@@ -126,7 +126,7 @@ $extern fn_((dansi_xterm_palette_setColor16(
 $attr($must_check)
 $extern fn_((dansi_xterm_palette_setColor16Write(
     u8 index, dansi_xterm_color_RGB16 rgb, io_Writer out
-))(E$void));
+))(io_PrintE$void));
 $attr($must_check)
 $extern fn_((dansi_xterm_palette_setColor(
     u8 index, dansi_xterm_color_RGB8 rgb, dansi_xterm_palette_SetColorBuf* buf
@@ -134,7 +134,7 @@ $extern fn_((dansi_xterm_palette_setColor(
 $attr($must_check)
 $extern fn_((dansi_xterm_palette_setColorWrite(
     u8 index, dansi_xterm_color_RGB8 rgb, io_Writer out
-))(E$void));
+))(io_PrintE$void));
 
 #define dansi_xterm_palette_queryColor_static(_index_tok) \
     ____dansi_xterm_palette_queryColor_static(_index_tok)
@@ -142,7 +142,7 @@ typedef A$$(8 + uint_log10Ceil_static(u8_limit_max), u8) dansi_xterm_palette_Que
 $attr($must_check)
 $extern fn_((dansi_xterm_palette_queryColor(u8 index, dansi_xterm_palette_QueryColorBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_palette_queryColorWrite(u8 index, io_Writer out))(E$void));
+$extern fn_((dansi_xterm_palette_queryColorWrite(u8 index, io_Writer out))(io_PrintE$void));
 $attr($must_check)
 $extern fn_((dansi_xterm_palette_receiveColorReport(io_Reader in, S$u8 buf))(E$S$u8));
 $attr($must_check)
@@ -160,20 +160,20 @@ typedef A$$(8 + uint_log10Ceil_static(u8_limit_max), u8) dansi_xterm_palette_Res
 $attr($must_check)
 $extern fn_((dansi_xterm_palette_resetColor(u8 index, dansi_xterm_palette_ResetColorBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_palette_resetColorWrite(u8 index, io_Writer out))(E$void));
+$extern fn_((dansi_xterm_palette_resetColorWrite(u8 index, io_Writer out))(io_PrintE$void));
 
 #define dansi_xterm_palette_resetColors_static(_indices_tok) \
     ____dansi_xterm_palette_resetColors_static(_indices_tok)
 $attr($must_check)
 $extern fn_((dansi_xterm_palette_resetColors(S_const$u8 indices, S$u8 buf))(E$S$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_palette_resetColorsWrite(S_const$u8 indices, io_Writer out))(E$void));
+$extern fn_((dansi_xterm_palette_resetColorsWrite(S_const$u8 indices, io_Writer out))(io_PrintE$void));
 
 #define dansi_xterm_palette_resetAllColors_static() \
     ____dansi_xterm_palette_resetAllColors_static()
 $extern fn_((dansi_xterm_palette_resetAllColors(void))(S_const$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_palette_resetAllColorsWrite(io_Writer out))(E$void));
+$extern fn_((dansi_xterm_palette_resetAllColorsWrite(io_Writer out))(io_WriteE$void));
 
 /*========== Macros and Definitions =========================================*/
 

@@ -31,9 +31,11 @@ extern "C" {
 #include "io/Writer.h"
 #include "io/Fixed.h"
 #include "io/Buf.h"
+#include "io/Locked.h"
 
-#include "io/Self.h"
+#include "io/std.h"
 #include "io/stream.h"
+
 #include "io/TTY.h"
 #include "io/PTY.h"
 

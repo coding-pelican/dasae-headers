@@ -1,4 +1,5 @@
 #include <dh/prl.h>
+#include <dh/proc/Args.h>
 
 /*========== RGB ============================================================*/
 
@@ -329,7 +330,7 @@ $static let_(tetris_SmallScreen_Cfg_default, tetris_SmallScreen_Cfg) = {
     .sim_policy = tetris_small_screen_sim_policy_pause,
     .render_policy = tetris_small_screen_render_policy_dim,
 };
-$static fn_((tetris_SmallScreen_Cfg_fromArgs(S$S_const$u8 args))(tetris_SmallScreen_Cfg));
+$static fn_((tetris_SmallScreen_Cfg_fromArgs(proc_Args args))(tetris_SmallScreen_Cfg));
 $static fn_((tetris_SmallScreen_Cfg_shouldTick(tetris_SmallScreen_Cfg self, bool is_small))(bool));
 
 typedef struct tetris_FrameCell {
@@ -429,8 +430,8 @@ $static fn_((tetris_Presenter_StyleState_applyCell(tetris_Presenter_StyleState* 
 
 $static fn_((tetris_Main_waitForEnter(void))(void));
 
-fn_((main(S$S_const$u8 args))(E$void) $guard) {
-    let small_screen_cfg = tetris_SmallScreen_Cfg_fromArgs(args);
+fn_((main(proc_Entry entry))(E$void) $guard) {
+    let small_screen_cfg = tetris_SmallScreen_Cfg_fromArgs(entry.args);
 
     tetris_Main_waitForEnter();
 
@@ -440,7 +441,7 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
     defer_(heap_Arena_fini(&arena));
     let gpa = heap_Arena_alctr(&arena);
 
-    var ansi = try_(daterm_ANSI_init(daterm_ANSI_Cfg_default(gpa)));
+    var ansi = try_(daterm_ANSI_init(unwrap_(daterm_ANSI_Cfg_direct(gpa))));
     defer_(daterm_ANSI_fini(&ansi));
     try_(daterm_ANSI_enableRawMode(&ansi));
     defer_(daterm_ANSI_disableRawMode(&ansi));
@@ -490,11 +491,15 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
 /*========== Main ===========================================================*/
 
 fn_((tetris_Main_waitForEnter(void))(void)) {
-    let out = fs_File_writer(io_handleStdOut());
+    let tty = unwrap_(io_TTY_Cfg_direct());
+    let out = fs_File_writer(tty.output_file);
     catch_((io_Writer_writeBytes(out, u8_l("example-tetris: press Enter to enter terminal mode\n")))($ignore, $do_nothing));
 
     var_(read_mem, A$$(128, u8)) $undefined;
-    var reader = io_Buf_Reader_init(fs_File_reader(io_handleStdIn()), A_ref$((S$u8)(read_mem)));
+    var reader = io_Buf_Reader_from(
+        fs_File_reader(tty.input_file),
+        A_ref$((S$u8)(read_mem))
+    );
     var_(line_mem, A$$(256, u8)) $undefined;
     catch_((io_Buf_Reader_readUntilByte(&reader, ascii_lf_byte, A_ref$((S$u8)(line_mem))))($ignore, $do_nothing));
 };
@@ -1050,16 +1055,26 @@ fn_((tetris_FrameCell_dimmedGray(tetris_FrameCell self))(tetris_FrameCell)) {
     return self;
 };
 
-fn_((tetris_SmallScreen_Cfg_fromArgs(S$S_const$u8 args))(tetris_SmallScreen_Cfg)) {
+fn_((tetris_SmallScreen_Cfg_fromArgs(proc_Args args))(tetris_SmallScreen_Cfg)) {
     var cfg = tetris_SmallScreen_Cfg_default;
-    for_(($s(args))(arg)) {
+    var iter = proc_Args_iter(args);
+    let_ignore = catch_((proc_Args_Iter_skip(&iter))($ignore, false));
+    var_(arg_mem, A$$(256, u8)) $undefined;
+    while (true) {
+        let arg_opt = catch_((proc_Args_Iter_next(
+            &iter, A_ref$((S$u8)(arg_mem))
+        ))($ignore, {
+            io_stream_eprintln(u8_l("failed to read process arguments"));
+            start_exit(1);
+        }));
+        let arg = orelse_((arg_opt)(break));
         let flag_prefix = u8_l("--");
-        if (!mem_startsWithBytes(*arg, flag_prefix)) continue;
+        if (!mem_startsWithBytes(arg, flag_prefix)) continue;
 
-        let flag_chunk = S_suffix((*arg)(flag_prefix.len));
+        let flag_chunk = S_suffix((arg)(flag_prefix.len));
         let opt_delim = u8_l("=");
         let opt_idx = orelse_((mem_findFirstSeqBytes(flag_chunk, opt_delim))({
-            io_stream_eprintln(u8_l("invalid flag format: {:s}"), *arg), start_exit(1);
+            io_stream_eprintln(u8_l("invalid flag format: {:s}"), arg), start_exit(1);
         }));
 
         let flag = S_prefix((flag_chunk)(opt_idx));
@@ -1083,7 +1098,7 @@ fn_((tetris_SmallScreen_Cfg_fromArgs(S$S_const$u8 args))(tetris_SmallScreen_Cfg)
         } else {
             io_stream_eprintln(u8_l("invalid flag: {:s}"), flag), start_exit(1);
         }
-    } $end(for);
+    }
     return cfg;
 };
 
@@ -1092,7 +1107,7 @@ fn_((tetris_SmallScreen_Cfg_shouldTick(tetris_SmallScreen_Cfg self, bool is_smal
 };
 
 fn_((tetris_Presenter_init(tetris_Presenter* self, io_Writer out))(tetris_Presenter*)) {
-    self->out.writer = io_Buf_Writer_init(out, A_ref$((S$u8)(self->out.mem)));
+    self->out.writer = io_Buf_Writer_from(out, A_ref$((S$u8)(self->out.mem)));
     tetris_Frame_clear(&self->frame);
     tetris_Frame_clear(&self->front);
     self->front_valid = false;
@@ -1335,9 +1350,10 @@ fn_((tetris_Presenter_writeGlyph(u32 glyph, io_Writer out))(E$void) $scope) {
 
 fn_((tetris_Presenter_moveToCell(
     usize x, usize y, io_Writer out
-))(E$void)) {
-    return dansi_cursor_moveToWrite(as$(u16)(y + 1), as$(u16)(x + 1), out);
-};
+))(E$void) $scope) {
+    try_(dansi_cursor_moveToWrite(as$(u16)(y + 1), as$(u16)(x + 1), out));
+    return_ok({});
+} $unscoped(fn);
 
 fn_((tetris_Presenter_homeScreen(io_Writer out))(E$void) $scope) {
     try_(dansi_cursor_moveToWrite(1, 1, out));
@@ -1492,7 +1508,7 @@ fn_((tetris_Presenter_presentSmallScreen(tetris_Presenter* self, daterm_CellSize
     try_(tetris_Presenter_beginScreen(out));
 
     var_(required_mem, A$$(48, u8)) $undefined;
-    var required_writer = io_Fixed_Writer_init(io_Fixed_writing(A_ref$((S$u8)(required_mem))));
+    var required_writer = io_Fixed_Writer_from(io_Fixed_writing(A_ref$((S$u8)(required_mem))));
     try_(io_Writer_writeBytes(io_Fixed_writer(&required_writer), u8_l("required: ")));
     var_(num_mem, A$$(10, u8)) $undefined;
     var num_buf = A_ref$((S$u8)(num_mem));
@@ -1504,7 +1520,7 @@ fn_((tetris_Presenter_presentSmallScreen(tetris_Presenter* self, daterm_CellSize
     let required = io_Fixed_written(required_writer.stream).as_const;
 
     var_(current_mem, A$$(48, u8)) $undefined;
-    var current_writer = io_Fixed_Writer_init(io_Fixed_writing(A_ref$((S$u8)(current_mem))));
+    var current_writer = io_Fixed_Writer_from(io_Fixed_writing(A_ref$((S$u8)(current_mem))));
     try_(io_Writer_writeBytes(io_Fixed_writer(&current_writer), u8_l("current: ")));
     let curr_cols_len = tetris_Presenter_formatU32(num_buf, screen.cols);
     try_(io_Writer_writeBytes(io_Fixed_writer(&current_writer), S_prefix((num_buf)(curr_cols_len)).as_const));
@@ -1714,7 +1730,7 @@ TEST_fn_("example-tetris: presenter renders a complete frame" $scope) {
     $static var_(game, tetris_Self) $undefined_static;
     $static var_(presenter, tetris_Presenter) $undefined_static;
     $static var_(out_mem, A$$(65536, u8)) $undefined_static;
-    var out = io_Fixed_Writer_init(io_Fixed_writing(A_ref$((S$u8)(out_mem))));
+    var out = io_Fixed_Writer_from(io_Fixed_writing(A_ref$((S$u8)(out_mem))));
     tetris_init(&game);
     tetris_Presenter_init(&presenter, io_Fixed_writer(&out));
 

@@ -3,9 +3,9 @@
 #include "dh/mem/common.h"
 
 TEST_fn_("io/Buf/Reader: peek take and skip expose buffered cursor" $scope) {
-    var reader_impl = io_Fixed_Reader_init(io_Fixed_reading(u8_l("abcdef")));
+    var reader_impl = io_Fixed_Reader_from(io_Fixed_reading(u8_l("abcdef")));
     var_(mem, A$$(4, u8)) $undefined;
-    var reader = io_Buf_Reader_init(io_Fixed_reader(&reader_impl), A_ref$((S$u8)(mem)));
+    var reader = io_Buf_Reader_from(io_Fixed_reader(&reader_impl), A_ref$((S$u8)(mem)));
 
     let peeked = try_(io_Buf_Reader_peekBytes(&reader, 3));
     try_(TEST_expect(mem_eqlBytes(peeked, u8_l("abc"))));
@@ -29,9 +29,9 @@ TEST_fn_("io/Buf/Reader: peek take and skip expose buffered cursor" $scope) {
 } $unscoped(TEST_fn);
 
 TEST_fn_("io/Buf/Reader: readUntilAnyByte consumes first matching delimiter" $scope) {
-    var reader_impl = io_Fixed_Reader_init(io_Fixed_reading(u8_l("abc,def;ghi")));
+    var reader_impl = io_Fixed_Reader_from(io_Fixed_reading(u8_l("abc,def;ghi")));
     var_(mem, A$$(4, u8)) $undefined;
-    var reader = io_Buf_Reader_init(io_Fixed_reader(&reader_impl), A_ref$((S$u8)(mem)));
+    var reader = io_Buf_Reader_from(io_Fixed_reader(&reader_impl), A_ref$((S$u8)(mem)));
     var_(out, A$$(8, u8)) $undefined;
 
     let first = try_(io_Buf_Reader_readUntilAny(&reader, u8_l(",;"), A_ref$((S$u8)(out))));
@@ -42,9 +42,9 @@ TEST_fn_("io/Buf/Reader: readUntilAnyByte consumes first matching delimiter" $sc
 } $unscoped(TEST_fn);
 
 TEST_fn_("io/Buf/Reader: skipUntilAnyByte consumes matching delimiter" $scope) {
-    var reader_impl = io_Fixed_Reader_init(io_Fixed_reading(u8_l("abc,def;ghi")));
+    var reader_impl = io_Fixed_Reader_from(io_Fixed_reading(u8_l("abc,def;ghi")));
     var_(mem, A$$(4, u8)) $undefined;
-    var reader = io_Buf_Reader_init(io_Fixed_reader(&reader_impl), A_ref$((S$u8)(mem)));
+    var reader = io_Buf_Reader_from(io_Fixed_reader(&reader_impl), A_ref$((S$u8)(mem)));
     var_(out, A$$(8, u8)) $undefined;
 
     try_(io_Buf_Reader_skipUntilAny(&reader, u8_l(",;")));
@@ -54,9 +54,9 @@ TEST_fn_("io/Buf/Reader: skipUntilAnyByte consumes matching delimiter" $scope) {
 } $unscoped(TEST_fn);
 
 TEST_fn_("io/Buf/Reader: readUntilSeq preserves delimiter across buffer boundary" $scope) {
-    var reader_impl = io_Fixed_Reader_init(io_Fixed_reading(u8_l("ab\r\ncd")));
+    var reader_impl = io_Fixed_Reader_from(io_Fixed_reading(u8_l("ab\r\ncd")));
     var_(mem, A$$(3, u8)) $undefined;
-    var reader = io_Buf_Reader_init(io_Fixed_reader(&reader_impl), A_ref$((S$u8)(mem)));
+    var reader = io_Buf_Reader_from(io_Fixed_reader(&reader_impl), A_ref$((S$u8)(mem)));
     var_(out, A$$(8, u8)) $undefined;
 
     let line = try_(io_Buf_Reader_readUntilSeq(&reader, u8_l("\r\n"), A_ref$((S$u8)(out))));
@@ -65,9 +65,9 @@ TEST_fn_("io/Buf/Reader: readUntilSeq preserves delimiter across buffer boundary
 } $unscoped(TEST_fn);
 
 TEST_fn_("io/Buf/Reader: skipUntilSeq preserves delimiter across buffer boundary" $scope) {
-    var reader_impl = io_Fixed_Reader_init(io_Fixed_reading(u8_l("ab\r\ncd\r\n")));
+    var reader_impl = io_Fixed_Reader_from(io_Fixed_reading(u8_l("ab\r\ncd\r\n")));
     var_(mem, A$$(3, u8)) $undefined;
-    var reader = io_Buf_Reader_init(io_Fixed_reader(&reader_impl), A_ref$((S$u8)(mem)));
+    var reader = io_Buf_Reader_from(io_Fixed_reader(&reader_impl), A_ref$((S$u8)(mem)));
     var_(out, A$$(8, u8)) $undefined;
 
     try_(io_Buf_Reader_skipUntilSeq(&reader, u8_l("\r\n")));
@@ -78,9 +78,9 @@ TEST_fn_("io/Buf/Reader: skipUntilSeq preserves delimiter across buffer boundary
 
 TEST_fn_("io/Buf/Writer: pending reports buffered bytes before flush" $scope) {
     var_(out, A$$(8, u8)) $undefined;
-    var writer_impl = io_Fixed_Writer_init(io_Fixed_writing(A_ref$((S$u8)(out))));
+    var writer_impl = io_Fixed_Writer_from(io_Fixed_writing(A_ref$((S$u8)(out))));
     var_(mem, A$$(4, u8)) $undefined;
-    var writer = io_Buf_Writer_init(io_Fixed_writer(&writer_impl), A_ref$((S$u8)(mem)));
+    var writer = io_Buf_Writer_from(io_Fixed_writer(&writer_impl), A_ref$((S$u8)(mem)));
 
     try_(io_Writer_writeBytes(io_Buf_writer(&writer), u8_l("ab")));
     try_(TEST_expect(mem_eqlBytes(io_Buf_Writer_pending(writer), u8_l("ab"))));

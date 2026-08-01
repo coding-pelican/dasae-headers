@@ -4,7 +4,7 @@ fn_((dansi_xterm_focus_setTracking(bool enabled, dansi_xterm_focus_SetTrackingBu
     return dansi_xterm_mode_set(dansi_xterm_mode_Code_focus_event, enabled, buf);
 };
 
-fn_((dansi_xterm_focus_setTrackingWrite(bool enabled, io_Writer out))(E$void)) {
+fn_((dansi_xterm_focus_setTrackingWrite(bool enabled, io_Writer out))(io_PrintE$void)) {
     return dansi_xterm_mode_setWrite(dansi_xterm_mode_Code_focus_event, enabled, out);
 };
 
@@ -12,7 +12,7 @@ fn_((dansi_xterm_focus_enableTracking(dansi_xterm_focus_EnableTrackingBuf* buf))
     return dansi_xterm_mode_enable(dansi_xterm_mode_Code_focus_event, buf);
 };
 
-fn_((dansi_xterm_focus_enableTrackingWrite(io_Writer out))(E$void)) {
+fn_((dansi_xterm_focus_enableTrackingWrite(io_Writer out))(io_PrintE$void)) {
     return dansi_xterm_mode_enableWrite(dansi_xterm_mode_Code_focus_event, out);
 };
 
@@ -20,7 +20,7 @@ fn_((dansi_xterm_focus_disableTracking(dansi_xterm_focus_DisableTrackingBuf* buf
     return dansi_xterm_mode_disable(dansi_xterm_mode_Code_focus_event, buf);
 };
 
-fn_((dansi_xterm_focus_disableTrackingWrite(io_Writer out))(E$void)) {
+fn_((dansi_xterm_focus_disableTrackingWrite(io_Writer out))(io_PrintE$void)) {
     return dansi_xterm_mode_disableWrite(dansi_xterm_mode_Code_focus_event, out);
 };
 

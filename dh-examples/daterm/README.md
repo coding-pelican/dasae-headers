@@ -82,10 +82,10 @@ Windows and POSIX.
 ## Lifecycle
 
 ```c
-var heap = heap_Sys_init();
+var heap = try_(heap_Sys_init());
 defer_(heap_Sys_fini(&heap));
 
-var cfg = daterm_ANSI_Cfg_default(heap_Sys_alctr(&heap));
+var cfg = unwrap_(daterm_ANSI_Cfg_direct(heap_Sys_alctr(&heap)));
 cfg.input_mode = daterm_ANSI_InputMode_vt;
 var ansi = try_(daterm_ANSI_init(cfg));
 defer_(daterm_ANSI_fini(&ansi));

@@ -52,7 +52,7 @@ T_use_E$($set(dansi_device_E)(dansi_device_Attrs));
     ____dansi_device_requestStatus_static()
 $extern fn_((dansi_device_requestStatus(void))(S_const$u8));
 $attr($must_check)
-$extern fn_((dansi_device_requestStatusWrite(io_Writer out))(E$void));
+$extern fn_((dansi_device_requestStatusWrite(io_Writer out))(io_WriteE$void));
 $attr($must_check)
 $extern fn_((dansi_device_receiveStatusReport(io_Reader in, S$u8 buf))(E$S$u8));
 $attr($must_check)
@@ -66,7 +66,7 @@ $extern fn_((dansi_device_fetchStatus(
     ____dansi_device_requestAttrs_static()
 $extern fn_((dansi_device_requestAttrs(void))(S_const$u8));
 $attr($must_check)
-$extern fn_((dansi_device_requestAttrsWrite(io_Writer out))(E$void));
+$extern fn_((dansi_device_requestAttrsWrite(io_Writer out))(io_WriteE$void));
 $attr($must_check)
 $extern fn_((dansi_device_receiveAttrsReport(io_Reader in, S$u8 buf))(E$S$u8));
 $attr($must_check)

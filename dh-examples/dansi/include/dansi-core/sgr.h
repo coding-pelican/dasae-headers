@@ -73,14 +73,14 @@ T_use_prl$(dansi_sgr_Code);
     ____dansi_sgr_reset_static()
 $extern fn_((dansi_sgr_reset(void))(S_const$u8));
 $attr($must_check)
-$extern fn_((dansi_sgr_resetWrite(io_Writer out))(E$void));
+$extern fn_((dansi_sgr_resetWrite(io_Writer out))(io_WriteE$void));
 
 #define dansi_sgr_setRaw_static(_params_tok) \
     ____dansi_sgr_setRaw_static(_params_tok)
 $attr($must_check)
 $extern fn_((dansi_sgr_setRaw(S_const$u8 params, S$u8 buf))(E$S$u8));
 $attr($must_check)
-$extern fn_((dansi_sgr_setRawWrite(S_const$u8 params, io_Writer out))(E$void));
+$extern fn_((dansi_sgr_setRawWrite(S_const$u8 params, io_Writer out))(io_PrintE$void));
 
 #define dansi_sgr_setOne_static(_code_tok) \
     ____dansi_sgr_setOne_static(_code_tok)
@@ -88,12 +88,12 @@ typedef A$$(3 + uint_log10Ceil_static(u8_limit_max), u8) dansi_sgr_SetOneBuf;
 $attr($must_check)
 $extern fn_((dansi_sgr_setOne(dansi_sgr_Code code, dansi_sgr_SetOneBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_sgr_setOneWrite(dansi_sgr_Code code, io_Writer out))(E$void));
+$extern fn_((dansi_sgr_setOneWrite(dansi_sgr_Code code, io_Writer out))(io_PrintE$void));
 
 $attr($must_check)
 $extern fn_((dansi_sgr_set(S_const$u16 codes, S$u8 buf))(E$S$u8));
 $attr($must_check)
-$extern fn_((dansi_sgr_setWrite(S_const$u16 codes, io_Writer out))(E$void));
+$extern fn_((dansi_sgr_setWrite(S_const$u16 codes, io_Writer out))(io_PrintE$void));
 
 /*========== Macros and Definitions =========================================*/
 

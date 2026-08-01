@@ -23,8 +23,6 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "TTY.h"
-#include "../mem/Alctr.h"
-#include "../proc/Cmd.h"
 #include "../proc/Self.h"
 
 /*========== Macros and Declarations ========================================*/
@@ -114,20 +112,24 @@ T_use_E$($set(io_PTY_SpawnE)(io_PTY_Session));
 
 T_alias$((io_PTY_SpawnCfg)(struct io_PTY_SpawnCfg {
     var_(gpa, mem_Alctr);
+    var_(env, proc_Env);
     var_(cmd, proc_Cmd);
     var_(pty, io_PTY_OpenCfg);
 }));
 T_use_prl$(io_PTY_SpawnCfg);
 $attr($inline_always)
-$static fn_((io_PTY_SpawnCfg_default(mem_Alctr gpa, proc_Cmd cmd))(io_PTY_SpawnCfg));
+$static fn_((io_PTY_SpawnCfg_default(
+    mem_Alctr gpa,
+    proc_Env env,
+    proc_Cmd cmd
+))(io_PTY_SpawnCfg));
 
 /*---------- PTY Session Lifecycle ------------------------------------------*/
 
 $attr($must_check)
 $extern fn_((io_PTY_spawn(io_PTY_SpawnCfg cfg))(io_PTY_SpawnE$io_PTY_Session));
 $extern fn_((io_PTY_Session_close(
-    proc_Self provider,
-    io_PTY_Session* self
+    io_PTY_Session* self, proc_Self proc
 ))(void));
 $extern fn_((io_PTY_Session_reader(io_PTY_Session* self))(io_Reader));
 $extern fn_((io_PTY_Session_writer(io_PTY_Session* self))(io_Writer));
@@ -135,12 +137,10 @@ $attr($must_check)
 $extern fn_((io_PTY_Session_resize(io_PTY_Session* self, io_PTY_Size size))(io_PTY_ResizeE$void));
 $attr($must_check)
 $extern fn_((io_PTY_Session_wait(
-    proc_Self provider,
-    io_PTY_Session* self
-))(proc_Child_Wait_E$proc_Child_Ter));
+    io_PTY_Session* self, proc_Self proc
+))(proc_Child_Wait_E$proc_Child_Trm));
 $extern fn_((io_PTY_Session_kill(
-    proc_Self provider,
-    io_PTY_Session* self
+    io_PTY_Session* self, proc_Self proc
 ))(void));
 
 /*========== Macros and Definitions =========================================*/
@@ -158,9 +158,14 @@ fn_((io_PTY_OpenCfg_default(void))(io_PTY_OpenCfg)) {
         .slave_mode = none(),
     };
 };
-fn_((io_PTY_SpawnCfg_default(mem_Alctr gpa, proc_Cmd cmd))(io_PTY_SpawnCfg)) {
+fn_((io_PTY_SpawnCfg_default(
+    mem_Alctr gpa,
+    proc_Env env,
+    proc_Cmd cmd
+))(io_PTY_SpawnCfg)) {
     return (io_PTY_SpawnCfg){
         .gpa = gpa,
+        .env = env,
         .cmd = cmd,
         .pty = io_PTY_OpenCfg_default(),
     };

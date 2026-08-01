@@ -16,4 +16,4 @@ TEST_fn_("heap/VMem: system interface separates reserve commit protect decommit 
     try_(TEST_expect(*ptr == u8_(0xC3)));
     try_(TEST_expect(heap_VMem_protect(vmem, ptr, commit_len, heap_VMem_Protcn_read_write)));
     try_(TEST_expect(heap_VMem_decommit(vmem, ptr, commit_len)));
-} $unguarded(TEST_fn)
+} $unguarded(TEST_fn);

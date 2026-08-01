@@ -78,7 +78,7 @@ typedef dansi_cursor_MovePosBuf dansi_cursor_MoveToBuf;
 $attr($must_check)
 $extern fn_((dansi_cursor_moveTo(u16 row, u16 col, dansi_cursor_MoveToBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_cursor_moveToWrite(u16 row, u16 col, io_Writer out))(E$void));
+$extern fn_((dansi_cursor_moveToWrite(u16 row, u16 col, io_Writer out))(io_PrintE$void));
 
 #define dansi_cursor_moveUp_static(_rows_tok) \
     ____dansi_cursor_moveUp_static(_rows_tok)
@@ -86,7 +86,7 @@ typedef dansi_cursor_MoveDirBuf dansi_cursor_MoveUpBuf;
 $attr($must_check)
 $extern fn_((dansi_cursor_moveUp(u16 rows, dansi_cursor_MoveUpBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_cursor_moveUpWrite(u16 rows, io_Writer out))(E$void));
+$extern fn_((dansi_cursor_moveUpWrite(u16 rows, io_Writer out))(io_PrintE$void));
 
 #define dansi_cursor_moveDown_static(_rows_tok) \
     ____dansi_cursor_moveDown_static(_rows_tok)
@@ -94,7 +94,7 @@ typedef dansi_cursor_MoveDirBuf dansi_cursor_MoveDownBuf;
 $attr($must_check)
 $extern fn_((dansi_cursor_moveDown(u16 rows, dansi_cursor_MoveDownBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_cursor_moveDownWrite(u16 rows, io_Writer out))(E$void));
+$extern fn_((dansi_cursor_moveDownWrite(u16 rows, io_Writer out))(io_PrintE$void));
 
 #define dansi_cursor_moveRight_static(_cols_tok) \
     ____dansi_cursor_moveRight_static(_cols_tok)
@@ -102,7 +102,7 @@ typedef dansi_cursor_MoveDirBuf dansi_cursor_MoveRightBuf;
 $attr($must_check)
 $extern fn_((dansi_cursor_moveRight(u16 cols, dansi_cursor_MoveRightBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_cursor_moveRightWrite(u16 cols, io_Writer out))(E$void));
+$extern fn_((dansi_cursor_moveRightWrite(u16 cols, io_Writer out))(io_PrintE$void));
 
 #define dansi_cursor_moveLeft_static(_cols_tok) \
     ____dansi_cursor_moveLeft_static(_cols_tok)
@@ -110,7 +110,7 @@ typedef dansi_cursor_MoveDirBuf dansi_cursor_MoveLeftBuf;
 $attr($must_check)
 $extern fn_((dansi_cursor_moveLeft(u16 cols, dansi_cursor_MoveLeftBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_cursor_moveLeftWrite(u16 cols, io_Writer out))(E$void));
+$extern fn_((dansi_cursor_moveLeftWrite(u16 cols, io_Writer out))(io_PrintE$void));
 
 #define dansi_cursor_moveToRow_static(_row_tok) \
     ____dansi_cursor_moveToRow_static(_row_tok)
@@ -118,7 +118,7 @@ typedef dansi_cursor_MoveDirBuf dansi_cursor_MoveToRowBuf;
 $attr($must_check)
 $extern fn_((dansi_cursor_moveToRow(u16 row, dansi_cursor_MoveToRowBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_cursor_moveToRowWrite(u16 row, io_Writer out))(E$void));
+$extern fn_((dansi_cursor_moveToRowWrite(u16 row, io_Writer out))(io_PrintE$void));
 
 #define dansi_cursor_moveToCol_static(_col_tok) \
     ____dansi_cursor_moveToCol_static(_col_tok)
@@ -126,7 +126,7 @@ typedef dansi_cursor_MoveDirBuf dansi_cursor_MoveToColBuf;
 $attr($must_check)
 $extern fn_((dansi_cursor_moveToCol(u16 col, dansi_cursor_MoveToColBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_cursor_moveToColWrite(u16 col, io_Writer out))(E$void));
+$extern fn_((dansi_cursor_moveToColWrite(u16 col, io_Writer out))(io_PrintE$void));
 
 #define dansi_cursor_moveNextLine_static(_rows_tok) \
     ____dansi_cursor_moveNextLine_static(_rows_tok)
@@ -134,7 +134,7 @@ typedef dansi_cursor_MoveDirBuf dansi_cursor_MoveNextLineBuf;
 $attr($must_check)
 $extern fn_((dansi_cursor_moveNextLine(u16 rows, dansi_cursor_MoveNextLineBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_cursor_moveNextLineWrite(u16 rows, io_Writer out))(E$void));
+$extern fn_((dansi_cursor_moveNextLineWrite(u16 rows, io_Writer out))(io_PrintE$void));
 
 #define dansi_cursor_movePrevLine_static(_rows_tok) \
     ____dansi_cursor_movePrevLine_static(_rows_tok)
@@ -142,31 +142,31 @@ typedef dansi_cursor_MoveDirBuf dansi_cursor_MovePrevLineBuf;
 $attr($must_check)
 $extern fn_((dansi_cursor_movePrevLine(u16 rows, dansi_cursor_MovePrevLineBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_cursor_movePrevLineWrite(u16 rows, io_Writer out))(E$void));
+$extern fn_((dansi_cursor_movePrevLineWrite(u16 rows, io_Writer out))(io_PrintE$void));
 
 #define dansi_cursor_setTabStop_static() \
     ____dansi_cursor_setTabStop_static()
 $extern fn_((dansi_cursor_setTabStop(void))(S_const$u8));
 $attr($must_check)
-$extern fn_((dansi_cursor_setTabStopWrite(io_Writer out))(E$void));
+$extern fn_((dansi_cursor_setTabStopWrite(io_Writer out))(io_WriteE$void));
 
 #define dansi_cursor_clearTabStop_static() \
     ____dansi_cursor_clearTabStop_static()
 $extern fn_((dansi_cursor_clearTabStop(void))(S_const$u8));
 $attr($must_check)
-$extern fn_((dansi_cursor_clearTabStopWrite(io_Writer out))(E$void));
+$extern fn_((dansi_cursor_clearTabStopWrite(io_Writer out))(io_WriteE$void));
 
 #define dansi_cursor_clearAllTabStops_static() \
     ____dansi_cursor_clearAllTabStops_static()
 $extern fn_((dansi_cursor_clearAllTabStops(void))(S_const$u8));
 $attr($must_check)
-$extern fn_((dansi_cursor_clearAllTabStopsWrite(io_Writer out))(E$void));
+$extern fn_((dansi_cursor_clearAllTabStopsWrite(io_Writer out))(io_WriteE$void));
 
 #define dansi_cursor_requestPos_static() \
     ____dansi_cursor_requestPos_static()
 $extern fn_((dansi_cursor_requestPos(void))(S_const$u8));
 $attr($must_check)
-$extern fn_((dansi_cursor_requestPosWrite(io_Writer out))(E$void));
+$extern fn_((dansi_cursor_requestPosWrite(io_Writer out))(io_WriteE$void));
 $attr($must_check)
 $extern fn_((dansi_cursor_receivePosReport(io_Reader in, S$u8 buf))(E$S$u8));
 $attr($must_check)

@@ -8,7 +8,8 @@
 #endif
 
 #if plat_is_windows || plat_based_unix
-$thrd_local $static var_(exec_Fiber__current, exec_Fiber*) = null;
+$attr($thrd_local)
+$static var_(exec_Fiber__current, exec_Fiber*) = null;
 #endif
 
 #define exec_Fiber__handler_state_uninit 0u

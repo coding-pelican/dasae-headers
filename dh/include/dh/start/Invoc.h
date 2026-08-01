@@ -20,46 +20,45 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "../proc/Args.h"
-#include "../proc/Env.h"
+#include "Invoc/Args.h"
+#include "Invoc/Env.h"
+#include "../proc/Preopens.h"
 
 /*========== Macros and Declarations ========================================*/
 
-T_alias$((start_Invoc_ArgCnt)(usize));
-T_alias$((start_Invoc_ArgVec)(P_const$P_const$u8));
-
-/// Caller-owned native storage whose borrowed views back process facts.
-///
-/// It is an adapter for the platform entry ABI, not a process-domain value.
-/// Keep it alive for the complete application `main` call.
-T_alias$((start_Invoc)(variant_((start_Invoc $fits($packed))(
-    (start_Invoc_classic, struct {
-        var_(argc, start_Invoc_ArgCnt);
-        var_(argv, start_Invoc_ArgVec);
-    }),
-    (start_Invoc_posix, struct {
-        var_(argc, start_Invoc_ArgCnt);
-        var_(argv, start_Invoc_ArgVec);
-        var_(envc, start_Invoc_ArgCnt);
-        var_(envp, start_Invoc_ArgVec);
-    }),
-    (start_Invoc_win32, struct {
-        var_(cmd_line, S_const$u16);
-        var_(env_block, O$S_const$u16);
-    })
-))));
+/// Caller-owned native startup adapters. Keep alive for the application main.
+T_alias$((start_Invoc)(struct start_Invoc {
+    var_(args, start_Invoc_Args);
+    var_(env, start_Invoc_Env);
+    var_(preopens, proc_Preopens);
+    var_(owned_env_block, O$S_const$u16);
+}));
 T_use_prl$(start_Invoc);
-$extern fn_((start_Invoc_initClassic(start_Invoc* self, start_Invoc_ArgCnt argc, start_Invoc_ArgVec argv))(void));
-$extern fn_((start_Invoc_initPosix(start_Invoc* self, start_Invoc_ArgCnt argc, start_Invoc_ArgVec argv, start_Invoc_ArgVec envp))(void));
+$extern fn_((start_Invoc_initArgs(
+    start_Invoc* self,
+    usize argc, P_const$P_const$u8 argv
+))(void));
+$extern fn_((start_Invoc_initArgsEnv(
+    start_Invoc* self,
+    usize argc, P_const$P_const$u8 argv,
+    usize envc, P_const$P_const$u8 envp
+))(void));
+$extern fn_((start_Invoc_initArgsEnvZ(
+    start_Invoc* self,
+    usize argc, P_const$P_const$u8 argv,
+    P_const$P_const$u8 envp
+))(void));
 #if plat_is_windows
 $extern fn_((start_Invoc_initWin32(start_Invoc* self))(void));
 #endif /* plat_is_windows */
-#if plat_is_linux
+#if in_analysis || plat_is_linux
 $extern fn_((start_Invoc_initLinux(start_Invoc* self, P$raw initial_stack))(void));
-#endif /* plat_is_linux */
+#endif /* in_analysis || plat_is_linux */
 $extern fn_((start_Invoc_fini(start_Invoc* self))(void));
+
 $extern fn_((start_Invoc_args(start_Invoc* self))(proc_Args));
 $extern fn_((start_Invoc_env(start_Invoc* self))(proc_Env));
+$extern fn_((start_Invoc_preopens(start_Invoc* self))(proc_Preopens));
 
 #if defined(__cplusplus)
 } /* extern "C" */

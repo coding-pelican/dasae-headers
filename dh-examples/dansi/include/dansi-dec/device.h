@@ -60,7 +60,7 @@ T_use_E$($set(dansi_dec_device_E)(dansi_dec_device_Attrs));
     ____dansi_dec_device_requestPrimaryAttrs_static()
 $extern fn_((dansi_dec_device_requestPrimaryAttrs(void))(S_const$u8));
 $attr($must_check)
-$extern fn_((dansi_dec_device_requestPrimaryAttrsWrite(io_Writer out))(E$void));
+$extern fn_((dansi_dec_device_requestPrimaryAttrsWrite(io_Writer out))(io_WriteE$void));
 $attr($must_check)
 $extern fn_((dansi_dec_device_fetchPrimaryAttrs(
     io_Writer out, io_Reader in, S$u8 buf
@@ -70,7 +70,7 @@ $extern fn_((dansi_dec_device_fetchPrimaryAttrs(
     ____dansi_dec_device_requestSecondaryAttrs_static()
 $extern fn_((dansi_dec_device_requestSecondaryAttrs(void))(S_const$u8));
 $attr($must_check)
-$extern fn_((dansi_dec_device_requestSecondaryAttrsWrite(io_Writer out))(E$void));
+$extern fn_((dansi_dec_device_requestSecondaryAttrsWrite(io_Writer out))(io_WriteE$void));
 $attr($must_check)
 $extern fn_((dansi_dec_device_fetchSecondaryAttrs(
     io_Writer out, io_Reader in, S$u8 buf
@@ -80,7 +80,7 @@ $extern fn_((dansi_dec_device_fetchSecondaryAttrs(
     ____dansi_dec_device_requestTertiaryAttrs_static()
 $extern fn_((dansi_dec_device_requestTertiaryAttrs(void))(S_const$u8));
 $attr($must_check)
-$extern fn_((dansi_dec_device_requestTertiaryAttrsWrite(io_Writer out))(E$void));
+$extern fn_((dansi_dec_device_requestTertiaryAttrsWrite(io_Writer out))(io_WriteE$void));
 $attr($must_check)
 $extern fn_((dansi_dec_device_fetchTertiaryAttrs(
     io_Writer out, io_Reader in, S$u8 buf
@@ -90,7 +90,7 @@ $extern fn_((dansi_dec_device_fetchTertiaryAttrs(
     ____dansi_dec_device_identify_static()
 $extern fn_((dansi_dec_device_identify(void))(S_const$u8));
 $attr($must_check)
-$extern fn_((dansi_dec_device_identifyWrite(io_Writer out))(E$void));
+$extern fn_((dansi_dec_device_identifyWrite(io_Writer out))(io_WriteE$void));
 $attr($must_check)
 $extern fn_((dansi_dec_device_receiveAttrsReport(io_Reader in, S$u8 buf))(E$S$u8));
 $attr($must_check)

@@ -1,6 +1,7 @@
 #include "dh/heap/VMem.h"
 
 #if plat_is_windows
+#include "dh/sys/api/windows/handle.h"
 #include "dh/sys/api/windows/mem.h"
 $static fn_((heap_VMem__windows_protect(heap_VMem_Protcn protect))(DWORD));
 #elif plat_is_linux

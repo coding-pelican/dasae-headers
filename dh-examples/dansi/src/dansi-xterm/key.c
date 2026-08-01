@@ -94,12 +94,12 @@ $static fn_((dansi_xterm_key__isModifiedCSI(dansi_csi_Frame frame))(bool)) {
 fn_((dansi_xterm_key_setModifyRaw(
     dansi_xterm_key_Resrc resource, u8 value, dansi_xterm_key_SetModifyRawBuf* buf
 ))(S$u8)) {
-    var writing = io_Fixed_Writer_init(io_Fixed_writing(A_ref$((S$u8)(*buf))));
+    var writing = io_Fixed_Writer_from(io_Fixed_writing(A_ref$((S$u8)(*buf))));
     catch_((dansi_xterm_key_setModifyRawWrite(resource, value, io_Fixed_writer(&writing)))($ignore, claim_unreachable));
     return io_Fixed_written(writing.stream);
 };
 
-fn_((dansi_xterm_key_setModifyRawWrite(dansi_xterm_key_Resrc resource, u8 value, io_Writer out))(E$void)) {
+fn_((dansi_xterm_key_setModifyRawWrite(dansi_xterm_key_Resrc resource, u8 value, io_Writer out))(io_PrintE$void)) {
     return io_Writer_print(
         out,
         u8_l(dansi_csi_make_static(
@@ -117,17 +117,17 @@ fn_((dansi_xterm_key_setModifyLevel(
 
 fn_((dansi_xterm_key_setModifyLevelWrite(
     dansi_xterm_key_Resrc resource, dansi_xterm_key_ModifyLevel level, io_Writer out
-))(E$void)) {
+))(io_PrintE$void)) {
     return dansi_xterm_key_setModifyRawWrite(resource, as$(u8)(level), out);
 };
 
 fn_((dansi_xterm_key_resetModify(dansi_xterm_key_Resrc resource, dansi_xterm_key_ResetModifyBuf* buf))(S$u8)) {
-    var writing = io_Fixed_Writer_init(io_Fixed_writing(A_ref$((S$u8)(*buf))));
+    var writing = io_Fixed_Writer_from(io_Fixed_writing(A_ref$((S$u8)(*buf))));
     catch_((dansi_xterm_key_resetModifyWrite(resource, io_Fixed_writer(&writing)))($ignore, claim_unreachable));
     return io_Fixed_written(writing.stream);
 };
 
-fn_((dansi_xterm_key_resetModifyWrite(dansi_xterm_key_Resrc resource, io_Writer out))(E$void)) {
+fn_((dansi_xterm_key_resetModifyWrite(dansi_xterm_key_Resrc resource, io_Writer out))(io_PrintE$void)) {
     return io_Writer_print(
         out,
         u8_l(dansi_csi_make_static(
@@ -138,12 +138,12 @@ fn_((dansi_xterm_key_resetModifyWrite(dansi_xterm_key_Resrc resource, io_Writer 
 };
 
 fn_((dansi_xterm_key_disableModify(dansi_xterm_key_Resrc resource, dansi_xterm_key_DisableModifyBuf* buf))(S$u8)) {
-    var writing = io_Fixed_Writer_init(io_Fixed_writing(A_ref$((S$u8)(*buf))));
+    var writing = io_Fixed_Writer_from(io_Fixed_writing(A_ref$((S$u8)(*buf))));
     catch_((dansi_xterm_key_disableModifyWrite(resource, io_Fixed_writer(&writing)))($ignore, claim_unreachable));
     return io_Fixed_written(writing.stream);
 };
 
-fn_((dansi_xterm_key_disableModifyWrite(dansi_xterm_key_Resrc resource, io_Writer out))(E$void)) {
+fn_((dansi_xterm_key_disableModifyWrite(dansi_xterm_key_Resrc resource, io_Writer out))(io_PrintE$void)) {
     return io_Writer_print(
         out,
         u8_l(dansi_csi_make_static(
@@ -154,12 +154,12 @@ fn_((dansi_xterm_key_disableModifyWrite(dansi_xterm_key_Resrc resource, io_Write
 };
 
 fn_((dansi_xterm_key_queryModify(dansi_xterm_key_Resrc resource, dansi_xterm_key_QueryModifyBuf* buf))(S$u8)) {
-    var writing = io_Fixed_Writer_init(io_Fixed_writing(A_ref$((S$u8)(*buf))));
+    var writing = io_Fixed_Writer_from(io_Fixed_writing(A_ref$((S$u8)(*buf))));
     catch_((dansi_xterm_key_queryModifyWrite(resource, io_Fixed_writer(&writing)))($ignore, claim_unreachable));
     return io_Fixed_written(writing.stream);
 };
 
-fn_((dansi_xterm_key_queryModifyWrite(dansi_xterm_key_Resrc resource, io_Writer out))(E$void)) {
+fn_((dansi_xterm_key_queryModifyWrite(dansi_xterm_key_Resrc resource, io_Writer out))(io_PrintE$void)) {
     return io_Writer_print(
         out,
         u8_l(dansi_csi_make_static(
@@ -172,12 +172,12 @@ fn_((dansi_xterm_key_queryModifyWrite(dansi_xterm_key_Resrc resource, io_Writer 
 fn_((dansi_xterm_key_setFormat(
     dansi_xterm_key_Resrc resource, dansi_xterm_key_Format format, dansi_xterm_key_SetFormatBuf* buf
 ))(S$u8)) {
-    var writing = io_Fixed_Writer_init(io_Fixed_writing(A_ref$((S$u8)(*buf))));
+    var writing = io_Fixed_Writer_from(io_Fixed_writing(A_ref$((S$u8)(*buf))));
     catch_((dansi_xterm_key_setFormatWrite(resource, format, io_Fixed_writer(&writing)))($ignore, claim_unreachable));
     return io_Fixed_written(writing.stream);
 };
 
-fn_((dansi_xterm_key_setFormatWrite(dansi_xterm_key_Resrc resource, dansi_xterm_key_Format format, io_Writer out))(E$void)) {
+fn_((dansi_xterm_key_setFormatWrite(dansi_xterm_key_Resrc resource, dansi_xterm_key_Format format, io_Writer out))(io_PrintE$void)) {
     return io_Writer_print(
         out,
         u8_l(dansi_csi_make_static(
@@ -188,12 +188,12 @@ fn_((dansi_xterm_key_setFormatWrite(dansi_xterm_key_Resrc resource, dansi_xterm_
 };
 
 fn_((dansi_xterm_key_resetFormat(dansi_xterm_key_Resrc resource, dansi_xterm_key_ResetFormatBuf* buf))(S$u8)) {
-    var writing = io_Fixed_Writer_init(io_Fixed_writing(A_ref$((S$u8)(*buf))));
+    var writing = io_Fixed_Writer_from(io_Fixed_writing(A_ref$((S$u8)(*buf))));
     catch_((dansi_xterm_key_resetFormatWrite(resource, io_Fixed_writer(&writing)))($ignore, claim_unreachable));
     return io_Fixed_written(writing.stream);
 };
 
-fn_((dansi_xterm_key_resetFormatWrite(dansi_xterm_key_Resrc resource, io_Writer out))(E$void)) {
+fn_((dansi_xterm_key_resetFormatWrite(dansi_xterm_key_Resrc resource, io_Writer out))(io_PrintE$void)) {
     return io_Writer_print(
         out,
         u8_l(dansi_csi_make_static(
@@ -204,12 +204,12 @@ fn_((dansi_xterm_key_resetFormatWrite(dansi_xterm_key_Resrc resource, io_Writer 
 };
 
 fn_((dansi_xterm_key_queryFormat(dansi_xterm_key_Resrc resource, dansi_xterm_key_QueryFormatBuf* buf))(S$u8)) {
-    var writing = io_Fixed_Writer_init(io_Fixed_writing(A_ref$((S$u8)(*buf))));
+    var writing = io_Fixed_Writer_from(io_Fixed_writing(A_ref$((S$u8)(*buf))));
     catch_((dansi_xterm_key_queryFormatWrite(resource, io_Fixed_writer(&writing)))($ignore, claim_unreachable));
     return io_Fixed_written(writing.stream);
 };
 
-fn_((dansi_xterm_key_queryFormatWrite(dansi_xterm_key_Resrc resource, io_Writer out))(E$void)) {
+fn_((dansi_xterm_key_queryFormatWrite(dansi_xterm_key_Resrc resource, io_Writer out))(io_PrintE$void)) {
     return io_Writer_print(
         out,
         u8_l(dansi_csi_make_static(
@@ -220,12 +220,12 @@ fn_((dansi_xterm_key_queryFormatWrite(dansi_xterm_key_Resrc resource, io_Writer 
 };
 
 fn_((dansi_xterm_key_enableEnhanced(dansi_xterm_key_EnableEnhancedBuf* buf))(S$u8)) {
-    var writing = io_Fixed_Writer_init(io_Fixed_writing(A_ref$((S$u8)(*buf))));
+    var writing = io_Fixed_Writer_from(io_Fixed_writing(A_ref$((S$u8)(*buf))));
     catch_((dansi_xterm_key_enableEnhancedWrite(io_Fixed_writer(&writing)))($ignore, claim_unreachable));
     return io_Fixed_written(writing.stream);
 };
 
-fn_((dansi_xterm_key_enableEnhancedWrite(io_Writer out))(E$void) $scope) {
+fn_((dansi_xterm_key_enableEnhancedWrite(io_Writer out))(io_PrintE$void) $scope) {
     try_(dansi_xterm_key_setModifyLevelWrite(
         dansi_xterm_key_Resrc_other_keys,
         dansi_xterm_key_ModifyLevel_other_keys,
@@ -239,12 +239,12 @@ fn_((dansi_xterm_key_enableEnhancedWrite(io_Writer out))(E$void) $scope) {
 } $unscoped(fn);
 
 fn_((dansi_xterm_key_disableEnhanced(dansi_xterm_key_DisableEnhancedBuf* buf))(S$u8)) {
-    var writing = io_Fixed_Writer_init(io_Fixed_writing(A_ref$((S$u8)(*buf))));
+    var writing = io_Fixed_Writer_from(io_Fixed_writing(A_ref$((S$u8)(*buf))));
     catch_((dansi_xterm_key_disableEnhancedWrite(io_Fixed_writer(&writing)))($ignore, claim_unreachable));
     return io_Fixed_written(writing.stream);
 };
 
-fn_((dansi_xterm_key_disableEnhancedWrite(io_Writer out))(E$void) $scope) {
+fn_((dansi_xterm_key_disableEnhancedWrite(io_Writer out))(io_PrintE$void) $scope) {
     try_(dansi_xterm_key_resetFormatWrite(dansi_xterm_key_Resrc_other_keys, out));
     return dansi_xterm_key_resetModifyWrite(dansi_xterm_key_Resrc_other_keys, out);
 } $unscoped(fn);

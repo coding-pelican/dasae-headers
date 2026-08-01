@@ -22,18 +22,18 @@ fn_((dansi_sos_make(S_const$u8 payload, S$u8 buf))(E$S$u8) $scope) {
     return dansi_sos_makeWithEOS(payload, dansi_Seq_EOS_st_7bit, buf);
 } $unscoped(fn);
 
-fn_((dansi_sos_write(S_const$u8 payload, io_Writer out))(E$void)) {
+fn_((dansi_sos_write(S_const$u8 payload, io_Writer out))(io_PrintE$void)) {
     return dansi_sos_writeWithEOS(payload, dansi_Seq_EOS_st_7bit, out);
 };
 
 fn_((dansi_sos_makeWithEOS(S_const$u8 payload, dansi_Seq_EOS eos, S$u8 buf))(E$S$u8) $scope) {
-    var writing = io_Fixed_Writer_init(io_Fixed_writing(buf));
+    var writing = io_Fixed_Writer_from(io_Fixed_writing(buf));
     try_(dansi_sos_writeWithEOS(payload, eos, io_Fixed_writer(&writing)));
     return_ok(io_Fixed_written(writing.stream));
 } $unscoped(fn);
 
-fn_((dansi_sos_writeWithEOS(S_const$u8 payload, dansi_Seq_EOS eos, io_Writer out))(E$void) $scope) {
+fn_((dansi_sos_writeWithEOS(S_const$u8 payload, dansi_Seq_EOS eos, io_Writer out))(io_PrintE$void) $scope) {
     try_(io_Writer_writeBytes(out, u8_l(dansi_sos_7bit_prefix)));
     try_(io_Writer_writeBytes(out, payload));
-    return dansi_Seq_EOS_write(eos, out);
+    return_ok(try_(dansi_Seq_EOS_write(eos, out)));
 } $unscoped(fn);

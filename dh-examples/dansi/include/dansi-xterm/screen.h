@@ -65,31 +65,31 @@ T_use_E$($set(dansi_xterm_screen_E)(dansi_xterm_screen_PixelSize));
     ____dansi_xterm_screen_enterAlternate_static()
 $extern fn_((dansi_xterm_screen_enterAlternate(void))(S_const$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_screen_enterAlternateWrite(io_Writer out))(E$void));
+$extern fn_((dansi_xterm_screen_enterAlternateWrite(io_Writer out))(io_WriteE$void));
 
 #define dansi_xterm_screen_exitAlternate_static() \
     ____dansi_xterm_screen_exitAlternate_static()
 $extern fn_((dansi_xterm_screen_exitAlternate(void))(S_const$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_screen_exitAlternateWrite(io_Writer out))(E$void));
+$extern fn_((dansi_xterm_screen_exitAlternateWrite(io_Writer out))(io_WriteE$void));
 
 #define dansi_xterm_screen_enterAlternateSaveCursor_static() \
     ____dansi_xterm_screen_enterAlternateSaveCursor_static()
 $extern fn_((dansi_xterm_screen_enterAlternateSaveCursor(void))(S_const$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_screen_enterAlternateSaveCursorWrite(io_Writer out))(E$void));
+$extern fn_((dansi_xterm_screen_enterAlternateSaveCursorWrite(io_Writer out))(io_WriteE$void));
 
 #define dansi_xterm_screen_exitAlternateSaveCursor_static() \
     ____dansi_xterm_screen_exitAlternateSaveCursor_static()
 $extern fn_((dansi_xterm_screen_exitAlternateSaveCursor(void))(S_const$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_screen_exitAlternateSaveCursorWrite(io_Writer out))(E$void));
+$extern fn_((dansi_xterm_screen_exitAlternateSaveCursorWrite(io_Writer out))(io_WriteE$void));
 
 #define dansi_xterm_screen_requestCellPixels_static() \
     ____dansi_xterm_screen_requestCellPixels_static()
 $extern fn_((dansi_xterm_screen_requestCellPixels(void))(S_const$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_screen_requestCellPixelsWrite(io_Writer out))(E$void));
+$extern fn_((dansi_xterm_screen_requestCellPixelsWrite(io_Writer out))(io_WriteE$void));
 $attr($must_check)
 $extern fn_((dansi_xterm_screen_receiveCellPixelsReport(io_Reader in, S$u8 buf))(E$S$u8));
 $attr($must_check)
@@ -105,7 +105,7 @@ $extern fn_((dansi_xterm_screen_fetchCellPixels(
     ____dansi_xterm_screen_requestTextAreaCells_static()
 $extern fn_((dansi_xterm_screen_requestTextAreaCells(void))(S_const$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_screen_requestTextAreaCellsWrite(io_Writer out))(E$void));
+$extern fn_((dansi_xterm_screen_requestTextAreaCellsWrite(io_Writer out))(io_WriteE$void));
 $attr($must_check)
 $extern fn_((dansi_xterm_screen_receiveTextAreaCellsReport(io_Reader in, S$u8 buf))(E$S$u8));
 $attr($must_check)
@@ -121,7 +121,7 @@ $extern fn_((dansi_xterm_screen_fetchTextAreaCells(
     ____dansi_xterm_screen_requestScreenCells_static()
 $extern fn_((dansi_xterm_screen_requestScreenCells(void))(S_const$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_screen_requestScreenCellsWrite(io_Writer out))(E$void));
+$extern fn_((dansi_xterm_screen_requestScreenCellsWrite(io_Writer out))(io_WriteE$void));
 $attr($must_check)
 $extern fn_((dansi_xterm_screen_receiveScreenCellsReport(io_Reader in, S$u8 buf))(E$S$u8));
 $attr($must_check)
@@ -137,7 +137,7 @@ $extern fn_((dansi_xterm_screen_fetchScreenCells(
     ____dansi_xterm_screen_requestTextAreaPixels_static()
 $extern fn_((dansi_xterm_screen_requestTextAreaPixels(void))(S_const$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_screen_requestTextAreaPixelsWrite(io_Writer out))(E$void));
+$extern fn_((dansi_xterm_screen_requestTextAreaPixelsWrite(io_Writer out))(io_WriteE$void));
 $attr($must_check)
 $extern fn_((dansi_xterm_screen_receiveTextAreaPixelsReport(io_Reader in, S$u8 buf))(E$S$u8));
 $attr($must_check)
@@ -153,7 +153,7 @@ $extern fn_((dansi_xterm_screen_fetchTextAreaPixels(
     ____dansi_xterm_screen_requestScreenPixels_static()
 $extern fn_((dansi_xterm_screen_requestScreenPixels(void))(S_const$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_screen_requestScreenPixelsWrite(io_Writer out))(E$void));
+$extern fn_((dansi_xterm_screen_requestScreenPixelsWrite(io_Writer out))(io_WriteE$void));
 $attr($must_check)
 $extern fn_((dansi_xterm_screen_receiveScreenPixelsReport(io_Reader in, S$u8 buf))(E$S$u8));
 $attr($must_check)

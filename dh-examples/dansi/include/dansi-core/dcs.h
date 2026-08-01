@@ -42,11 +42,11 @@ $extern fn_((dansi_dcs_parse(S_const$u8 bytes))(dansi_dcs_E$dansi_dcs_Frame));
 $attr($must_check)
 $extern fn_((dansi_dcs_makeRaw(S_const$u8 payload, S$u8 buf))(E$S$u8));
 $attr($must_check)
-$extern fn_((dansi_dcs_writeRaw(S_const$u8 payload, io_Writer out))(E$void));
+$extern fn_((dansi_dcs_writeRaw(S_const$u8 payload, io_Writer out))(io_PrintE$void));
 $attr($must_check)
 $extern fn_((dansi_dcs_makeRawWithEOS(S_const$u8 payload, dansi_Seq_EOS eos, S$u8 buf))(E$S$u8));
 $attr($must_check)
-$extern fn_((dansi_dcs_writeRawWithEOS(S_const$u8 payload, dansi_Seq_EOS eos, io_Writer out))(E$void));
+$extern fn_((dansi_dcs_writeRawWithEOS(S_const$u8 payload, dansi_Seq_EOS eos, io_Writer out))(io_PrintE$void));
 
 #define dansi_dcs_make_static(_params_tok, _intermediates_tok, _final_tok, _payload_tok) \
     ____dansi_dcs_make_static(_params_tok, _intermediates_tok, _final_tok, _payload_tok)
@@ -59,7 +59,7 @@ $attr($must_check)
 $extern fn_((dansi_dcs_write(
     S_const$u8 params, S_const$u8 intermediates, u8 final,
     S_const$u8 payload, io_Writer out
-))(E$void));
+))(io_PrintE$void));
 $attr($must_check)
 $extern fn_((dansi_dcs_makeWithEOS(
     S_const$u8 params, S_const$u8 intermediates, u8 final,
@@ -69,7 +69,7 @@ $attr($must_check)
 $extern fn_((dansi_dcs_writeWithEOS(
     S_const$u8 params, S_const$u8 intermediates, u8 final,
     S_const$u8 payload, dansi_Seq_EOS eos, io_Writer out
-))(E$void));
+))(io_PrintE$void));
 
 struct dansi_dcs_Frame {
     var_(params, S_const$u8);

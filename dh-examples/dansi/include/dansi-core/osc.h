@@ -47,11 +47,11 @@ $extern fn_((dansi_osc_parse(S_const$u8 bytes))(dansi_osc_E$dansi_osc_Frame));
 $attr($must_check)
 $extern fn_((dansi_osc_makeRaw(S_const$u8 payload, S$u8 buf))(E$S$u8));
 $attr($must_check)
-$extern fn_((dansi_osc_writeRaw(S_const$u8 payload, io_Writer out))(E$void));
+$extern fn_((dansi_osc_writeRaw(S_const$u8 payload, io_Writer out))(io_PrintE$void));
 $attr($must_check)
 $extern fn_((dansi_osc_makeRawWithEOS(S_const$u8 payload, dansi_Seq_EOS eos, S$u8 buf))(E$S$u8));
 $attr($must_check)
-$extern fn_((dansi_osc_writeRawWithEOS(S_const$u8 payload, dansi_Seq_EOS eos, io_Writer out))(E$void));
+$extern fn_((dansi_osc_writeRawWithEOS(S_const$u8 payload, dansi_Seq_EOS eos, io_Writer out))(io_PrintE$void));
 
 #define dansi_osc_make_static(_cmd_tok, _payload_tok) \
     ____dansi_osc_make_static(_cmd_tok, _payload_tok)
@@ -60,11 +60,11 @@ $extern fn_((dansi_osc_writeRawWithEOS(S_const$u8 payload, dansi_Seq_EOS eos, io
 $attr($must_check)
 $extern fn_((dansi_osc_make(u16 cmd, S_const$u8 payload, S$u8 buf))(E$S$u8));
 $attr($must_check)
-$extern fn_((dansi_osc_write(u16 cmd, S_const$u8 payload, io_Writer out))(E$void));
+$extern fn_((dansi_osc_write(u16 cmd, S_const$u8 payload, io_Writer out))(io_PrintE$void));
 $attr($must_check)
 $extern fn_((dansi_osc_makeWithEOS(u16 cmd, S_const$u8 payload, dansi_Seq_EOS eos, S$u8 buf))(E$S$u8));
 $attr($must_check)
-$extern fn_((dansi_osc_writeWithEOS(u16 cmd, S_const$u8 payload, dansi_Seq_EOS eos, io_Writer out))(E$void));
+$extern fn_((dansi_osc_writeWithEOS(u16 cmd, S_const$u8 payload, dansi_Seq_EOS eos, io_Writer out))(io_PrintE$void));
 
 struct dansi_osc_Frame {
     var_(payload, S_const$u8);

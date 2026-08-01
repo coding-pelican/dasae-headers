@@ -115,7 +115,7 @@ $static cmp_fn_ordCtx$((exec_Timer)(lhs, rhs, ctx)) {
 };
 $static cmp_fn_u_ordCtx_default$((exec_Timer)(lhs, rhs, ctx));
 fn_((exec_LaneTimed__timerCtx(void))(P_const$ArrPQue_Ctx)) {
-    $static let_(inner, Void) = cleared();
+    $static let_(inner, Void) $undefined_static;
     $static let_(ctx, ArrPQue_Ctx) = {
         .inner = u_anyP(&inner),
         .ordFn = cmp_u_ordCtx$(exec_Timer),

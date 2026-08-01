@@ -35,7 +35,10 @@ struct io_Writer {
     $attr($must_check)
     fn_(((*writeFn)(P$raw ctx, S_const$u8 bytes))(io_WriteE$usize));
 };
+$extern let_(io_Writer_noop, io_Writer);
 $extern let_(io_Writer_failing, io_Writer);
+$attr($must_check)
+$extern fn_((io_Writer_noWrite(P$raw ctx, S_const$u8 bytes))(io_WriteE$usize));
 $attr($must_check)
 $extern fn_((io_Writer_failingWrite(P$raw ctx, S_const$u8 bytes))(io_WriteE$usize));
 

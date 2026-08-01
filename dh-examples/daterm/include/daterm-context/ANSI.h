@@ -119,7 +119,9 @@ typedef struct daterm_ANSI_Cfg {
 } daterm_ANSI_Cfg;
 T_use_prl$(daterm_ANSI_Cfg);
 $attr($inline_always)
-$static fn_((daterm_ANSI_Cfg_default(mem_Alctr gpa))(daterm_ANSI_Cfg));
+$static fn_((daterm_ANSI_Cfg_from(mem_Alctr gpa, io_TTY_Cfg tty))(daterm_ANSI_Cfg));
+$attr($inline_always)
+$static fn_((daterm_ANSI_Cfg_direct(mem_Alctr gpa))(O$daterm_ANSI_Cfg));
 
 $attr($must_check)
 $extern fn_((daterm_ANSI_init(daterm_ANSI_Cfg cfg))(mem_E$daterm_ANSI));
@@ -135,13 +137,13 @@ $extern fn_((daterm_ANSI_term(daterm_ANSI* self))(daterm_Term));
 /*========== Macros and Definitions =========================================*/
 
 #if in_analysis_active_only || in_comptime
-fn_((daterm_ANSI_Cfg_default(mem_Alctr gpa))(daterm_ANSI_Cfg)) {
+fn_((daterm_ANSI_Cfg_from(mem_Alctr gpa, io_TTY_Cfg tty))(daterm_ANSI_Cfg)) {
     return (daterm_ANSI_Cfg){
         .gpa = some(gpa),
         .clock = union_of((time_Clock_awake)(catch_((time_Awake_direct())($ignore, time_Awake_noop)))),
-        .output_file = io_handleStdOut(),
+        .output_file = tty.output_file,
         .output_mode = daterm_ANSI_OutputMode_processed,
-        .input_file = io_handleStdIn(),
+        .input_file = tty.input_file,
 #if plat_is_windows
         .input_mode = daterm_ANSI_InputMode_native,
 #else
@@ -153,6 +155,10 @@ fn_((daterm_ANSI_Cfg_default(mem_Alctr gpa))(daterm_ANSI_Cfg)) {
         .esc_timeout = daterm_ANSI_esc_timeout_default,
     };
 };
+fn_((daterm_ANSI_Cfg_direct(mem_Alctr gpa))(O$daterm_ANSI_Cfg) $scope) {
+    let tty = orelse_((io_TTY_Cfg_direct())(return_none()));
+    return_some(daterm_ANSI_Cfg_from(gpa, tty));
+} $unscoped(fn);
 #endif /* in_analysis_active_only || in_comptime */
 
 #if defined(__cplusplus)

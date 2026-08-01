@@ -977,26 +977,30 @@ $static fn_((pac_Presenter_formatU32(S$u8 buf, u32 val))(usize)) {
     return len;
 };
 $static fn_((pac_Presenter_init(pac_Presenter* self, io_Writer out))(pac_Presenter*)) {
-    self->out.writer = io_Buf_Writer_init(out, A_ref$((S$u8)(self->out.mem)));
+    self->out.writer = io_Buf_Writer_from(out, A_ref$((S$u8)(self->out.mem)));
     pac_Frame_clear(&self->frame);
     pac_Frame_clear(&self->front);
     self->front_valid = false;
     return self;
 };
-$static fn_((pac_moveTo(io_Writer out, usize x, usize y))(E$void)) {
-    return dansi_cursor_moveToWrite(as$(u16)(y + 1), as$(u16)(x + 1), out);
-};
-$static fn_((pac_fg(io_Writer out, pac_RGB rgb))(E$void)) {
-    return dansi_xterm_color_fg24bitWrite((dansi_xterm_color_RGB8){ rgb.r, rgb.g, rgb.b }, out);
-};
+$static fn_((pac_moveTo(io_Writer out, usize x, usize y))(E$void) $scope) {
+    try_(dansi_cursor_moveToWrite(as$(u16)(y + 1), as$(u16)(x + 1), out));
+    return_ok({});
+} $unscoped(fn);
+$static fn_((pac_fg(io_Writer out, pac_RGB rgb))(E$void) $scope) {
+    try_(dansi_xterm_color_fg24bitWrite((dansi_xterm_color_RGB8){ rgb.r, rgb.g, rgb.b }, out));
+    return_ok({});
+} $unscoped(fn);
 $attr($maybe_unused)
-$static fn_((pac_bg(io_Writer out, pac_RGB rgb))(E$void)) {
-    return dansi_xterm_color_bg24bitWrite((dansi_xterm_color_RGB8){ rgb.r, rgb.g, rgb.b }, out);
-};
-$static fn_((pac_writeByte(io_Writer out, u8 c))(E$void)) {
+$static fn_((pac_bg(io_Writer out, pac_RGB rgb))(E$void) $scope) {
+    try_(dansi_xterm_color_bg24bitWrite((dansi_xterm_color_RGB8){ rgb.r, rgb.g, rgb.b }, out));
+    return_ok({});
+} $unscoped(fn);
+$static fn_((pac_writeByte(io_Writer out, u8 c))(E$void) $scope) {
     var_(mem, A$$(1, u8)) = A_init({ c });
-    return io_Writer_writeBytes(out, A_ref$((S_const$u8)(mem)));
-};
+    try_(io_Writer_writeBytes(out, A_ref$((S_const$u8)(mem))));
+    return_ok({});
+} $unscoped(fn);
 
 $static fn_((pac_Presenter_StyleState_init(void))(pac_Presenter_StyleState)) {
     return (pac_Presenter_StyleState){ .fg = { 0, 0, 0 }, .fg_valid = false };
@@ -1143,12 +1147,14 @@ $static fn_((pac_Presenter_compose(pac_Presenter* self, const pac_Game* game))(v
 $static fn_((pac_Presenter_beginScreen(io_Writer out))(E$void) $scope) {
     try_(dansi_sgr_resetWrite(out));
     try_(dansi_erase_inDisplayWrite(dansi_erase_Area_all, out));
-    return pac_moveTo(out, 0, 0);
+    try_(pac_moveTo(out, 0, 0));
+    return_ok({});
 } $unscoped(fn);
 
-$static fn_((pac_Presenter_homeScreen(io_Writer out))(E$void)) {
-    return pac_moveTo(out, 0, 0);
-};
+$static fn_((pac_Presenter_homeScreen(io_Writer out))(E$void) $scope) {
+    try_(pac_moveTo(out, 0, 0));
+    return_ok({});
+} $unscoped(fn);
 
 $static fn_((pac_Presenter_presentSmallScreen(pac_Presenter* self))(E$void) $scope) {
     let out = io_Buf_writer(&self->out.writer);
@@ -1263,16 +1269,20 @@ $static fn_((pac_Presenter_render(pac_Presenter* self, const pac_Game* game, dat
 #include <dh/io/stream.h>
 
 $static fn_((pac_waitForEnter(void))(void)) {
-    let out = fs_File_writer(io_handleStdOut());
+    let tty = unwrap_(io_TTY_Cfg_direct());
+    let out = fs_File_writer(tty.output_file);
     catch_((io_Writer_writeBytes(out, u8_l("dasae pacman: press Enter to enter terminal mode\n")))($ignore, $do_nothing));
     var_(read_mem, A$$(128, u8)) $undefined;
-    var reader = io_Buf_Reader_init(fs_File_reader(io_handleStdIn()), A_ref$((S$u8)(read_mem)));
+    var reader = io_Buf_Reader_from(
+        fs_File_reader(tty.input_file),
+        A_ref$((S$u8)(read_mem))
+    );
     var_(line_mem, A$$(256, u8)) $undefined;
     catch_((io_Buf_Reader_readUntilByte(&reader, ascii_lf_byte, A_ref$((S$u8)(line_mem))))($ignore, $do_nothing));
 };
 
-fn_((main(S$S_const$u8 args))(E$void) $guard) {
-    let_ignore = args;
+fn_((main(proc_Entry entry))(E$void) $guard) {
+    let_ignore = entry;
     pac_waitForEnter();
 
     var heap = try_(heap_Sys_init());
@@ -1281,7 +1291,7 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
     defer_(heap_Arena_fini(&arena));
     let gpa = heap_Arena_alctr(&arena);
 
-    var ansi = try_(daterm_ANSI_init(daterm_ANSI_Cfg_default(gpa)));
+    var ansi = try_(daterm_ANSI_init(unwrap_(daterm_ANSI_Cfg_direct(gpa))));
     defer_(daterm_ANSI_fini(&ansi));
     try_(daterm_ANSI_enableRawMode(&ansi));
     defer_(daterm_ANSI_disableRawMode(&ansi));

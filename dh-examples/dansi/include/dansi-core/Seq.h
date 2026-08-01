@@ -71,7 +71,7 @@ typedef enum_((dansi_Seq_EOS $fits($packed))(
 claim_assert_static(eqlType$(dansi_Seq_EOS, u8));
 T_use_prl$(dansi_Seq_EOS);
 $attr($must_check)
-$extern fn_((dansi_Seq_EOS_write(dansi_Seq_EOS self, io_Writer out))(E$void));
+$extern fn_((dansi_Seq_EOS_write(dansi_Seq_EOS self, io_Writer out))(io_WriteE$void));
 
 /// A control string terminator.
 typedef struct dansi_Seq_CtrlTer {

@@ -89,7 +89,7 @@ typedef A$$(4 + uint_log10Ceil_static(u16_limit_max), u8) dansi_dec_mode_SetBuf;
 $attr($must_check)
 $extern fn_((dansi_dec_mode_set(dansi_dec_mode_Code mode, bool enabled, dansi_dec_mode_SetBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_dec_mode_setWrite(dansi_dec_mode_Code mode, bool enabled, io_Writer out))(E$void));
+$extern fn_((dansi_dec_mode_setWrite(dansi_dec_mode_Code mode, bool enabled, io_Writer out))(io_PrintE$void));
 
 #define dansi_dec_mode_enable_static(_mode_tok) \
     ____dansi_dec_mode_enable_static(_mode_tok)
@@ -97,7 +97,7 @@ typedef dansi_dec_mode_SetBuf dansi_dec_mode_EnableBuf;
 $attr($must_check)
 $extern fn_((dansi_dec_mode_enable(dansi_dec_mode_Code mode, dansi_dec_mode_EnableBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_dec_mode_enableWrite(dansi_dec_mode_Code mode, io_Writer out))(E$void));
+$extern fn_((dansi_dec_mode_enableWrite(dansi_dec_mode_Code mode, io_Writer out))(io_PrintE$void));
 
 #define dansi_dec_mode_disable_static(_mode_tok) \
     ____dansi_dec_mode_disable_static(_mode_tok)
@@ -105,7 +105,7 @@ typedef dansi_dec_mode_SetBuf dansi_dec_mode_DisableBuf;
 $attr($must_check)
 $extern fn_((dansi_dec_mode_disable(dansi_dec_mode_Code mode, dansi_dec_mode_DisableBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_dec_mode_disableWrite(dansi_dec_mode_Code mode, io_Writer out))(E$void));
+$extern fn_((dansi_dec_mode_disableWrite(dansi_dec_mode_Code mode, io_Writer out))(io_PrintE$void));
 
 #define dansi_dec_mode_save_static(_mode_tok) \
     ____dansi_dec_mode_save_static(_mode_tok)
@@ -113,7 +113,7 @@ typedef dansi_dec_mode_SetBuf dansi_dec_mode_SaveBuf;
 $attr($must_check)
 $extern fn_((dansi_dec_mode_save(dansi_dec_mode_Code mode, dansi_dec_mode_SaveBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_dec_mode_saveWrite(dansi_dec_mode_Code mode, io_Writer out))(E$void));
+$extern fn_((dansi_dec_mode_saveWrite(dansi_dec_mode_Code mode, io_Writer out))(io_PrintE$void));
 
 #define dansi_dec_mode_restore_static(_mode_tok) \
     ____dansi_dec_mode_restore_static(_mode_tok)
@@ -121,7 +121,7 @@ typedef dansi_dec_mode_SetBuf dansi_dec_mode_RestoreBuf;
 $attr($must_check)
 $extern fn_((dansi_dec_mode_restore(dansi_dec_mode_Code mode, dansi_dec_mode_RestoreBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_dec_mode_restoreWrite(dansi_dec_mode_Code mode, io_Writer out))(E$void));
+$extern fn_((dansi_dec_mode_restoreWrite(dansi_dec_mode_Code mode, io_Writer out))(io_PrintE$void));
 
 #define dansi_dec_mode_request_static(_mode_tok) \
     ____dansi_dec_mode_request_static(_mode_tok)
@@ -129,7 +129,7 @@ typedef A$$(5 + uint_log10Ceil_static(u16_limit_max), u8) dansi_dec_mode_Request
 $attr($must_check)
 $extern fn_((dansi_dec_mode_request(dansi_dec_mode_Code mode, dansi_dec_mode_RequestBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_dec_mode_requestWrite(dansi_dec_mode_Code mode, io_Writer out))(E$void));
+$extern fn_((dansi_dec_mode_requestWrite(dansi_dec_mode_Code mode, io_Writer out))(io_PrintE$void));
 $attr($must_check)
 $extern fn_((dansi_dec_mode_receiveReport(io_Reader in, S$u8 buf))(E$S$u8));
 $attr($must_check)

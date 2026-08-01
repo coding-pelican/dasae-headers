@@ -32,7 +32,7 @@ fn_((dansi_xterm_mouse_setReportMode(
 
 fn_((dansi_xterm_mouse_setReportModeWrite(
     dansi_xterm_mouse_ReportMode mode, bool enabled, io_Writer out
-))(E$void)) {
+))(io_PrintE$void)) {
     return dansi_xterm_mode_setRawWrite(as$(u16)(mode), enabled, out);
 };
 
@@ -42,7 +42,7 @@ fn_((dansi_xterm_mouse_enableReportMode(
     return dansi_xterm_mode_enableRaw(as$(u16)(mode), buf);
 };
 
-fn_((dansi_xterm_mouse_enableReportModeWrite(dansi_xterm_mouse_ReportMode mode, io_Writer out))(E$void)) {
+fn_((dansi_xterm_mouse_enableReportModeWrite(dansi_xterm_mouse_ReportMode mode, io_Writer out))(io_PrintE$void)) {
     return dansi_xterm_mode_enableRawWrite(as$(u16)(mode), out);
 };
 
@@ -52,7 +52,7 @@ fn_((dansi_xterm_mouse_disableReportMode(
     return dansi_xterm_mode_disableRaw(as$(u16)(mode), buf);
 };
 
-fn_((dansi_xterm_mouse_disableReportModeWrite(dansi_xterm_mouse_ReportMode mode, io_Writer out))(E$void)) {
+fn_((dansi_xterm_mouse_disableReportModeWrite(dansi_xterm_mouse_ReportMode mode, io_Writer out))(io_PrintE$void)) {
     return dansi_xterm_mode_disableRawWrite(as$(u16)(mode), out);
 };
 
@@ -62,7 +62,7 @@ fn_((dansi_xterm_mouse_setEncoding(
     return dansi_xterm_mode_setRaw(as$(u16)(encoding), enabled, buf);
 };
 
-fn_((dansi_xterm_mouse_setEncodingWrite(dansi_xterm_mouse_Encoding encoding, bool enabled, io_Writer out))(E$void)) {
+fn_((dansi_xterm_mouse_setEncodingWrite(dansi_xterm_mouse_Encoding encoding, bool enabled, io_Writer out))(io_PrintE$void)) {
     return dansi_xterm_mode_setRawWrite(as$(u16)(encoding), enabled, out);
 };
 
@@ -72,7 +72,7 @@ fn_((dansi_xterm_mouse_enableEncoding(
     return dansi_xterm_mode_enableRaw(as$(u16)(encoding), buf);
 };
 
-fn_((dansi_xterm_mouse_enableEncodingWrite(dansi_xterm_mouse_Encoding encoding, io_Writer out))(E$void)) {
+fn_((dansi_xterm_mouse_enableEncodingWrite(dansi_xterm_mouse_Encoding encoding, io_Writer out))(io_PrintE$void)) {
     return dansi_xterm_mode_enableRawWrite(as$(u16)(encoding), out);
 };
 
@@ -82,7 +82,7 @@ fn_((dansi_xterm_mouse_disableEncoding(
     return dansi_xterm_mode_disableRaw(as$(u16)(encoding), buf);
 };
 
-fn_((dansi_xterm_mouse_disableEncodingWrite(dansi_xterm_mouse_Encoding encoding, io_Writer out))(E$void)) {
+fn_((dansi_xterm_mouse_disableEncodingWrite(dansi_xterm_mouse_Encoding encoding, io_Writer out))(io_PrintE$void)) {
     return dansi_xterm_mode_disableRawWrite(as$(u16)(encoding), out);
 };
 
@@ -90,7 +90,7 @@ fn_((dansi_xterm_mouse_enableAny(dansi_xterm_mouse_EnableAnyBuf* buf))(S$u8)) {
     return dansi_xterm_mouse_enableReportMode(dansi_xterm_mouse_ReportMode_any_event, buf);
 };
 
-fn_((dansi_xterm_mouse_enableAnyWrite(io_Writer out))(E$void)) {
+fn_((dansi_xterm_mouse_enableAnyWrite(io_Writer out))(io_PrintE$void)) {
     return dansi_xterm_mouse_enableReportModeWrite(dansi_xterm_mouse_ReportMode_any_event, out);
 };
 
@@ -98,19 +98,19 @@ fn_((dansi_xterm_mouse_disableAny(dansi_xterm_mouse_DisableAnyBuf* buf))(S$u8)) 
     return dansi_xterm_mouse_disableReportMode(dansi_xterm_mouse_ReportMode_any_event, buf);
 };
 
-fn_((dansi_xterm_mouse_disableAnyWrite(io_Writer out))(E$void)) {
+fn_((dansi_xterm_mouse_disableAnyWrite(io_Writer out))(io_PrintE$void)) {
     return dansi_xterm_mouse_disableReportModeWrite(dansi_xterm_mouse_ReportMode_any_event, out);
 };
 
 fn_((dansi_xterm_mouse_enableSGR(
     dansi_xterm_mouse_ReportMode mode, dansi_xterm_mouse_EnableSGRBuf* buf
 ))(S$u8)) {
-    var writing = io_Fixed_Writer_init(io_Fixed_writing(A_ref$((S$u8)(*buf))));
+    var writing = io_Fixed_Writer_from(io_Fixed_writing(A_ref$((S$u8)(*buf))));
     catch_((dansi_xterm_mouse_enableSGRWrite(mode, io_Fixed_writer(&writing)))($ignore, claim_unreachable));
     return io_Fixed_written(writing.stream);
 };
 
-fn_((dansi_xterm_mouse_enableSGRWrite(dansi_xterm_mouse_ReportMode mode, io_Writer out))(E$void) $scope) {
+fn_((dansi_xterm_mouse_enableSGRWrite(dansi_xterm_mouse_ReportMode mode, io_Writer out))(io_PrintE$void) $scope) {
     try_(dansi_xterm_mouse_enableReportModeWrite(mode, out));
     return dansi_xterm_mouse_enableEncodingWrite(dansi_xterm_mouse_Encoding_sgr, out);
 } $unscoped(fn);
@@ -118,12 +118,12 @@ fn_((dansi_xterm_mouse_enableSGRWrite(dansi_xterm_mouse_ReportMode mode, io_Writ
 fn_((dansi_xterm_mouse_disableSGR(
     dansi_xterm_mouse_ReportMode mode, dansi_xterm_mouse_DisableSGRBuf* buf
 ))(S$u8)) {
-    var writing = io_Fixed_Writer_init(io_Fixed_writing(A_ref$((S$u8)(*buf))));
+    var writing = io_Fixed_Writer_from(io_Fixed_writing(A_ref$((S$u8)(*buf))));
     catch_((dansi_xterm_mouse_disableSGRWrite(mode, io_Fixed_writer(&writing)))($ignore, claim_unreachable));
     return io_Fixed_written(writing.stream);
 };
 
-fn_((dansi_xterm_mouse_disableSGRWrite(dansi_xterm_mouse_ReportMode mode, io_Writer out))(E$void) $scope) {
+fn_((dansi_xterm_mouse_disableSGRWrite(dansi_xterm_mouse_ReportMode mode, io_Writer out))(io_PrintE$void) $scope) {
     try_(dansi_xterm_mouse_disableEncodingWrite(dansi_xterm_mouse_Encoding_sgr, out));
     return dansi_xterm_mouse_disableReportModeWrite(mode, out);
 } $unscoped(fn);

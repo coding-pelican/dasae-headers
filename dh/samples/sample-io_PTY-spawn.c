@@ -18,42 +18,51 @@
 fn_((main(proc_Entry entry))(E$void) $guard) {
     var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
-
-    var_(argv, A$$(4, S_const$u8)) = A_init(pp_if_(plat_is_windows)(
-        pp_then_({
-            [0] = u8_l("cmd.exe"),
-            [1] = u8_l("/D"),
-            [2] = u8_l("/C"),
-            [3] = u8_l("exit 0"),
-        }),
-        pp_else_({
-            [0] = u8_l("/bin/sh"),
-            [1] = u8_l("-c"),
-            [2] = u8_l("exit 0"),
-            [3] = u8_l("example-pty-spawn"),
-        })
-    ));
+    let gpa = heap_Sys_alctr(&heap);
+    let proc = try_(proc_direct());
+    let exit_cmd = u8_l("exit 0");
+    var argv = A_from$((S_const$u8){
+        pp_switch_((plat_type)(
+            pp_case_((plat_type_windows)(
+                u8_l("cmd.exe"),
+                u8_l("/D"),
+                u8_l("/C"),
+                exit_cmd
+            )),
+            pp_case_((plat_type_linux)(
+                u8_l("/bin/sh"),
+                u8_l("-c"),
+                exit_cmd,
+                u8_l("example-pty-spawn")
+            )),
+            pp_default_(local_({
+                io_stream_eprintln(u8_l("unsupported platform: {:s}"), u8_l(plat_name));
+                proc_exit(1);
+                local_return_(u8_l(""));
+            }))
+        )),
+    });
     let_(cmd, proc_Cmd) = {
         .argv = A_ref$((S$S_const$u8)(argv)),
         .env = none(),
-        .cwd = union_of((proc_Cwd_inherit){}),
-        .std_in = union_of((proc_std_IO_inherit){}),
-        .std_out = union_of((proc_std_IO_inherit){}),
-        .std_err = union_of((proc_std_IO_inherit){}),
-        .expand_arg0 = proc_ArgExpsn_no_expand,
+        .cwd = union_of((proc_Cmd_CWD_inherit){}),
+        .std_in = union_of((proc_Stream_inherit){}),
+        .std_out = union_of((proc_Stream_inherit){}),
+        .std_err = union_of((proc_Stream_inherit){}),
+        .expand_arg0 = proc_Cmd_ArgExpsn_no_expand,
         .start_suspended = false,
         .create_no_window = false,
     };
 
-    let cfg = with_((io_PTY_SpawnCfg_default(heap_Sys_alctr(&heap), cmd))(
+    let cfg = with_((io_PTY_SpawnCfg_default(gpa, entry.env, cmd))(
         (.pty.size)({ .cols = u16_(120), .rows = u16_(40) })
     ));
     var session = try_(io_PTY_spawn(cfg));
-    defer_(io_PTY_Session_close(entry.proc, &session));
+    defer_(io_PTY_Session_close(&session, proc));
 
     let_(size, io_PTY_Size) = { .cols = u16_(120), .rows = u16_(40) };
     try_(io_PTY_Session_resize(&session, size));
-    let_ignore = try_(io_PTY_Session_wait(entry.proc, &session));
+    let_ignore = try_(io_PTY_Session_wait(&session, proc));
 
     return_ok({});
 } $unguarded(fn);

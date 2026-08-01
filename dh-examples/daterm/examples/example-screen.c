@@ -6,12 +6,14 @@
 #include "dansi-core/style.h"
 #include "dansi-core/sgr.h"
 
-fn_((main(S$S_const$u8 args))(E$void) $guard) {
-    let_ignore = args;
+fn_((main(proc_Entry entry))(E$void) $guard) {
+    let_ignore = entry;
 
     var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
-    var ansi = try_(daterm_ANSI_init(daterm_ANSI_Cfg_default(heap_Sys_alctr(&heap))));
+    var ansi = try_(daterm_ANSI_init(unwrap_(daterm_ANSI_Cfg_direct(
+        heap_Sys_alctr(&heap)
+    ))));
     defer_(daterm_ANSI_fini(&ansi));
     try_(daterm_ANSI_enableRawMode(&ansi));
     defer_(daterm_ANSI_disableRawMode(&ansi));

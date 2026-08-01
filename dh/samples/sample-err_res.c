@@ -57,9 +57,7 @@ $static fn_((processResult(my_math_Res result))(void)) {
             io_stream_println(A_ref$((S_const$u8)(A_cat(msg, fmt))), value);
         });
     } $end(match)) $unscoped(expr);
-    if_some((maybe_err)(err)) io_stream_println(
-        u8_l("Error occurred: {:s} ({:i})"), E_strfy$my_math_E(err), E_tag$my_math_E(err)
-    );
+    if_some((maybe_err)(err)) io_stream_println(u8_l("Error occurred: {:s} ({:i})"), E_strfy$my_math_E(err), E_tag$my_math_E(err));
 };
 
 T_use_E$($set(mem_E)(S$i32));

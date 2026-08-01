@@ -86,7 +86,7 @@ $extern fn_((dansi_xterm_selection_set(
 $attr($must_check)
 $extern fn_((dansi_xterm_selection_setWrite(
     dansi_xterm_selection_Targets targets, S_const$u8 data_base64, io_Writer out
-))(E$void));
+))(io_PrintE$void));
 $attr($must_check)
 $extern fn_((dansi_xterm_selection_query(
     dansi_xterm_selection_Targets targets, S$u8 buf
@@ -94,7 +94,7 @@ $extern fn_((dansi_xterm_selection_query(
 $attr($must_check)
 $extern fn_((dansi_xterm_selection_queryWrite(
     dansi_xterm_selection_Targets targets, io_Writer out
-))(E$void));
+))(io_PrintE$void));
 $attr($must_check)
 $extern fn_((dansi_xterm_selection_clear(
     dansi_xterm_selection_Targets targets, S$u8 buf
@@ -102,28 +102,28 @@ $extern fn_((dansi_xterm_selection_clear(
 $attr($must_check)
 $extern fn_((dansi_xterm_selection_clearWrite(
     dansi_xterm_selection_Targets targets, io_Writer out
-))(E$void));
+))(io_PrintE$void));
 
 #define dansi_xterm_selection_setRaw_static(_targets_tok, _data_base64_tok) \
     ____dansi_xterm_selection_setRaw_static(_targets_tok, _data_base64_tok)
 $attr($must_check)
 $extern fn_((dansi_xterm_selection_setRaw(S_const$u8 targets, S_const$u8 data_base64, S$u8 buf))(E$S$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_selection_setRawWrite(S_const$u8 targets, S_const$u8 data_base64, io_Writer out))(E$void));
+$extern fn_((dansi_xterm_selection_setRawWrite(S_const$u8 targets, S_const$u8 data_base64, io_Writer out))(io_PrintE$void));
 
 #define dansi_xterm_selection_queryRaw_static(_targets_tok) \
     ____dansi_xterm_selection_queryRaw_static(_targets_tok)
 $attr($must_check)
 $extern fn_((dansi_xterm_selection_queryRaw(S_const$u8 targets, S$u8 buf))(E$S$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_selection_queryRawWrite(S_const$u8 targets, io_Writer out))(E$void));
+$extern fn_((dansi_xterm_selection_queryRawWrite(S_const$u8 targets, io_Writer out))(io_PrintE$void));
 
 #define dansi_xterm_selection_clearRaw_static(_targets_tok) \
     ____dansi_xterm_selection_clearRaw_static(_targets_tok)
 $attr($must_check)
 $extern fn_((dansi_xterm_selection_clearRaw(S_const$u8 targets, S$u8 buf))(E$S$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_selection_clearRawWrite(S_const$u8 targets, io_Writer out))(E$void));
+$extern fn_((dansi_xterm_selection_clearRawWrite(S_const$u8 targets, io_Writer out))(io_PrintE$void));
 
 /*========== Macros and Definitions =========================================*/
 

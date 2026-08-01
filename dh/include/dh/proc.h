@@ -12,16 +12,14 @@ extern "C" {
 
 #include "proc/Args.h"
 #include "proc/Env.h"
-#include "proc/std.h"
-#include "proc/mem.h"
-
-#include "proc/Cmd.h"
-#include "proc/Child.h"
-#include "proc/Self.h"
-#include "proc/Direct.h"
-
 #include "proc/Preopens.h"
 #include "proc/Entry.h"
+
+#include "proc/Stream.h"
+#include "proc/Child.h"
+#include "proc/Self.h"
+
+#include "proc/Mem.h"
 
 #if defined(__cplusplus)
 } /* extern "C" */

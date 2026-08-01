@@ -72,21 +72,21 @@ T_use_E$($set(dansi_xterm_title_E)(dansi_xterm_title_Report));
 $attr($must_check)
 $extern fn_((dansi_xterm_title_setIcon(S_const$u8 title, S$u8 buf))(E$S$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_title_setIconWrite(S_const$u8 title, io_Writer out))(E$void));
+$extern fn_((dansi_xterm_title_setIconWrite(S_const$u8 title, io_Writer out))(io_PrintE$void));
 
 #define dansi_xterm_title_setWindow_static(_title_tok) \
     ____dansi_xterm_title_setWindow_static(_title_tok)
 $attr($must_check)
 $extern fn_((dansi_xterm_title_setWindow(S_const$u8 title, S$u8 buf))(E$S$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_title_setWindowWrite(S_const$u8 title, io_Writer out))(E$void));
+$extern fn_((dansi_xterm_title_setWindowWrite(S_const$u8 title, io_Writer out))(io_PrintE$void));
 
 #define dansi_xterm_title_setBoth_static(_title_tok) \
     ____dansi_xterm_title_setBoth_static(_title_tok)
 $attr($must_check)
 $extern fn_((dansi_xterm_title_setBoth(S_const$u8 title, S$u8 buf))(E$S$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_title_setBothWrite(S_const$u8 title, io_Writer out))(E$void));
+$extern fn_((dansi_xterm_title_setBothWrite(S_const$u8 title, io_Writer out))(io_PrintE$void));
 
 #define dansi_xterm_title_push_static(_target_tok) \
     ____dansi_xterm_title_push_static(_target_tok)
@@ -94,20 +94,20 @@ typedef A$$(7 + uint_log10Ceil_static(u8_limit_max), u8) dansi_xterm_title_Stack
 $attr($must_check)
 $extern fn_((dansi_xterm_title_push(dansi_xterm_title_Target target, dansi_xterm_title_StackBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_title_pushWrite(dansi_xterm_title_Target target, io_Writer out))(E$void));
+$extern fn_((dansi_xterm_title_pushWrite(dansi_xterm_title_Target target, io_Writer out))(io_PrintE$void));
 
 #define dansi_xterm_title_pop_static(_target_tok) \
     ____dansi_xterm_title_pop_static(_target_tok)
 $attr($must_check)
 $extern fn_((dansi_xterm_title_pop(dansi_xterm_title_Target target, dansi_xterm_title_StackBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_title_popWrite(dansi_xterm_title_Target target, io_Writer out))(E$void));
+$extern fn_((dansi_xterm_title_popWrite(dansi_xterm_title_Target target, io_Writer out))(io_PrintE$void));
 
 #define dansi_xterm_title_requestIconLabel_static() \
     ____dansi_xterm_title_requestIconLabel_static()
 $extern fn_((dansi_xterm_title_requestIconLabel(void))(S_const$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_title_requestIconLabelWrite(io_Writer out))(E$void));
+$extern fn_((dansi_xterm_title_requestIconLabelWrite(io_Writer out))(io_WriteE$void));
 $attr($must_check)
 $extern fn_((dansi_xterm_title_receiveIconLabelReport(io_Reader in, S$u8 buf))(E$S$u8));
 $attr($must_check)
@@ -123,7 +123,7 @@ $extern fn_((dansi_xterm_title_fetchIconLabel(
     ____dansi_xterm_title_requestWindowTitle_static()
 $extern fn_((dansi_xterm_title_requestWindowTitle(void))(S_const$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_title_requestWindowTitleWrite(io_Writer out))(E$void));
+$extern fn_((dansi_xterm_title_requestWindowTitleWrite(io_Writer out))(io_WriteE$void));
 $attr($must_check)
 $extern fn_((dansi_xterm_title_receiveWindowTitleReport(io_Reader in, S$u8 buf))(E$S$u8));
 $attr($must_check)

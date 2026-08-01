@@ -54,12 +54,12 @@ $static fn_((daterm_ANSI_test_initTxn(
     asg_l((ansi)(cleared()));
     ansi->input_mode = daterm_ANSI_InputMode_vt;
     ansi->mouse_pos_kind = daterm_mouse_PosKind_cell;
-    ansi->input_buf.reader = io_Buf_Reader_init(source, input_buf);
+    ansi->input_buf.reader = io_Buf_Reader_from(source, input_buf);
     ansi->input_buf.esc_timeout = daterm_ANSI_esc_timeout_default;
     ansi->clock = clock;
 };
 
-$static fn_((daterm_ANSI_test_ChunkReader__read(P$raw ctx, S$u8 out))(E$usize) $scope) {
+$static fn_((daterm_ANSI_test_ChunkReader__read(P$raw ctx, S$u8 out))(io_ReadE$usize) $scope) {
     let self = ptrAlignCast$((daterm_ANSI_test_ChunkReader*)(ctx));
     let available = self->bytes.len - self->pos;
     if (available == 0) { return_ok(0); }
@@ -79,9 +79,9 @@ $static fn_((daterm_ANSI_test_ChunkReader_reader(daterm_ANSI_test_ChunkReader* s
     };
 };
 
-TEST_fn_("daterm-context/ANSI: default config keeps processed output" $scope) {
+TEST_fn_("daterm-context/ANSI: direct config keeps processed output" $scope) {
     var_(gpa, mem_Alctr) = cleared();
-    let cfg = daterm_ANSI_Cfg_default(gpa);
+    let cfg = unwrap_(daterm_ANSI_Cfg_direct(gpa));
 
     try_(TEST_expect(cfg.output_mode == daterm_ANSI_OutputMode_processed));
 #if plat_is_windows
@@ -107,7 +107,9 @@ TEST_fn_("daterm-runtime: position and size vocabulary is coordinate-safe" $scop
 TEST_fn_("daterm-context/ANSI: caps match selected input mode" $guard) {
     var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
-    var ansi = try_(daterm_ANSI_init(daterm_ANSI_Cfg_default(heap_Sys_alctr(&heap))));
+    var ansi = try_(daterm_ANSI_init(unwrap_(daterm_ANSI_Cfg_direct(
+        heap_Sys_alctr(&heap)
+    ))));
     defer_(daterm_ANSI_fini(&ansi));
     let caps = daterm_Term_caps(daterm_ANSI_term(&ansi));
 
@@ -131,7 +133,7 @@ TEST_fn_("daterm-context/ANSI: Windows VT mode transfers key ownership to byte i
 #else
     var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
-    var cfg = daterm_ANSI_Cfg_default(heap_Sys_alctr(&heap));
+    var cfg = unwrap_(daterm_ANSI_Cfg_direct(heap_Sys_alctr(&heap)));
     cfg.input_mode = daterm_ANSI_InputMode_vt;
     var ansi = try_(daterm_ANSI_init(cfg));
     defer_(daterm_ANSI_fini(&ansi));
@@ -337,7 +339,7 @@ TEST_fn_("daterm-context/ANSI: Windows modifier records preserve side and lifecy
 } $unscoped(TEST_fn);
 
 TEST_fn_("daterm-context/ANSI: transaction preserves unrelated key event" $scope) {
-    var source = io_Fixed_Reader_init(io_Fixed_reading(u8_l("\x1B[A\x1B[6n")));
+    var source = io_Fixed_Reader_from(io_Fixed_reading(u8_l("\x1B[A\x1B[6n")));
     var_(input_mem, A$$(32, u8)) $undefined;
     let_(clock, time_Clock) = union_of((time_Clock_awake)(try_(time_Awake_direct())));
     var_(ansi, daterm_ANSI) $undefined;
@@ -366,7 +368,7 @@ TEST_fn_("daterm-context/ANSI: transaction preserves unrelated key event" $scope
 } $unscoped(TEST_fn);
 
 TEST_fn_("daterm-context/ANSI: transaction preserves unrelated mouse event" $scope) {
-    var source = io_Fixed_Reader_init(io_Fixed_reading(u8_l("\x1B[<0;2;3M\x1B[6n")));
+    var source = io_Fixed_Reader_from(io_Fixed_reading(u8_l("\x1B[<0;2;3M\x1B[6n")));
     var_(input_mem, A$$(48, u8)) $undefined;
     let_(clock, time_Clock) = union_of((time_Clock_awake)(try_(time_Awake_direct())));
     var_(ansi, daterm_ANSI) $undefined;
@@ -400,7 +402,7 @@ TEST_fn_("daterm-context/ANSI: transaction preserves unrelated mouse event" $sco
 } $unscoped(TEST_fn);
 
 TEST_fn_("daterm-context/ANSI: transaction times out" $scope) {
-    var source = io_Fixed_Reader_init(io_Fixed_reading(u8_l("")));
+    var source = io_Fixed_Reader_from(io_Fixed_reading(u8_l("")));
     var_(input_mem, A$$(8, u8)) $undefined;
     let_(clock, time_Clock) = union_of((time_Clock_awake)(try_(time_Awake_direct())));
     var_(ansi, daterm_ANSI) $undefined;
@@ -430,7 +432,7 @@ TEST_fn_("daterm-context/ANSI: transaction times out" $scope) {
 TEST_fn_("daterm-context/ANSI: transaction reports full pending queue" $scope) {
     var_(source_mem, A$$(daterm_ANSI_pending_event_cap + 1, u8)) $undefined;
     mem_setBytes(A_ref$((S$u8)(source_mem)), 'a');
-    var source = io_Fixed_Reader_init(io_Fixed_reading(A_ref$((S_const$u8)(source_mem))));
+    var source = io_Fixed_Reader_from(io_Fixed_reading(A_ref$((S_const$u8)(source_mem))));
     var_(input_mem, A$$(daterm_ANSI_pending_event_cap + 1, u8)) $undefined;
     let_(clock, time_Clock) = union_of((time_Clock_awake)(try_(time_Awake_direct())));
     var_(ansi, daterm_ANSI) $undefined;
@@ -460,7 +462,7 @@ TEST_fn_("daterm-context/ANSI: transaction reports full pending queue" $scope) {
 } $unscoped(TEST_fn);
 
 TEST_fn_("daterm-context/ANSI: transaction accepts matched report" $scope) {
-    var source = io_Fixed_Reader_init(io_Fixed_reading(u8_l("\x1B[6n")));
+    var source = io_Fixed_Reader_from(io_Fixed_reading(u8_l("\x1B[6n")));
     var_(input_mem, A$$(16, u8)) $undefined;
     let_(clock, time_Clock) = union_of((time_Clock_awake)(try_(time_Awake_direct())));
     var_(ansi, daterm_ANSI) $undefined;
@@ -482,9 +484,9 @@ TEST_fn_("daterm-context/ANSI: transaction accepts matched report" $scope) {
 } $unscoped(TEST_fn);
 
 TEST_fn_("daterm-context/ANSI: buffered text becomes sequence without refill" $scope) {
-    var reader_impl = io_Fixed_Reader_init(io_Fixed_reading(u8_l("a")));
+    var reader_impl = io_Fixed_Reader_from(io_Fixed_reading(u8_l("a")));
     var_(mem, A$$(8, u8)) $undefined;
-    var reader = io_Buf_Reader_init(io_Fixed_reader(&reader_impl), A_ref$((S$u8)(mem)));
+    var reader = io_Buf_Reader_from(io_Fixed_reader(&reader_impl), A_ref$((S$u8)(mem)));
     try_(io_Buf_Reader_fill(&reader));
     let_(clock, time_Clock) = union_of((time_Clock_awake)(try_(time_Awake_direct())));
     var_(esc_started_at, O$time_Clock_Inst) = none();
@@ -499,10 +501,10 @@ TEST_fn_("daterm-context/ANSI: buffered text becomes sequence without refill" $s
 } $unscoped(TEST_fn);
 
 TEST_fn_("daterm-context/ANSI: buffered C1 CSI uses eight-bit framing" $scope) {
-    var reader_impl = io_Fixed_Reader_init(io_Fixed_reading(u8_l("\x9B"
+    var reader_impl = io_Fixed_Reader_from(io_Fixed_reading(u8_l("\x9B"
                                                                  "1;5A")));
     var_(mem, A$$(8, u8)) $undefined;
-    var reader = io_Buf_Reader_init(io_Fixed_reader(&reader_impl), A_ref$((S$u8)(mem)));
+    var reader = io_Buf_Reader_from(io_Fixed_reader(&reader_impl), A_ref$((S$u8)(mem)));
     try_(io_Buf_Reader_fill(&reader));
     let_(clock, time_Clock) = union_of((time_Clock_awake)(try_(time_Awake_direct())));
     var_(esc_started_at, O$time_Clock_Inst) = none();
@@ -525,7 +527,7 @@ TEST_fn_("daterm-context/ANSI: buffered PM waits for string terminator" $scope) 
         .chunk = 5,
     };
     var_(mem, A$$(32, u8)) $undefined;
-    var reader = io_Buf_Reader_init(
+    var reader = io_Buf_Reader_from(
         daterm_ANSI_test_ChunkReader_reader(&reader_impl), A_ref$((S$u8)(mem))
     );
     let_(clock, time_Clock) = union_of((time_Clock_awake)(try_(time_Awake_direct())));
@@ -637,7 +639,7 @@ TEST_fn_("daterm-context/ANSI: split CSI waits for final byte" $scope) {
         .chunk = 2,
     };
     var_(mem, A$$(8, u8)) $undefined;
-    var reader = io_Buf_Reader_init(daterm_ANSI_test_ChunkReader_reader(&reader_impl), A_ref$((S$u8)(mem)));
+    var reader = io_Buf_Reader_from(daterm_ANSI_test_ChunkReader_reader(&reader_impl), A_ref$((S$u8)(mem)));
     let_(clock, time_Clock) = union_of((time_Clock_awake)(try_(time_Awake_direct())));
     var_(esc_started_at, O$time_Clock_Inst) = none();
 
@@ -655,9 +657,9 @@ TEST_fn_("daterm-context/ANSI: split CSI waits for final byte" $scope) {
 } $unscoped(TEST_fn);
 
 TEST_fn_("daterm-context/ANSI: single escape follows timeout policy" $scope) {
-    var reader_impl = io_Fixed_Reader_init(io_Fixed_reading(u8_l("\x1B")));
+    var reader_impl = io_Fixed_Reader_from(io_Fixed_reading(u8_l("\x1B")));
     var_(mem, A$$(8, u8)) $undefined;
-    var reader = io_Buf_Reader_init(io_Fixed_reader(&reader_impl), A_ref$((S$u8)(mem)));
+    var reader = io_Buf_Reader_from(io_Fixed_reader(&reader_impl), A_ref$((S$u8)(mem)));
     try_(io_Buf_Reader_fill(&reader));
     let_(clock, time_Clock) = union_of((time_Clock_awake)(try_(time_Awake_direct())));
     var_(esc_started_at, O$time_Clock_Inst) = none();
@@ -677,14 +679,16 @@ TEST_fn_("daterm-context/ANSI: POSIX processed output keeps output postprocessin
 #if !plat_is_posix
     try_(TEST_skipMsg(u8_l("POSIX termios is not available on this platform")));
 #else
-    let input = io_handleStdIn();
+    let input = unwrap_(io_TTY_Cfg_direct()).input_file;
     if (!try_(fs_File_isTTY(input))) {
         try_(TEST_skipMsg(u8_l("stdin is not a TTY")));
     }
 
     var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
-    var ansi = try_(daterm_ANSI_init(daterm_ANSI_Cfg_default(heap_Sys_alctr(&heap))));
+    var ansi = try_(daterm_ANSI_init(unwrap_(daterm_ANSI_Cfg_direct(
+        heap_Sys_alctr(&heap)
+    ))));
     defer_(daterm_ANSI_fini(&ansi));
 
     try_(daterm_ANSI_enableRawMode(&ansi));
@@ -699,14 +703,14 @@ TEST_fn_("daterm-context/ANSI: POSIX raw output disables output postprocessing" 
 #if !plat_is_posix
     try_(TEST_skipMsg(u8_l("POSIX termios is not available on this platform")));
 #else
-    let input = io_handleStdIn();
+    let input = unwrap_(io_TTY_Cfg_direct()).input_file;
     if (!try_(fs_File_isTTY(input))) {
         try_(TEST_skipMsg(u8_l("stdin is not a TTY")));
     }
 
     var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
-    var cfg = daterm_ANSI_Cfg_default(heap_Sys_alctr(&heap));
+    var cfg = unwrap_(daterm_ANSI_Cfg_direct(heap_Sys_alctr(&heap)));
     cfg.output_mode = daterm_ANSI_OutputMode_raw;
     var ansi = try_(daterm_ANSI_init(cfg));
     defer_(daterm_ANSI_fini(&ansi));

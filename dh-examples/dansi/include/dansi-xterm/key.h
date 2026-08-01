@@ -297,7 +297,7 @@ $extern fn_((dansi_xterm_key_setModifyRaw(
     dansi_xterm_key_Resrc resource, u8 value, dansi_xterm_key_SetModifyRawBuf* buf
 ))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_key_setModifyRawWrite(dansi_xterm_key_Resrc resource, u8 value, io_Writer out))(E$void));
+$extern fn_((dansi_xterm_key_setModifyRawWrite(dansi_xterm_key_Resrc resource, u8 value, io_Writer out))(io_PrintE$void));
 
 #define dansi_xterm_key_setModifyLevel_static(_resrc_tok, _level_tok) \
     ____dansi_xterm_key_setModifyLevel_static(_resrc_tok, _level_tok)
@@ -309,7 +309,7 @@ $extern fn_((dansi_xterm_key_setModifyLevel(
 $attr($must_check)
 $extern fn_((dansi_xterm_key_setModifyLevelWrite(
     dansi_xterm_key_Resrc resource, dansi_xterm_key_ModifyLevel level, io_Writer out
-))(E$void));
+))(io_PrintE$void));
 
 #define dansi_xterm_key_resetModify_static(_resrc_tok) \
     ____dansi_xterm_key_resetModify_static(_resrc_tok)
@@ -319,7 +319,7 @@ $extern fn_((dansi_xterm_key_resetModify(
     dansi_xterm_key_Resrc resource, dansi_xterm_key_ResetModifyBuf* buf
 ))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_key_resetModifyWrite(dansi_xterm_key_Resrc resource, io_Writer out))(E$void));
+$extern fn_((dansi_xterm_key_resetModifyWrite(dansi_xterm_key_Resrc resource, io_Writer out))(io_PrintE$void));
 
 #define dansi_xterm_key_disableModify_static(_resrc_tok) \
     ____dansi_xterm_key_disableModify_static(_resrc_tok)
@@ -329,7 +329,7 @@ $extern fn_((dansi_xterm_key_disableModify(
     dansi_xterm_key_Resrc resource, dansi_xterm_key_DisableModifyBuf* buf
 ))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_key_disableModifyWrite(dansi_xterm_key_Resrc resource, io_Writer out))(E$void));
+$extern fn_((dansi_xterm_key_disableModifyWrite(dansi_xterm_key_Resrc resource, io_Writer out))(io_PrintE$void));
 
 #define dansi_xterm_key_queryModify_static(_resrc_tok) \
     ____dansi_xterm_key_queryModify_static(_resrc_tok)
@@ -339,7 +339,7 @@ $extern fn_((dansi_xterm_key_queryModify(
     dansi_xterm_key_Resrc resource, dansi_xterm_key_QueryModifyBuf* buf
 ))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_key_queryModifyWrite(dansi_xterm_key_Resrc resource, io_Writer out))(E$void));
+$extern fn_((dansi_xterm_key_queryModifyWrite(dansi_xterm_key_Resrc resource, io_Writer out))(io_PrintE$void));
 
 #define dansi_xterm_key_setFormat_static(_resrc_tok, _format_tok) \
     ____dansi_xterm_key_setFormat_static(_resrc_tok, _format_tok)
@@ -351,7 +351,7 @@ $extern fn_((dansi_xterm_key_setFormat(
 $attr($must_check)
 $extern fn_((dansi_xterm_key_setFormatWrite(
     dansi_xterm_key_Resrc resource, dansi_xterm_key_Format format, io_Writer out
-))(E$void));
+))(io_PrintE$void));
 
 #define dansi_xterm_key_resetFormat_static(_resrc_tok) \
     ____dansi_xterm_key_resetFormat_static(_resrc_tok)
@@ -361,7 +361,7 @@ $extern fn_((dansi_xterm_key_resetFormat(
     dansi_xterm_key_Resrc resource, dansi_xterm_key_ResetFormatBuf* buf
 ))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_key_resetFormatWrite(dansi_xterm_key_Resrc resource, io_Writer out))(E$void));
+$extern fn_((dansi_xterm_key_resetFormatWrite(dansi_xterm_key_Resrc resource, io_Writer out))(io_PrintE$void));
 
 #define dansi_xterm_key_queryFormat_static(_resrc_tok) \
     ____dansi_xterm_key_queryFormat_static(_resrc_tok)
@@ -371,7 +371,7 @@ $extern fn_((dansi_xterm_key_queryFormat(
     dansi_xterm_key_Resrc resource, dansi_xterm_key_QueryFormatBuf* buf
 ))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_key_queryFormatWrite(dansi_xterm_key_Resrc resource, io_Writer out))(E$void));
+$extern fn_((dansi_xterm_key_queryFormatWrite(dansi_xterm_key_Resrc resource, io_Writer out))(io_PrintE$void));
 
 #define dansi_xterm_key_enableEnhanced_static() \
     ____dansi_xterm_key_enableEnhanced_static()
@@ -379,7 +379,7 @@ typedef A$$(18, u8) dansi_xterm_key_EnableEnhancedBuf;
 $attr($must_check)
 $extern fn_((dansi_xterm_key_enableEnhanced(dansi_xterm_key_EnableEnhancedBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_key_enableEnhancedWrite(io_Writer out))(E$void));
+$extern fn_((dansi_xterm_key_enableEnhancedWrite(io_Writer out))(io_PrintE$void));
 
 #define dansi_xterm_key_disableEnhanced_static() \
     ____dansi_xterm_key_disableEnhanced_static()
@@ -387,7 +387,7 @@ typedef A$$(14, u8) dansi_xterm_key_DisableEnhancedBuf;
 $attr($must_check)
 $extern fn_((dansi_xterm_key_disableEnhanced(dansi_xterm_key_DisableEnhancedBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_key_disableEnhancedWrite(io_Writer out))(E$void));
+$extern fn_((dansi_xterm_key_disableEnhancedWrite(io_Writer out))(io_PrintE$void));
 
 $extern fn_((dansi_xterm_key_parseReport(dansi_Seq seq))(O$dansi_xterm_key_Report));
 $attr($must_check)

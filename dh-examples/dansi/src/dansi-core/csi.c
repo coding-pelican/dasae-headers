@@ -58,16 +58,16 @@ fn_((dansi_csi_parse(S_const$u8 bytes))(dansi_csi_E$dansi_csi_Frame) $scope) {
 } $unscoped(fn);
 
 fn_((dansi_csi_make(S_const$u8 params, S_const$u8 intermediates, u8 final, S$u8 buf))(E$S$u8) $scope) {
-    var writing = io_Fixed_Writer_init(io_Fixed_writing(buf));
+    var writing = io_Fixed_Writer_from(io_Fixed_writing(buf));
     try_(dansi_csi_write(params, intermediates, final, io_Fixed_writer(&writing)));
     return_ok(io_Fixed_written(writing.stream));
 } $unscoped(fn);
 
-fn_((dansi_csi_write(S_const$u8 params, S_const$u8 intermediates, u8 final, io_Writer out))(E$void) $scope) {
+fn_((dansi_csi_write(S_const$u8 params, S_const$u8 intermediates, u8 final, io_Writer out))(io_PrintE$void) $scope) {
     try_(io_Writer_writeBytes(out, u8_l(dansi_csi_7bit_prefix)));
     try_(io_Writer_writeBytes(out, params));
     try_(io_Writer_writeBytes(out, intermediates));
-    return io_Writer_writeByte(out, final);
+    return_ok(try_(io_Writer_writeByte(out, final)));
 } $unscoped(fn);
 
 fn_((dansi_csi_Frame_isPrivate(dansi_csi_Frame self, u8 marker))(bool)) {

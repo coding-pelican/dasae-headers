@@ -4,12 +4,12 @@
 #include "daterm-bridge/xterm.h"
 #include <dh/time/Dur.h>
 
-fn_((main(S$S_const$u8 args))(E$void) $guard) {
-    let_ignore = args;
+fn_((main(proc_Entry entry))(E$void) $guard) {
+    let_ignore = entry;
 
     var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
-    var cfg = daterm_ANSI_Cfg_default(heap_Sys_alctr(&heap));
+    var cfg = unwrap_(daterm_ANSI_Cfg_direct(heap_Sys_alctr(&heap)));
     cfg.input_mode = daterm_ANSI_InputMode_vt;
     var ansi = try_(daterm_ANSI_init(cfg));
     defer_(daterm_ANSI_fini(&ansi));

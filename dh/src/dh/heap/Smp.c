@@ -14,7 +14,8 @@ typedef struct heap_Smp__CacheEntry {
 #define heap_Smp__cache_size /*:usize*/ (arch_cache_line_bytes / sizeOf$(heap_Smp__CacheEntry))
 #define heap_Smp__use_thrd_cache pp_not(plat_is_darwin)
 pp_if_(heap_Smp__use_thrd_cache)(pp_then_(
-    $static $thrd_local var_(heap_Smp__cache, A$$(heap_Smp__cache_size, heap_Smp__CacheEntry)) = A_zero()
+    $attr($thrd_local)
+    $static var_(heap_Smp__cache, A$$(heap_Smp__cache_size, heap_Smp__CacheEntry)) = A_zero()
 ));
 
 typedef struct heap_Smp__Locked {

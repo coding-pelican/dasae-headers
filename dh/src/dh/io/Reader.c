@@ -2,6 +2,17 @@
 #include "dh/io/Writer.h"
 #include "dh/mem/common.h"
 
+$static var_(io_Reader__ctx_noop, Void) $undefined_static;
+let_(io_Reader_noop, io_Reader) = {
+    .ctx = &io_Reader__ctx_noop,
+    .readFn = io_Reader_noRead
+};
+fn_((io_Reader_noRead(P$raw ctx, S$u8 out_buf))(io_ReadE$usize) $scope) {
+    let_ignore = ctx;
+    let_ignore = out_buf;
+    return_ok(0);
+} $unscoped(fn);
+
 $static var_(io_Reader__ctx_failing, Void) $undefined_static;
 let_(io_Reader_failing, io_Reader) = {
     .ctx = &io_Reader__ctx_failing,

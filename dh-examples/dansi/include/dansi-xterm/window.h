@@ -102,7 +102,7 @@ typedef A$$(3 + uint_log10Ceil_static(u8_limit_max), u8) dansi_xterm_window_OpBu
 $attr($must_check)
 $extern fn_((dansi_xterm_window_op(dansi_xterm_window_Op op, dansi_xterm_window_OpBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_window_opWrite(dansi_xterm_window_Op op, io_Writer out))(E$void));
+$extern fn_((dansi_xterm_window_opWrite(dansi_xterm_window_Op op, io_Writer out))(io_PrintE$void));
 
 #define dansi_xterm_window_move_static(_x_tok, _y_tok) \
     ____dansi_xterm_window_move_static(_x_tok, _y_tok)
@@ -110,7 +110,7 @@ typedef A$$(6 + uint_log10Ceil_static(u16_limit_max) * 2, u8) dansi_xterm_window
 $attr($must_check)
 $extern fn_((dansi_xterm_window_move(u16 x, u16 y, dansi_xterm_window_MoveBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_window_moveWrite(u16 x, u16 y, io_Writer out))(E$void));
+$extern fn_((dansi_xterm_window_moveWrite(u16 x, u16 y, io_Writer out))(io_PrintE$void));
 
 #define dansi_xterm_window_resizePixels_static(_height_tok, _width_tok) \
     ____dansi_xterm_window_resizePixels_static(_height_tok, _width_tok)
@@ -120,7 +120,7 @@ $extern fn_((
     dansi_xterm_window_resizePixels(u16 height, u16 width, dansi_xterm_window_ResizePixelsBuf* buf)
 )(S$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_window_resizePixelsWrite(u16 height, u16 width, io_Writer out))(E$void));
+$extern fn_((dansi_xterm_window_resizePixelsWrite(u16 height, u16 width, io_Writer out))(io_PrintE$void));
 
 #define dansi_xterm_window_resizeCells_static(_height_tok, _width_tok) \
     ____dansi_xterm_window_resizeCells_static(_height_tok, _width_tok)
@@ -130,7 +130,7 @@ $extern fn_((
     dansi_xterm_window_resizeCells(u16 height, u16 width, dansi_xterm_window_ResizeCellsBuf* buf)
 )(S$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_window_resizeCellsWrite(u16 height, u16 width, io_Writer out))(E$void));
+$extern fn_((dansi_xterm_window_resizeCellsWrite(u16 height, u16 width, io_Writer out))(io_PrintE$void));
 
 #define dansi_xterm_window_maximize_static(_mode_tok) \
     ____dansi_xterm_window_maximize_static(_mode_tok)
@@ -140,7 +140,7 @@ $extern fn_((dansi_xterm_window_maximize(
     dansi_xterm_window_Maximize mode, dansi_xterm_window_MaximizeBuf* buf
 ))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_window_maximizeWrite(dansi_xterm_window_Maximize mode, io_Writer out))(E$void));
+$extern fn_((dansi_xterm_window_maximizeWrite(dansi_xterm_window_Maximize mode, io_Writer out))(io_PrintE$void));
 
 #define dansi_xterm_window_fullscreen_static(_mode_tok) \
     ____dansi_xterm_window_fullscreen_static(_mode_tok)
@@ -150,13 +150,13 @@ $extern fn_((dansi_xterm_window_fullscreen(
     dansi_xterm_window_Fullscreen mode, dansi_xterm_window_FullscreenBuf* buf
 ))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_window_fullscreenWrite(dansi_xterm_window_Fullscreen mode, io_Writer out))(E$void));
+$extern fn_((dansi_xterm_window_fullscreenWrite(dansi_xterm_window_Fullscreen mode, io_Writer out))(io_PrintE$void));
 
 #define dansi_xterm_window_requestState_static() \
     ____dansi_xterm_window_requestState_static()
 $extern fn_((dansi_xterm_window_requestState(void))(S_const$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_window_requestStateWrite(io_Writer out))(E$void));
+$extern fn_((dansi_xterm_window_requestStateWrite(io_Writer out))(io_WriteE$void));
 $attr($must_check)
 $extern fn_((dansi_xterm_window_receiveStateReport(io_Reader in, S$u8 buf))(E$S$u8));
 $attr($must_check)
@@ -172,7 +172,7 @@ $extern fn_((dansi_xterm_window_fetchState(
     ____dansi_xterm_window_requestPos_static()
 $extern fn_((dansi_xterm_window_requestPos(void))(S_const$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_window_requestPosWrite(io_Writer out))(E$void));
+$extern fn_((dansi_xterm_window_requestPosWrite(io_Writer out))(io_WriteE$void));
 $attr($must_check)
 $extern fn_((dansi_xterm_window_receivePosReport(io_Reader in, S$u8 buf))(E$S$u8));
 $attr($must_check)

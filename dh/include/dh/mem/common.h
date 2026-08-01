@@ -5,7 +5,7 @@
  * @file    common.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2024-12-17 (date of creation)
- * @updated 2026-05-20 (date of last update)
+ * @updated 2026-07-31 (date of last update)
  * @ingroup dasae-headers(dh)/mem
  * @prefix  mem
  *
@@ -238,14 +238,36 @@ $attr($inline_always)
 $static fn_((mem_emptyAddr(mem_Align log2_align))(usize));
 
 $attr($inline_always)
-$static fn_((mem_idxZ$u8(u8 sentinel, const u8* pz))(usize));
+$static fn_((mem_lenZ0Bytes(const u8* pz0))(usize));
 $attr($inline_always)
-$static fn_((mem_lenZ0$u8(const u8* pz0))(usize));
+$static fn_((mem_lenZ0(u_P_const$raw pz0))(usize));
+#define T_use_mem_lenZ0$(_T...) __stmt__T_use_mem_lenZ0$(_T)
+$attr($inline_always)
+$static fn_((mem_lenZBytes(u8 sentinel, const u8* pz))(usize));
+$attr($inline_always)
+$static fn_((mem_lenZ(u_V$raw sentinel, u_P_const$raw pz))(usize));
+#define T_use_mem_lenZ$(_T...) __stmt__T_use_mem_lenZ$(_T)
 
 $attr($inline_always)
-$static fn_((mem_spanZ0$u8(const u8* pz0))(S_const$u8));
+$static fn_((mem_spanZ0Bytes(const u8* pz0))(S_const$u8));
 $attr($inline_always)
-$static fn_((mem_spanZ0Mut$u8(u8* pz0))(S$u8));
+$static fn_((mem_spanZ0(u_P_const$raw pz0))(u_S_const$raw));
+#define T_use_mem_spanZ0$(_T...) __stmt__T_use_mem_spanZ0$(_T)
+$attr($inline_always)
+$static fn_((mem_spanZ0MutBytes(u8* pz0))(S$u8));
+$attr($inline_always)
+$static fn_((mem_spanZ0Mut(u_P$raw pz0))(u_S$raw));
+#define T_use_mem_spanZ0Mut$(_T...) __stmt__T_use_mem_spanZ0Mut$(_T)
+$attr($inline_always)
+$static fn_((mem_spanZBytes(u8 sentinel, const u8* pz))(S_const$u8));
+$attr($inline_always)
+$static fn_((mem_spanZ(u_V$raw sentinel, u_P_const$raw pz))(u_S_const$raw));
+#define T_use_mem_spanZ$(_T...) __stmt__T_use_mem_spanZ$(_T)
+$attr($inline_always)
+$static fn_((mem_spanZMutBytes(u8 sentinel, u8* pz))(S$u8));
+$attr($inline_always)
+$static fn_((mem_spanZMut(u_V$raw sentinel, u_P$raw pz))(u_S$raw));
+#define T_use_mem_spanZMut$(_T...) __stmt__T_use_mem_spanZMut$(_T)
 
 $attr($inline_always)
 $static fn_((mem_asBytes(u_P_const$raw ptr))(S_const$u8));
@@ -1246,24 +1268,58 @@ fn_((mem_emptyAddr(mem_Align log2_align))(usize)) {
     return usize_limit_max & ~(mem_log2ToAlign(log2_align) - 1);
 };
 
-fn_((mem_idxZ$u8(u8 sentinel, const u8* pz))(usize)) {
+fn_((mem_lenZ0Bytes(const u8* pz0))(usize)) {
+    claim_assert_nonnull(pz0);
+    return mem_lenZBytes(u8_c('\0'), pz0);
+};
+fn_((mem_lenZ0(u_P_const$raw pz0))(usize)) {
+    claim_assert_nonnull(pz0.raw);
+    return mem_lenZ(u_allocV(pz0.type), pz0);
+};
+fn_((mem_lenZBytes(u8 sentinel, const u8* pz))(usize)) {
     claim_assert_nonnull(pz);
     var_(idx, usize) = 0;
-    while (*P_at((pz)[idx]) != sentinel) { ++idx; }
+    while (*P_at((pz)[idx]) != sentinel) ++idx;
     return idx;
 };
-fn_((mem_lenZ0$u8(const u8* pz0))(usize)) {
-    claim_assert_nonnull(pz0);
-    return mem_idxZ$u8(u8_c('\0'), pz0);
+fn_((mem_lenZ(u_V$raw sentinel, u_P_const$raw pz))(usize)) {
+    claim_assert_nonnull(pz.raw);
+    var_(idx, usize) = 0;
+    while (!u_memeql(u_atP(pz, idx), sentinel.ref.as_const)) ++idx;
+    return idx;
 };
 
-fn_((mem_spanZ0$u8(const u8* pz0))(S_const$u8)) {
+fn_((mem_spanZ0Bytes(const u8* pz0))(S_const$u8)) {
     claim_assert_nonnull(pz0);
-    return (S_const$u8){ .ptr = pz0, .len = mem_lenZ0$u8(pz0) };
+    return P_prefix$((S_const$u8)(pz0)(mem_lenZ0Bytes(pz0)));
 };
-fn_((mem_spanZ0Mut$u8(u8* pz0))(S$u8)) {
+fn_((mem_spanZ0(u_P_const$raw pz0))(u_S_const$raw)) {
+    claim_assert_nonnull(pz0.raw);
+    return u_prefixP(pz0, mem_lenZ0(pz0));
+};
+fn_((mem_spanZ0MutBytes(u8* pz0))(S$u8)) {
     claim_assert_nonnull(pz0);
-    return (S$u8){ .ptr = pz0, .len = mem_lenZ0$u8(pz0) };
+    return P_prefix$((S$u8)(pz0)(mem_lenZ0Bytes(pz0)));
+};
+fn_((mem_spanZ0Mut(u_P$raw pz0))(u_S$raw)) {
+    claim_assert_nonnull(pz0.raw);
+    return u_prefixP(pz0, mem_lenZ0(pz0.as_const));
+};
+fn_((mem_spanZBytes(u8 sentinel, const u8* pz))(S_const$u8)) {
+    claim_assert_nonnull(pz);
+    return P_prefix$((S_const$u8)(pz)(mem_lenZBytes(sentinel, pz)));
+};
+fn_((mem_spanZ(u_V$raw sentinel, u_P_const$raw pz))(u_S_const$raw)) {
+    claim_assert_nonnull(pz.raw);
+    return u_prefixP(pz, mem_lenZ(sentinel, pz));
+};
+fn_((mem_spanZMutBytes(u8 sentinel, u8* pz))(S$u8)) {
+    claim_assert_nonnull(pz);
+    return P_prefix$((S$u8)(pz)(mem_lenZBytes(sentinel, pz)));
+};
+fn_((mem_spanZMut(u_V$raw sentinel, u_P$raw pz))(u_S$raw)) {
+    claim_assert_nonnull(pz.raw);
+    return u_prefixP(pz, mem_lenZ(sentinel, pz.as_const));
 };
 
 fn_((mem_asBytes(u_P_const$raw ptr))(S_const$u8)) {
@@ -1871,6 +1927,30 @@ fn_((mem_Cutted_after(mem_Cutted self, TypeInfo type))(u_S_const$raw)) {
 
 /*--- template ---*/
 
+#define __stmt__T_use_mem_lenZ0$(_T...) \
+    $inline_always $static fn_((tpl$(mem_lenZ0, _T)(u_V$raw sentinel, u_P_const$raw pz0))(usize)) { \
+        return mem_lenZ0(u_anyV(sentinel), u_anyP(pz0)); \
+    }
+#define __stmt__T_use_mem_lenZ$(_T...) \
+    $inline_always $static fn_((tpl$(mem_lenZ, _T)(u_V$raw sentinel, u_P_const$raw pz))(usize)) { \
+        return mem_lenZ(u_anyV(sentinel), u_anyP(pz)); \
+    }
+#define __stmt__T_use_mem_spanZ0$(_T...) \
+    $inline_always $static fn_((tpl$(mem_spanZ0, _T)(u_P_const$raw pz0))(u_S_const$raw)) { \
+        return mem_spanZ0(u_anyP(pz0)); \
+    }
+#define __stmt__T_use_mem_spanZ0Mut$(_T...) \
+    $inline_always $static fn_((tpl$(mem_spanZ0Mut, _T)(u_P$raw pz0))(u_S$raw)) { \
+        return mem_spanZ0Mut(u_anyP(pz0)); \
+    }
+#define __stmt__T_use_mem_spanZ$(_T...) \
+    $inline_always $static fn_((tpl$(mem_spanZ, _T)(u_V$raw sentinel, u_P_const$raw pz))(u_S_const$raw)) { \
+        return mem_spanZ(u_anyV(sentinel), u_anyP(pz)); \
+    }
+#define __stmt__T_use_mem_spanZMut$(_T...) \
+    $inline_always $static fn_((tpl$(mem_spanZMut, _T)(u_V$raw sentinel, u_P$raw pz))(u_S$raw)) { \
+        return mem_spanZMut(u_anyV(sentinel), u_anyP(pz)); \
+    }
 #define __stmt__T_use_mem_asBytes$(_T...) \
     $inline_always $static fn_((tpl$(mem_asBytes, _T)(P$$(_T) ptr))(S_const$u8)) { \
         return mem_asBytes(u_anyP(ptr)); \

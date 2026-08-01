@@ -30,7 +30,7 @@ $static fn_((test_io_ChunkReader_reader(test_io_ChunkReader* self))(io_Reader)) 
 };
 
 TEST_fn_("io/Reader: readAtLeast returns partial count at EOF" $scope) {
-    var reader_impl = io_Fixed_Reader_init(io_Fixed_reading(u8_l("abc")));
+    var reader_impl = io_Fixed_Reader_from(io_Fixed_reading(u8_l("abc")));
     let reader = io_Fixed_reader(&reader_impl);
     var_(out, A$$(5, u8)) $undefined;
 
@@ -55,7 +55,7 @@ TEST_fn_("io/Reader: readExact loops across short reads" $scope) {
 } $unscoped(TEST_fn);
 
 TEST_fn_("io/Reader: readByte reports UnexpectedEOF at EOF" $scope) {
-    var reader_impl = io_Fixed_Reader_init(io_Fixed_reading(u8_l("")));
+    var reader_impl = io_Fixed_Reader_from(io_Fixed_reading(u8_l("")));
 
     if_err((io_Reader_readByte(io_Fixed_reader(&reader_impl)))(err)) {
         try_(TEST_expect(E_eql(err.as_any, E_cause$UnexpectedEOF().as_any)));
@@ -66,14 +66,14 @@ TEST_fn_("io/Reader: readByte reports UnexpectedEOF at EOF" $scope) {
 } $unscoped(TEST_fn);
 
 TEST_fn_("io/Reader: skipAtLeast returns skipped count at EOF" $scope) {
-    var reader_impl = io_Fixed_Reader_init(io_Fixed_reading(u8_l("abc")));
+    var reader_impl = io_Fixed_Reader_from(io_Fixed_reading(u8_l("abc")));
     let skipped_len = try_(io_Reader_skipAtLeast(io_Fixed_reader(&reader_impl), 5));
 
     try_(TEST_expect(skipped_len == 3));
 } $unscoped(TEST_fn);
 
 TEST_fn_("io/Reader: skip requires the exact requested length" $scope) {
-    var reader_impl = io_Fixed_Reader_init(io_Fixed_reading(u8_l("abc")));
+    var reader_impl = io_Fixed_Reader_from(io_Fixed_reading(u8_l("abc")));
 
     if_err((io_Reader_skip(io_Fixed_reader(&reader_impl), 4))(err)) {
         try_(TEST_expect(E_eql(err.as_any, E_cause$UnexpectedEOF().as_any)));
@@ -84,9 +84,9 @@ TEST_fn_("io/Reader: skip requires the exact requested length" $scope) {
 } $unscoped(TEST_fn);
 
 TEST_fn_("io/Reader: copy moves bytes into any writer" $scope) {
-    var reader_impl = io_Fixed_Reader_init(io_Fixed_reading(u8_l("abcdef")));
+    var reader_impl = io_Fixed_Reader_from(io_Fixed_reading(u8_l("abcdef")));
     var_(out, A$$(8, u8)) $undefined;
-    var writer_impl = io_Fixed_Writer_init(io_Fixed_writing(A_ref$((S$u8)(out))));
+    var writer_impl = io_Fixed_Writer_from(io_Fixed_writing(A_ref$((S$u8)(out))));
 
     let copied = try_(io_Reader_copy(io_Fixed_reader(&reader_impl), io_Fixed_writer(&writer_impl)));
     let written = io_Fixed_written(writer_impl.stream);
@@ -96,9 +96,9 @@ TEST_fn_("io/Reader: copy moves bytes into any writer" $scope) {
 } $unscoped(TEST_fn);
 
 TEST_fn_("io/Reader: copyExact fails when source ends early" $scope) {
-    var reader_impl = io_Fixed_Reader_init(io_Fixed_reading(u8_l("abc")));
+    var reader_impl = io_Fixed_Reader_from(io_Fixed_reading(u8_l("abc")));
     var_(out, A$$(8, u8)) $undefined;
-    var writer_impl = io_Fixed_Writer_init(io_Fixed_writing(A_ref$((S$u8)(out))));
+    var writer_impl = io_Fixed_Writer_from(io_Fixed_writing(A_ref$((S$u8)(out))));
 
     let result = io_Reader_copyExact(io_Fixed_reader(&reader_impl), io_Fixed_writer(&writer_impl), 4);
 
@@ -106,9 +106,9 @@ TEST_fn_("io/Reader: copyExact fails when source ends early" $scope) {
 } $unscoped(TEST_fn);
 
 TEST_fn_("io/Reader: copyAtLeast returns copied count at EOF" $scope) {
-    var reader_impl = io_Fixed_Reader_init(io_Fixed_reading(u8_l("abc")));
+    var reader_impl = io_Fixed_Reader_from(io_Fixed_reading(u8_l("abc")));
     var_(out, A$$(8, u8)) $undefined;
-    var writer_impl = io_Fixed_Writer_init(io_Fixed_writing(A_ref$((S$u8)(out))));
+    var writer_impl = io_Fixed_Writer_from(io_Fixed_writing(A_ref$((S$u8)(out))));
 
     let copied_len = try_(io_Reader_copyAtLeast(io_Fixed_reader(&reader_impl), io_Fixed_writer(&writer_impl), 5));
     let written = io_Fixed_written(writer_impl.stream);

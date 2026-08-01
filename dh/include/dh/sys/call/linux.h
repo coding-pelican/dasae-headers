@@ -179,6 +179,7 @@ typedef enum sys_call_linux_Errno {
     sys_call_linux_ETXTBSY = 26,
     sys_call_linux_ERANGE = 34,
     sys_call_linux_ENAMETOOLONG = 36,
+    sys_call_linux_ENOSYS = 38,
     sys_call_linux_ELOOP = 40,
     sys_call_linux_ELIBBAD = 80,
     sys_call_linux_EINPROGRESS = 115,
@@ -342,6 +343,11 @@ typedef enum sys_call_linux_MCL {
     sys_call_linux_MCL_ONFAULT = 4,
 } sys_call_linux_MCL;
 typedef sys_call_linux_word sys_call_linux_mlockall_flags_t;
+
+typedef enum sys_call_linux_MLOCK {
+    sys_call_linux_MLOCK_ONFAULT = 1,
+} sys_call_linux_MLOCK;
+typedef sys_call_linux_word sys_call_linux_mlock_flags_t;
 
 /*---------- <termios.h> ----------------------------------------------------*/
 
@@ -536,6 +542,15 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_arm)(150)),
         pp_case_((arch_type_riscv64)(228)),
         pp_case_((arch_type_riscv32)(228)),
+        pp_default_(0)
+    )),
+    sys_call_linux_SYS_mlock2 = pp_switch_((arch_type)(
+        pp_case_((arch_type_x86_64)(325)),
+        pp_case_((arch_type_x86)(376)),
+        pp_case_((arch_type_aarch64)(284)),
+        pp_case_((arch_type_arm)(390)),
+        pp_case_((arch_type_riscv64)(284)),
+        pp_case_((arch_type_riscv32)(284)),
         pp_default_(0)
     )),
     sys_call_linux_SYS_munlock = pp_switch_((arch_type)(
@@ -1125,6 +1140,8 @@ $attr($inline)
 $static fn_((sys_call_linux_msync(void* addr, usize len, sys_call_linux_msync_flags_t flags))(sys_call_linux_word));
 $attr($inline)
 $static fn_((sys_call_linux_mlock(const void* addr, usize len))(sys_call_linux_word));
+$attr($inline)
+$static fn_((sys_call_linux_mlock2(const void* addr, usize len, sys_call_linux_mlock_flags_t flags))(sys_call_linux_word));
 $attr($inline)
 $static fn_((sys_call_linux_munlock(const void* addr, usize len))(sys_call_linux_word));
 $attr($inline)
@@ -1901,6 +1918,19 @@ fn_((sys_call_linux_mlock(const void* addr, usize len))(sys_call_linux_word)) {
         sys_call_linux_SYS_mlock,
         (sys_call_linux_word)(addr),
         (sys_call_linux_word)(len)
+    );
+};
+
+fn_((sys_call_linux_mlock2(
+    const void* addr,
+    usize len,
+    sys_call_linux_mlock_flags_t flags
+))(sys_call_linux_word)) {
+    return sys_call_linux_syscall3(
+        sys_call_linux_SYS_mlock2,
+        (sys_call_linux_word)(addr),
+        (sys_call_linux_word)(len),
+        flags
     );
 };
 

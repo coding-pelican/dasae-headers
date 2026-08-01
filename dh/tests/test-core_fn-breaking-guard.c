@@ -2,7 +2,9 @@
 #include "dh/io/stream.h"
 
 #define test_core_fn_breaking_guard__enabled_outstream pp_false
-$static fn_((ignorePrintln(S_const$u8 fmt, ...))(void)) { let_ignore = fmt; }
+$static fn_((ignorePrintln(S_const$u8 fmt, ...))(void)) {
+    let_ignore = fmt;
+}
 $static let io_println = pp_if_(test_core_fn_breaking_guard__enabled_outstream)(
     pp_then_(io_stream_println),
     pp_else_(ignorePrintln));

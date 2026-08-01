@@ -69,11 +69,11 @@ T_use_E$($set(dansi_shell_osc133_E)(dansi_shell_osc133_Frame));
 $attr($must_check)
 $extern fn_((dansi_shell_osc133_mark(dansi_shell_osc133_Mark mark, S$u8 buf))(E$S$u8));
 $attr($must_check)
-$extern fn_((dansi_shell_osc133_markWrite(dansi_shell_osc133_Mark mark, io_Writer out))(E$void));
+$extern fn_((dansi_shell_osc133_markWrite(dansi_shell_osc133_Mark mark, io_Writer out))(io_PrintE$void));
 $attr($must_check)
 $extern fn_((dansi_shell_osc133_commandEnd(O$i32 exit_code, S$u8 buf))(E$S$u8));
 $attr($must_check)
-$extern fn_((dansi_shell_osc133_commandEndWrite(O$i32 exit_code, io_Writer out))(E$void));
+$extern fn_((dansi_shell_osc133_commandEndWrite(O$i32 exit_code, io_Writer out))(io_PrintE$void));
 $attr($must_check)
 $extern fn_((dansi_shell_osc133_parse(dansi_osc_Frame frame))(dansi_shell_osc133_E$dansi_shell_osc133_Frame));
 

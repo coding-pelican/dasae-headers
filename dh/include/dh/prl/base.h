@@ -5,7 +5,7 @@
  * @file    base.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2026-05-03 (date of creation)
- * @updated 2026-05-03 (date of last update)
+ * @updated 2026-08-01 (date of last update)
  * @ingroup dasae-headers(dh)/prl
  * @prefix  (none)
  *
@@ -27,15 +27,15 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-#define A_a$(_$ANT, ... /*(_$ANT)*/) l$((_$ANT)A_init(__VA_ARGS__))
-#define A_s$(_$ANT, ... /*(anon S(T))*/) A_ref(A_a$(_$ANT, __VA_ARGS__))
-#define A_l$(_$ANT, ... /*(anon S_const(T))*/) (A_ref(A_a$(_$ANT, __VA_ARGS__)).as_const)
-#define T_a$(_$T, ... /*(anon A(N,_$T))*/) A_from$((_$T)__VA_ARGS__)
-#define T_s$(_$T, ... /*(S(_$T))*/) A_ref$((S$(_$T))T_a$(_$T, __VA_ARGS__))
-#define T_l$(_$T, ... /*(S_const(_$T))*/) A_ref$((S_const$(_$T))T_a$(_$T, __VA_ARGS__))
-#define NT_a$(_$N, _$T, ... /*(A(_$N, _$T))*/) l$((A$(_$N, _$T))A_init(__VA_ARGS__))
-#define NT_s$(_$N, _$T, ... /*(S(_$T))*/) A_ref$((S$(_$T))l$((A$$(_$N, _$T))A_init(__VA_ARGS__)))
-#define NT_l$(_$N, _$T, ... /*(S_const(_$T))*/) A_ref$((S_const$(_$T))l$((A$$(_$N, _$T))A_init(__VA_ARGS__)))
+#define A_a$(/*(_$ANT)(...)*/... /*(_$ANT)*/) comp_syn__A_a$(__VA_ARGS__)
+#define A_s$(/*(_$ANT)(...)*/... /*(anon S(T))*/) comp_syn__A_s$(__VA_ARGS__)
+#define A_l$(/*(_$ANT)(...)*/... /*(anon S_const(T))*/) comp_syn__A_l$(__VA_ARGS__)
+#define T_a$(/*(_$T)(...)*/... /*(anon A(N,_$T))*/) comp_syn__T_a$(__VA_ARGS__)
+#define T_s$(/*(_$T)(...)*/... /*(S(_$T))*/) comp_syn__T_s$(__VA_ARGS__)
+#define T_l$(/*(_$T)(...)*/... /*(S_const(_$T))*/) comp_syn__T_l$(__VA_ARGS__)
+#define NT_a$(/*(_$N, _$T)*/... /*(A(_$N, _$T))*/) comp_syn__NT_a$(__VA_ARGS__)
+#define NT_s$(/*(_$N, _$T)*/... /*(S(_$T))*/) comp_syn__NT_s$(__VA_ARGS__)
+#define NT_l$(/*(_$N, _$T)*/... /*(S_const(_$T))*/) comp_syn__NT_l$(__VA_ARGS__)
 
 #define u8_c(_$literal) /*literal as u8 character*/ \
     comp_syn__u8_c(_$literal)
@@ -70,6 +70,43 @@ extern "C" {
 #endif /* UNUSED_CODE */
 
 /*========== Macros and Definitions =========================================*/
+
+#define comp_syn__A_a$(...) __step__A_a$__emit(__step__A_a$__parse __VA_ARGS__)
+#define __step__A_a$__parse(_$ANT...) _$ANT,
+#define __step__A_a$__emit(...) ____A_a$(__VA_ARGS__)
+#define ____A_a$(_$ANT, ...) l$((_$ANT)A_init(__VA_ARGS__))
+#define comp_syn__A_s$(...) __step__A_s$__emit(__step__A_s$__parse __VA_ARGS__)
+#define __step__A_s$__parse(_$ANT...) _$ANT,
+#define __step__A_s$__emit(...) ____A_s$(__VA_ARGS__)
+#define ____A_s$(_$ANT, ...) A_ref(A_a$((_$ANT)__VA_ARGS__))
+#define comp_syn__A_l$(...) __step__A_l$__emit(__step__A_l$__parse __VA_ARGS__)
+#define __step__A_l$__parse(_$ANT...) _$ANT,
+#define __step__A_l$__emit(...) ____A_l$(__VA_ARGS__)
+#define ____A_l$(_$ANT, ...) (A_ref(A_a$((_$ANT)__VA_ARGS__)).as_const)
+#define comp_syn__T_a$(...) __step__T_a$__emit(__step__T_a$__parse __VA_ARGS__)
+#define __step__T_a$__parse(_$T...) _$T,
+#define __step__T_a$__emit(...) ____T_a$(__VA_ARGS__)
+#define ____T_a$(_$T, ...) A_from$((_$T)__VA_ARGS__)
+#define comp_syn__T_s$(...) __step__T_s$__emit(__step__T_s$__parse __VA_ARGS__)
+#define __step__T_s$__parse(_$T...) _$T,
+#define __step__T_s$__emit(...) ____T_s$(__VA_ARGS__)
+#define ____T_s$(_$T, ...) A_ref$((S$(_$T))T_a$((_$T)__VA_ARGS__))
+#define comp_syn__T_l$(...) __step__T_l$__emit(__step__T_l$__parse __VA_ARGS__)
+#define __step__T_l$__parse(_$T...) _$T,
+#define __step__T_l$__emit(...) ____T_l$(__VA_ARGS__)
+#define ____T_l$(_$T, ...) A_ref$((S_const$(_$T))T_a$((_$T)__VA_ARGS__))
+#define comp_syn__NT_a$(...) __step__NT_a$__emit(__step__NT_a$__parse __VA_ARGS__)
+#define __step__NT_a$__parse(_$N, _$T...) _$N, _$T,
+#define __step__NT_a$__emit(...) ____NT_a$(__VA_ARGS__)
+#define ____NT_a$(_$N, _$T, ...) l$((A$(_$N, _$T))A_init(__VA_ARGS__))
+#define comp_syn__NT_s$(...) __step__NT_s$__emit(__step__NT_s$__parse __VA_ARGS__)
+#define __step__NT_s$__parse(_$N, _$T...) _$N, _$T,
+#define __step__NT_s$__emit(...) ____NT_s$(__VA_ARGS__)
+#define ____NT_s$(_$N, _$T, ...) A_ref$((S$(_$T))l$((A$$(_$N, _$T))A_init(__VA_ARGS__)))
+#define comp_syn__NT_l$(...) __step__NT_l$__emit(__step__NT_l$__parse __VA_ARGS__)
+#define __step__NT_l$__parse(_$N, _$T...) _$N, _$T,
+#define __step__NT_l$__emit(...) ____NT_l$(__VA_ARGS__)
+#define ____NT_l$(_$N, _$T, ...) A_ref$((S_const$(_$T))l$((A$$(_$N, _$T))A_init(__VA_ARGS__)))
 
 #define comp_syn__u8_c(_$literal) l$((u8){ _$literal })
 #define comp_syn__u16_c(_$literal) l$((u16){ u##_$literal })

@@ -9,7 +9,7 @@ fn_((Future__await(Future$raw* self, Sched sched, TypeInfo type))(u_P_const$raw)
     claim_assert_nonnull(self), debug_assert_eqBy($typed(self->type), type, TypeInfo_eql);
     let result = Future_resultMut(self, type);
     let any_future = orelse_((self->any_future)(return result.as_const));
-    sched.vtbl->awaitFn(sched.ctx, any_future, result);
+    sched.vtbl->future.awaitFn(sched.ctx, any_future, result);
     asg_l((&self->any_future)(none()));
     return result.as_const;
 };
@@ -22,7 +22,7 @@ fn_((Future__cancel(Future$raw* self, Sched sched, TypeInfo type))(u_P_const$raw
     claim_assert_nonnull(self), debug_assert_eqBy($typed(self->type), type, TypeInfo_eql);
     let result = Future_resultMut(self, type);
     let any_future = orelse_((self->any_future)(return result.as_const));
-    sched.vtbl->cancelFn(sched.ctx, any_future, result);
+    sched.vtbl->future.cancelFn(sched.ctx, any_future, result);
     asg_l((&self->any_future)(none()));
     return result.as_const;
 };

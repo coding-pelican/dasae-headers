@@ -343,6 +343,9 @@ TEST_fn_("HashMap: stress test with many insertions and deletions" $guard) {
     let gpa = heap_Sys_alctr(&heap);
     let ctx = HashMap_Ctx_default();
 
+    $attr(pp_if_(pp_not(test_HashMap_enable_debug_print))(pp_then_($maybe_unused)))
+    let std = catch_((io_std_direct())($ignore, io_std_noop));
+
     var map = try_(HashMap_init$1usize$2u16(&ctx, gpa, 16));
     defer_(HashMap_fini$1usize$2u16(&map, gpa));
 
@@ -376,12 +379,12 @@ TEST_fn_("HashMap: stress test with many insertions and deletions" $guard) {
     for_(($r(0, total_insertions))(i)) {
         let should_exist = (i % 3) != 0;
         pp_if_(test_HashMap_enable_debug_print)(pp_then_(io_stream_println), pp_else_(pp_ignore))(
-            u8_l("i: {:ul}, should_exist: {:B}"), i, should_exist
+            std, u8_l("i: {:ul}, should_exist: {:B}"), i, should_exist
         );
         try_(TEST_expect(HashMap_contains$1usize$2u16(map, i) == should_exist));
         if (should_exist) {
             pp_if_(test_HashMap_enable_debug_print)(pp_then_(io_stream_println), pp_else_(pp_ignore))(
-                u8_l("-> HashMap_by$1usize$2u16(map, i): {:?uh}"), HashMap_by$1usize$2u16(map, i)
+                std, u8_l("-> HashMap_by$1usize$2u16(map, i): {:?uh}"), HashMap_by$1usize$2u16(map, i)
             );
             try_(TEST_expect(unwrap_(HashMap_by$1usize$2u16(map, i)) == as$(u16)(i % 65536)));
         }

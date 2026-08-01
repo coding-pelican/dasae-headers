@@ -1,6 +1,7 @@
 #include "dh-main.h"
 #include "dh/net.h"
 #include "dh/io.h"
+#include "dh/mem/common.h"
 
 TEST_fn_("net: loopback listen connect accept and exchange bytes" $guard) {
     let listen_addr = net_IpAddr_ip4Loopback(0);

@@ -18,10 +18,11 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "Self.h"
+#include "std.h"
 
 /*========== Macros and Declarations ========================================*/
 
+/// Standard-stream convenience operations with explicit coordination owner.
 #ifdef UNUSED_CODE
 $extern fn_((io_stream_scan(S_const$u8 fmt, ...))(void));
 $extern fn_((io_stream_scanVaArgs(S_const$u8 fmt, va_list va_args))(void));

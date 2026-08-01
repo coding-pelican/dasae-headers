@@ -179,10 +179,15 @@ $static fn_((log_Default__log(
     va_list args
 ))(void) $guard) {
     let self = log_Default__ctx(ctx);
-    io_lockStdErr(self->io);
-    defer_(io_unlockStdErr(self->io));
-    let writer = fs_File_IO_writer(&self->err_io);
-    let_ignore = catch_((log__write(writer, level, scope, fmt, args))(
+    let locked = io_std_lockErr(self->std);
+    defer_(io_Locked_Writer_unlock(locked));
+    let_ignore = catch_((log__write(
+        io_Locked_writer(locked),
+        level,
+        scope,
+        fmt,
+        args
+    ))(
         $ignore,
         $do_nothing
     ));
@@ -193,13 +198,11 @@ $static let_(log_Default__vtbl, log_Self_VTbl) = {
 };
 
 fn_((log_Default_init(
-    io_Self io,
-    proc_std_Self std,
+    io_std_Self std,
     log_Level max_level
 ))(log_Default)) {
     return (log_Default){
-        .io = io_ensureValid(io),
-        .err_io = fs_File_io(proc_std_err(proc_std_ensureValid(std))),
+        .std = io_std_ensureValid(std),
         .max_level = max_level,
     };
 };

@@ -27,7 +27,10 @@ struct io_Reader {
     $attr($must_check)
     fn_(((*readFn)(P$raw ctx, S$u8 out_buf))(io_ReadE$usize));
 };
+$extern let_(io_Reader_noop, io_Reader);
 $extern let_(io_Reader_failing, io_Reader);
+$attr($must_check)
+$extern fn_((io_Reader_noRead(P$raw ctx, S$u8 out_buf))(io_ReadE$usize));
 $attr($must_check)
 $extern fn_((io_Reader_failingRead(P$raw ctx, S$u8 out_buf))(io_ReadE$usize));
 

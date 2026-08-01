@@ -1,4 +1,5 @@
 #include "dh-main.h"
+#include "dh/mem/common.h"
 
 // Test state tracking
 $static struct TestState {

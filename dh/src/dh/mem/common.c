@@ -41,7 +41,7 @@ fn_((memcmp(P_const$raw lhs, P_const$raw rhs, usize len))(int)) {
     return 0;
 };
 fn_((strlen(const char* str))(usize)) {
-    return mem_lenZ0$u8(as$(const u8*)(str));
+    return mem_lenZ0Bytes(as$(const u8*)(str));
 };
 #endif /* !env_libc_linked */
 

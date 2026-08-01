@@ -34,14 +34,14 @@ $extern fn_((dansi_dec_scroll_setMargins(
     u16 top, u16 bottom, dansi_dec_scroll_SetMarginsBuf* buf
 ))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_dec_scroll_setMarginsWrite(u16 top, u16 bottom, io_Writer out))(E$void));
+$extern fn_((dansi_dec_scroll_setMarginsWrite(u16 top, u16 bottom, io_Writer out))(io_PrintE$void));
 
 #define dansi_dec_scroll_resetMargins_static() \
     ____dansi_dec_scroll_resetMargins_static()
 $attr($must_check)
 $extern fn_((dansi_dec_scroll_resetMargins(void))(S_const$u8));
 $attr($must_check)
-$extern fn_((dansi_dec_scroll_resetMarginsWrite(io_Writer out))(E$void));
+$extern fn_((dansi_dec_scroll_resetMarginsWrite(io_Writer out))(io_WriteE$void));
 
 /*========== Macros and Definitions =========================================*/
 

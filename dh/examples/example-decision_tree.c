@@ -17,6 +17,7 @@
  *          - Handle CSV data input
  */
 #include "dh-main.h"
+#include "dh/heap/Sys.h"
 #include "dh/log.h"
 #include "dh/mem.h"
 #include "dh/fs/common.h"
@@ -80,8 +81,13 @@ $static fn_((Dataset_destroy(Dataset* dataset))(void));
 
 // Main function
 fn_((main(proc_Entry entry))(E$void) $guard) {
-    let gpa = entry.gpa;
-    var default_logger = log_Default_init(entry.io, entry.std, log_Level_debug);
+    var heap = try_(heap_Sys_init());
+    defer_(heap_Sys_fini(&heap));
+    let gpa = heap_Sys_alctr(&heap);
+    var default_logger = log_Default_init(
+        catch_((io_std_direct())($ignore, io_std_noop)),
+        log_Level_debug
+    );
     let logger = log_Default_self(&default_logger);
     log_info(logger, u8_l("Starting decision tree application"));
 

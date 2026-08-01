@@ -5,17 +5,17 @@ fn_((dansi_shell_osc7_set(dansi_shell_osc7_Cwd cwd, S$u8 buf))(E$S$u8)) {
     return dansi_shell_osc7_setRaw(cwd.file_uri, buf);
 };
 
-fn_((dansi_shell_osc7_setWrite(dansi_shell_osc7_Cwd cwd, io_Writer out))(E$void)) {
+fn_((dansi_shell_osc7_setWrite(dansi_shell_osc7_Cwd cwd, io_Writer out))(io_PrintE$void)) {
     return dansi_shell_osc7_setRawWrite(cwd.file_uri, out);
 };
 
 fn_((dansi_shell_osc7_setRaw(S_const$u8 file_uri, S$u8 buf))(E$S$u8) $scope) {
-    var writing = io_Fixed_Writer_init(io_Fixed_writing(buf));
+    var writing = io_Fixed_Writer_from(io_Fixed_writing(buf));
     try_(dansi_shell_osc7_setRawWrite(file_uri, io_Fixed_writer(&writing)));
     return_ok(io_Fixed_written(writing.stream));
 } $unscoped(fn);
 
-fn_((dansi_shell_osc7_setRawWrite(S_const$u8 file_uri, io_Writer out))(E$void)) {
+fn_((dansi_shell_osc7_setRawWrite(S_const$u8 file_uri, io_Writer out))(io_PrintE$void)) {
     return dansi_osc_write(dansi_shell_osc7_cmd_u16, file_uri, out);
 };
 

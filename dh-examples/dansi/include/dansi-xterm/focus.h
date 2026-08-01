@@ -41,7 +41,7 @@ typedef dansi_xterm_mode_SetBuf dansi_xterm_focus_SetTrackingBuf;
 $attr($must_check)
 $extern fn_((dansi_xterm_focus_setTracking(bool enabled, dansi_xterm_focus_SetTrackingBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_focus_setTrackingWrite(bool enabled, io_Writer out))(E$void));
+$extern fn_((dansi_xterm_focus_setTrackingWrite(bool enabled, io_Writer out))(io_PrintE$void));
 
 #define dansi_xterm_focus_enableTracking_static() \
     ____dansi_xterm_focus_enableTracking_static()
@@ -49,7 +49,7 @@ typedef dansi_xterm_mode_EnableBuf dansi_xterm_focus_EnableTrackingBuf;
 $attr($must_check)
 $extern fn_((dansi_xterm_focus_enableTracking(dansi_xterm_focus_EnableTrackingBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_focus_enableTrackingWrite(io_Writer out))(E$void));
+$extern fn_((dansi_xterm_focus_enableTrackingWrite(io_Writer out))(io_PrintE$void));
 
 #define dansi_xterm_focus_disableTracking_static() \
     ____dansi_xterm_focus_disableTracking_static()
@@ -57,7 +57,7 @@ typedef dansi_xterm_mode_DisableBuf dansi_xterm_focus_DisableTrackingBuf;
 $attr($must_check)
 $extern fn_((dansi_xterm_focus_disableTracking(dansi_xterm_focus_DisableTrackingBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_focus_disableTrackingWrite(io_Writer out))(E$void));
+$extern fn_((dansi_xterm_focus_disableTrackingWrite(io_Writer out))(io_PrintE$void));
 $extern fn_((dansi_xterm_focus_parseReport(S_const$u8 report))(O$dansi_xterm_focus_Event));
 
 /*========== Macros and Definitions =========================================*/

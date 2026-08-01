@@ -41,7 +41,7 @@ $extern fn_((dansi_esc_parse(S_const$u8 bytes))(dansi_esc_E$dansi_esc_Frame));
 $attr($must_check)
 $extern fn_((dansi_esc_make(S_const$u8 intermediates, u8 final, S$u8 buf))(E$S$u8));
 $attr($must_check)
-$extern fn_((dansi_esc_write(S_const$u8 intermediates, u8 final, io_Writer out))(E$void));
+$extern fn_((dansi_esc_write(S_const$u8 intermediates, u8 final, io_Writer out))(io_PrintE$void));
 
 struct dansi_esc_Frame {
     var_(intermediates, S_const$u8);

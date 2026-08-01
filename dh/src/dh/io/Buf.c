@@ -3,7 +3,7 @@
 
 /*---------- Buffered Reader ------------------------------------------------*/
 
-fn_((io_Buf_Reader_init(io_Reader inner, S$u8 buf))(io_Buf_Reader)) {
+fn_((io_Buf_Reader_from(io_Reader inner, S$u8 buf))(io_Buf_Reader)) {
     return (io_Buf_Reader){
         .inner = inner,
         .buf = buf,
@@ -323,7 +323,7 @@ fn_((io_Buf_Reader_skipUntilAny(io_Buf_Reader* self, S_const$u8 delims))(io_Buf_
 
 /*---------- Buffered Writer ------------------------------------------------*/
 
-fn_((io_Buf_Writer_init(io_Writer inner, S$u8 buf))(io_Buf_Writer)) {
+fn_((io_Buf_Writer_from(io_Writer inner, S$u8 buf))(io_Buf_Writer)) {
     return (io_Buf_Writer){
         .inner = inner,
         .buf = buf,

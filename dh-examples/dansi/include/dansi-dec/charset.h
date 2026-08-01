@@ -64,19 +64,19 @@ $extern fn_((dansi_dec_charset_designate(
 $attr($must_check)
 $extern fn_((dansi_dec_charset_designateWrite(
     dansi_dec_charset_Slot slot, dansi_dec_charset_Set set, io_Writer out
-))(E$void));
+))(io_PrintE$void));
 
 #define dansi_dec_charset_shiftIn_static() \
     ____dansi_dec_charset_shiftIn_static()
 $extern fn_((dansi_dec_charset_shiftIn(void))(S_const$u8));
 $attr($must_check)
-$extern fn_((dansi_dec_charset_shiftInWrite(io_Writer out))(E$void));
+$extern fn_((dansi_dec_charset_shiftInWrite(io_Writer out))(io_WriteE$void));
 
 #define dansi_dec_charset_shiftOut_static() \
     ____dansi_dec_charset_shiftOut_static()
 $extern fn_((dansi_dec_charset_shiftOut(void))(S_const$u8));
 $attr($must_check)
-$extern fn_((dansi_dec_charset_shiftOutWrite(io_Writer out))(E$void));
+$extern fn_((dansi_dec_charset_shiftOutWrite(io_Writer out))(io_WriteE$void));
 
 /*========== Macros and Definitions =========================================*/
 

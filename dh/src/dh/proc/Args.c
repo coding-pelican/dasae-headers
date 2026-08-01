@@ -1,6 +1,142 @@
 #include "dh/proc/Args.h"
+#include "dh/start/Invoc/Args.h"
 #include "dh/mem/common.h"
 #include "dh/unicode.h"
+
+/*========== Internal Declarations ==========================================*/
+
+$static fn_((proc_Args__emptyNext(
+    P$raw ctx,
+    usize* idx,
+    usize* offset,
+    S$u8 scratch
+))(proc_Args_E$O$S_const$u8));
+$static fn_((proc_Args__emptySkip(
+    P$raw ctx,
+    usize* idx,
+    usize* offset
+))(proc_Args_E$bool));
+
+$static fn_((proc_Args__emitWin32CodeUnit(
+    S$u8 scratch,
+    P$usize written,
+    u16 code_unit,
+    P$bool has_last,
+    P$u16 last
+))(proc_Args_E$void));
+$static fn_((proc_Args__emitWin32Backslashes(
+    S$u8 scratch,
+    P$usize written,
+    usize count,
+    bool capture,
+    P$bool has_last,
+    P$u16 last
+))(proc_Args_E$void));
+$static fn_((proc_Args__parseWin32(
+    start_Invoc_Args_WTF16 wtf16,
+    P$usize index,
+    P$usize offset,
+    S$u8 scratch,
+    bool capture,
+    P$usize written
+))(proc_Args_E$bool));
+$static fn_((start_Invoc_Args__next(
+    P$raw ctx,
+    usize* idx,
+    usize* offset,
+    S$u8 scratch
+))(proc_Args_E$O$S_const$u8));
+$static fn_((start_Invoc_Args__skip(
+    P$raw ctx,
+    usize* idx,
+    usize* offset
+))(proc_Args_E$bool));
+
+$static var_(proc_Args__empty_ctx, Void) = cleared();
+
+$static let_(proc_Args__empty_vtbl, proc_Args_VTbl) = {
+    .nextFn = proc_Args__emptyNext,
+    .skipFn = proc_Args__emptySkip,
+};
+
+$static let_(start_Invoc_Args__vtbl, proc_Args_VTbl) = {
+    .nextFn = start_Invoc_Args__next,
+    .skipFn = start_Invoc_Args__skip,
+};
+
+/*========== External Definitions ===========================================*/
+
+let_(proc_Args_empty, proc_Args) = {
+    .ctx = &proc_Args__empty_ctx,
+    .vtbl = &proc_Args__empty_vtbl,
+};
+
+fn_((proc_Args_iter(proc_Args self))(proc_Args_Iter)) {
+    return (proc_Args_Iter){
+        .src = proc_Args_ensureValid(self),
+        .idx = 0,
+        .offset = 0,
+    };
+};
+
+fn_((proc_Args_Iter_next(
+    proc_Args_Iter* self,
+    S$u8 scratch
+))(proc_Args_E$O$S_const$u8)) {
+    claim_assert_nonnull(self);
+    let src = proc_Args_ensureValid(self->src);
+    return src.vtbl->nextFn(
+        src.ctx, &self->idx, &self->offset, scratch
+    );
+};
+
+fn_((proc_Args_Iter_skip(proc_Args_Iter* self))(proc_Args_E$bool)) {
+    claim_assert_nonnull(self);
+    let src = proc_Args_ensureValid(self->src);
+    return src.vtbl->skipFn(src.ctx, &self->idx, &self->offset);
+};
+
+fn_((start_Invoc_Args_self(start_Invoc_Args* self))(proc_Args)) {
+    claim_assert_nonnull(self);
+    return proc_Args_ensureValid((proc_Args){
+        .ctx = self,
+        .vtbl = &start_Invoc_Args__vtbl,
+    });
+};
+
+/*========== Internal Definitions ===========================================*/
+
+/*--- Common ---*/
+
+$static fn_((proc_Args__emptyNext(
+    P$raw ctx,
+    usize* idx,
+    usize* offset,
+    S$u8 scratch
+))(proc_Args_E$O$S_const$u8) $scope) {
+    claim_assert_nonnull(ctx);
+    claim_assert_nonnull(idx);
+    claim_assert_nonnull(offset);
+    let_ignore = idx;
+    let_ignore = offset;
+    let_ignore = scratch;
+    return_ok(none());
+} $unscoped(fn);
+
+$static fn_((proc_Args__emptySkip(
+    P$raw ctx,
+    usize* idx,
+    usize* offset
+))(proc_Args_E$bool) $scope) {
+    claim_assert_nonnull(ctx);
+    claim_assert_nonnull(idx);
+    claim_assert_nonnull(offset);
+    let_ignore = idx;
+    let_ignore = offset;
+    return_ok(false);
+} $unscoped(fn);
+
+/*--- Start Invocation ---*/
 
 $static fn_((proc_Args__emitWin32CodeUnit(
     S$u8 scratch,
@@ -72,7 +208,7 @@ $static fn_((proc_Args__emitWin32Backslashes(
 } $unscoped(fn);
 
 $static fn_((proc_Args__parseWin32(
-    proc_Args_Win32 win32,
+    start_Invoc_Args_WTF16 wtf16,
     P$usize index,
     P$usize offset,
     S$u8 scratch,
@@ -82,7 +218,7 @@ $static fn_((proc_Args__parseWin32(
     claim_assert_nonnull(index);
     claim_assert_nonnull(offset);
     claim_assert_nonnull(written);
-    let command_line = win32.cmd_line;
+    let command_line = wtf16.cmd_line;
     var src = *offset;
     *written = 0;
 
@@ -197,48 +333,52 @@ $static fn_((proc_Args__parseWin32(
     return_ok(true);
 } $unscoped(fn);
 
-fn_((proc_Args_iter(proc_Args self))(proc_Args_Iter)) {
-    return (proc_Args_Iter){
-        .src = self,
-        .idx = 0,
-        .offset = 0,
-    };
-};
-
-fn_((proc_Args_Iter_next(
-    proc_Args_Iter* self,
+$static fn_((start_Invoc_Args__next(
+    P$raw ctx,
+    usize* idx,
+    usize* offset,
     S$u8 scratch
 ))(proc_Args_E$O$S_const$u8) $scope) {
-    claim_assert_nonnull(self);
-    if (matches(self->src, proc_Args_posix)) {
-        let posix = union_as((&self->src)(proc_Args_posix));
-        if (self->idx == posix->count) return_ok(none());
-        let item_z = *P_at((posix->items)[self->idx++]);
-        return_ok(some(mem_spanZ0$u8(item_z)));
+    claim_assert_nonnull(ctx);
+    claim_assert_nonnull(idx);
+    claim_assert_nonnull(offset);
+    let self = ptrCast$((start_Invoc_Args*)(ctx));
+    if (matches(*self, start_Invoc_Args_vec_z)) {
+        let vec = union_as((self)(start_Invoc_Args_vec_z));
+        if (*idx == vec->count) return_ok(none());
+        let item_z = *P_at((vec->items)[(*idx)++]);
+        return_ok(some(mem_spanZ0Bytes(item_z)));
     }
-    let win32 = *union_as((&self->src)(proc_Args_win32));
+    let wtf16 = *union_as((self)(start_Invoc_Args_wtf16));
     var_(written, usize) = 0;
     if (!try_(proc_Args__parseWin32(
-            win32, &self->idx, &self->offset, scratch, true, &written
+            wtf16, idx, offset, scratch, true, &written
         ))) return_ok(none());
     return_ok(some(P_prefix$((S_const$u8)(scratch.ptr)(written))));
 } $unscoped(fn);
 
-fn_((proc_Args_Iter_skip(proc_Args_Iter* self))(proc_Args_E$bool) $scope) {
-    claim_assert_nonnull(self);
-    if (matches(self->src, proc_Args_posix)) {
-        let posix = union_as((&self->src)(proc_Args_posix));
-        if (self->idx == posix->count) return_ok(false);
-        ++self->idx;
+$static fn_((start_Invoc_Args__skip(
+    P$raw ctx,
+    usize* idx,
+    usize* offset
+))(proc_Args_E$bool) $scope) {
+    claim_assert_nonnull(ctx);
+    claim_assert_nonnull(idx);
+    claim_assert_nonnull(offset);
+    let self = ptrCast$((start_Invoc_Args*)(ctx));
+    if (matches(*self, start_Invoc_Args_vec_z)) {
+        let vec = union_as((self)(start_Invoc_Args_vec_z));
+        if (*idx == vec->count) return_ok(false);
+        ++*idx;
         return_ok(true);
     }
-    let win32 = *union_as((&self->src)(proc_Args_win32));
+    let wtf16 = *union_as((self)(start_Invoc_Args_wtf16));
     var_(written, usize) = 0;
     let empty = (S$u8){
         .ptr = as$(P$u8)(mem_emptyAddr(alignOf$(u8))),
         .len = 0,
     };
     return_(proc_Args__parseWin32(
-        win32, &self->idx, &self->offset, empty, false, &written
+        wtf16, idx, offset, empty, false, &written
     ));
 } $unscoped(fn);

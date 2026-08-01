@@ -5,7 +5,7 @@ fn_((dansi_device_requestStatus(void))(S_const$u8)) {
     return u8_l(dansi_device_requestStatus_static());
 };
 
-fn_((dansi_device_requestStatusWrite(io_Writer out))(E$void)) {
+fn_((dansi_device_requestStatusWrite(io_Writer out))(io_WriteE$void)) {
     return io_Writer_writeBytes(out, dansi_device_requestStatus());
 };
 
@@ -37,7 +37,7 @@ fn_((dansi_device_requestAttrs(void))(S_const$u8)) {
     return u8_l(dansi_device_requestAttrs_static());
 };
 
-fn_((dansi_device_requestAttrsWrite(io_Writer out))(E$void)) {
+fn_((dansi_device_requestAttrsWrite(io_Writer out))(io_WriteE$void)) {
     return io_Writer_writeBytes(out, dansi_device_requestAttrs());
 };
 

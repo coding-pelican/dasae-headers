@@ -6,7 +6,7 @@ $static fn_((dansi_xterm_title__set(u16 cmd, S_const$u8 title, S$u8 buf))(E$S$u8
     return dansi_osc_make(cmd, title, buf);
 };
 
-$static fn_((dansi_xterm_title__setWrite(u16 cmd, S_const$u8 title, io_Writer out))(E$void)) {
+$static fn_((dansi_xterm_title__setWrite(u16 cmd, S_const$u8 title, io_Writer out))(io_PrintE$void)) {
     return dansi_osc_write(cmd, title, out);
 };
 
@@ -24,7 +24,7 @@ fn_((dansi_xterm_title_setIcon(S_const$u8 title, S$u8 buf))(E$S$u8)) {
     return dansi_xterm_title__set(dansi_xterm_title_cmd_icon_u16, title, buf);
 };
 
-fn_((dansi_xterm_title_setIconWrite(S_const$u8 title, io_Writer out))(E$void)) {
+fn_((dansi_xterm_title_setIconWrite(S_const$u8 title, io_Writer out))(io_PrintE$void)) {
     return dansi_xterm_title__setWrite(dansi_xterm_title_cmd_icon_u16, title, out);
 };
 
@@ -32,7 +32,7 @@ fn_((dansi_xterm_title_setWindow(S_const$u8 title, S$u8 buf))(E$S$u8)) {
     return dansi_xterm_title__set(dansi_xterm_title_cmd_window_u16, title, buf);
 };
 
-fn_((dansi_xterm_title_setWindowWrite(S_const$u8 title, io_Writer out))(E$void)) {
+fn_((dansi_xterm_title_setWindowWrite(S_const$u8 title, io_Writer out))(io_PrintE$void)) {
     return dansi_xterm_title__setWrite(dansi_xterm_title_cmd_window_u16, title, out);
 };
 
@@ -40,17 +40,17 @@ fn_((dansi_xterm_title_setBoth(S_const$u8 title, S$u8 buf))(E$S$u8)) {
     return dansi_xterm_title__set(dansi_xterm_title_cmd_both_u16, title, buf);
 };
 
-fn_((dansi_xterm_title_setBothWrite(S_const$u8 title, io_Writer out))(E$void)) {
+fn_((dansi_xterm_title_setBothWrite(S_const$u8 title, io_Writer out))(io_PrintE$void)) {
     return dansi_xterm_title__setWrite(dansi_xterm_title_cmd_both_u16, title, out);
 };
 
 fn_((dansi_xterm_title_push(dansi_xterm_title_Target target, dansi_xterm_title_StackBuf* buf))(S$u8)) {
-    var writing = io_Fixed_Writer_init(io_Fixed_writing(A_ref$((S$u8)(*buf))));
+    var writing = io_Fixed_Writer_from(io_Fixed_writing(A_ref$((S$u8)(*buf))));
     catch_((dansi_xterm_title_pushWrite(target, io_Fixed_writer(&writing)))($ignore, claim_unreachable));
     return io_Fixed_written(writing.stream);
 };
 
-fn_((dansi_xterm_title_pushWrite(dansi_xterm_title_Target target, io_Writer out))(E$void)) {
+fn_((dansi_xterm_title_pushWrite(dansi_xterm_title_Target target, io_Writer out))(io_PrintE$void)) {
     return io_Writer_print(
         out,
         u8_l(dansi_csi_make_static(
@@ -61,12 +61,12 @@ fn_((dansi_xterm_title_pushWrite(dansi_xterm_title_Target target, io_Writer out)
 };
 
 fn_((dansi_xterm_title_pop(dansi_xterm_title_Target target, dansi_xterm_title_StackBuf* buf))(S$u8)) {
-    var writing = io_Fixed_Writer_init(io_Fixed_writing(A_ref$((S$u8)(*buf))));
+    var writing = io_Fixed_Writer_from(io_Fixed_writing(A_ref$((S$u8)(*buf))));
     catch_((dansi_xterm_title_popWrite(target, io_Fixed_writer(&writing)))($ignore, claim_unreachable));
     return io_Fixed_written(writing.stream);
 };
 
-fn_((dansi_xterm_title_popWrite(dansi_xterm_title_Target target, io_Writer out))(E$void)) {
+fn_((dansi_xterm_title_popWrite(dansi_xterm_title_Target target, io_Writer out))(io_PrintE$void)) {
     return io_Writer_print(
         out,
         u8_l(dansi_csi_make_static(
@@ -80,7 +80,7 @@ fn_((dansi_xterm_title_requestIconLabel(void))(S_const$u8)) {
     return u8_l(dansi_xterm_title_requestIconLabel_static());
 };
 
-fn_((dansi_xterm_title_requestIconLabelWrite(io_Writer out))(E$void)) {
+fn_((dansi_xterm_title_requestIconLabelWrite(io_Writer out))(io_WriteE$void)) {
     return io_Writer_writeBytes(out, dansi_xterm_title_requestIconLabel());
 };
 
@@ -111,7 +111,7 @@ fn_((dansi_xterm_title_requestWindowTitle(void))(S_const$u8)) {
     return u8_l(dansi_xterm_title_requestWindowTitle_static());
 };
 
-fn_((dansi_xterm_title_requestWindowTitleWrite(io_Writer out))(E$void)) {
+fn_((dansi_xterm_title_requestWindowTitleWrite(io_Writer out))(io_WriteE$void)) {
     return io_Writer_writeBytes(out, dansi_xterm_title_requestWindowTitle());
 };
 

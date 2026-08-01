@@ -43,23 +43,23 @@ T_use_prl$(dansi_link_osc8_Params);
 $attr($must_check)
 $extern fn_((dansi_link_osc8_open(S_const$u8 uri, dansi_link_osc8_Params params, S$u8 buf))(E$S$u8));
 $attr($must_check)
-$extern fn_((dansi_link_osc8_openWrite(S_const$u8 uri, dansi_link_osc8_Params params, io_Writer out))(E$void));
+$extern fn_((dansi_link_osc8_openWrite(S_const$u8 uri, dansi_link_osc8_Params params, io_Writer out))(io_PrintE$void));
 $attr($must_check)
 $extern fn_((dansi_link_osc8_openPlain(S_const$u8 uri, S$u8 buf))(E$S$u8));
 $attr($must_check)
-$extern fn_((dansi_link_osc8_openPlainWrite(S_const$u8 uri, io_Writer out))(E$void));
+$extern fn_((dansi_link_osc8_openPlainWrite(S_const$u8 uri, io_Writer out))(io_PrintE$void));
 $attr($must_check)
 $extern fn_((dansi_link_osc8_openWithId(S_const$u8 uri, S_const$u8 id, S$u8 buf))(E$S$u8));
 $attr($must_check)
-$extern fn_((dansi_link_osc8_openWithIdWrite(S_const$u8 uri, S_const$u8 id, io_Writer out))(E$void));
+$extern fn_((dansi_link_osc8_openWithIdWrite(S_const$u8 uri, S_const$u8 id, io_Writer out))(io_PrintE$void));
 $attr($must_check)
 $extern fn_((dansi_link_osc8_openRaw(S_const$u8 uri, S_const$u8 params, S$u8 buf))(E$S$u8));
 $attr($must_check)
-$extern fn_((dansi_link_osc8_openRawWrite(S_const$u8 uri, S_const$u8 params, io_Writer out))(E$void));
+$extern fn_((dansi_link_osc8_openRawWrite(S_const$u8 uri, S_const$u8 params, io_Writer out))(io_PrintE$void));
 $attr($must_check)
 $extern fn_((dansi_link_osc8_close(S$u8 buf))(E$S$u8));
 $attr($must_check)
-$extern fn_((dansi_link_osc8_closeWrite(io_Writer out))(E$void));
+$extern fn_((dansi_link_osc8_closeWrite(io_Writer out))(io_PrintE$void));
 
 typedef struct dansi_link_osc8_ParsedParams {
     var_(raw, S_const$u8);

@@ -7,7 +7,7 @@ fn_((main(proc_Entry entry))(E$void) $scope) {
     while (try_(proc_Args_Iter_skip(&count_iter))) ++count;
 
     io_stream_println(u8_l("passed args:"));
-    for_($rev($rt(count), $rf(0))(index)) {
+    for_($rev($rt(count))(index)) {
         var iter = proc_Args_iter(entry.args);
         for_(($rt(index))($ignore)) {
             claim_assert(try_(proc_Args_Iter_skip(&iter)));

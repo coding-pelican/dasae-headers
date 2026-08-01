@@ -69,7 +69,7 @@ struct Sched_VTbl {
     $attr($must_check)
     fn_(((*spawnFn)(P$raw ctx, u_P$raw result, P$$(Clsr$raw) inner))(Sched_ConcE$P$FutureAny));
 
-    T_embed$(struct Sched_VTbl_Future {
+    var_(future, struct Sched_VTbl_Future {
         /// This function is only called when `async` or `spawn` returns `some`.
         ///
         /// Thread-safe.
@@ -101,10 +101,10 @@ struct Sched_VTbl {
 $extern fn_((Sched_VTbl_noAsync(P$raw ctx, u_P$raw result, P$$(Clsr$raw) inner))(O$P$FutureAny));
 $attr($must_check)
 $extern fn_((Sched_VTbl_failingSpawn(P$raw ctx, u_P$raw result, P$$(Clsr$raw) inner))(Sched_ConcE$P$FutureAny));
-$extern fn_((Sched_VTbl_noAwait(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void));
-$extern fn_((Sched_VTbl_unreachableAwait(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void));
-$extern fn_((Sched_VTbl_noCancel(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void));
-$extern fn_((Sched_VTbl_unreachableCancel(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void));
+$extern fn_((Sched_VTbl_noFutureAwait(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void));
+$extern fn_((Sched_VTbl_unreachableFutureAwait(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void));
+$extern fn_((Sched_VTbl_noFutureCancel(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void));
+$extern fn_((Sched_VTbl_unreachableFutureCancel(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void));
 $extern fn_((Sched_VTbl_noRecancel(P$raw ctx))(void));
 $extern fn_((Sched_VTbl_unreachableRecancel(P$raw ctx))(void));
 $extern fn_((Sched_VTbl_noSwapCancelProtcn(P$raw ctx, Sched_CancelProtcn new_protect))(Sched_CancelProtcn));
@@ -120,8 +120,8 @@ fn_((Sched_isValid(Sched self))(bool)) {
         && isNonnull(self.vtbl)
         && isNonnull(self.vtbl->asyncFn)
         && isNonnull(self.vtbl->spawnFn)
-        && isNonnull(self.vtbl->awaitFn)
-        && isNonnull(self.vtbl->cancelFn)
+        && isNonnull(self.vtbl->future.awaitFn)
+        && isNonnull(self.vtbl->future.cancelFn)
         && isNonnull(self.vtbl->recancelFn)
         && isNonnull(self.vtbl->swapCancelProtcnFn)
         && isNonnull(self.vtbl->idleFn);
@@ -131,8 +131,8 @@ fn_((Sched_assertValid(P$raw ctx, P_const$$(Sched_VTbl) vtbl))(void)) {
     claim_assert_nonnull(vtbl);
     claim_assert_nonnull(vtbl->asyncFn);
     claim_assert_nonnull(vtbl->spawnFn);
-    claim_assert_nonnull(vtbl->awaitFn);
-    claim_assert_nonnull(vtbl->cancelFn);
+    claim_assert_nonnull(vtbl->future.awaitFn);
+    claim_assert_nonnull(vtbl->future.cancelFn);
     claim_assert_nonnull(vtbl->recancelFn);
     claim_assert_nonnull(vtbl->swapCancelProtcnFn);
     claim_assert_nonnull(vtbl->idleFn);

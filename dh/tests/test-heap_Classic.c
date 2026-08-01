@@ -1,4 +1,5 @@
 #include "dh-main.h"
+#include "dh/mem/common.h"
 #include "dh/heap/Classic.h"
 
 TEST_fn_("heap/Classic: header initializer yields a usable instance" $guard) {

@@ -81,9 +81,9 @@ $attr($must_check)
 $static fn_((SWEngineer_init(SWEngineer_Cfg cfg))(mem_E$SWEngineer));
 $static fn_((SWEngineer_fini(SWEngineer* self))(void));
 
-fn_((main(S$S_const$u8 args))(E$void) $guard) {
-    let_ignore = args;
-    var_(heap, heap_Sys) = heap_Sys_init();
+fn_((main(proc_Entry entry))(E$void) $guard) {
+    let_ignore = entry;
+    var_(heap, heap_Sys) = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     var_(arena, heap_Arena) = heap_Arena_init(heap_Sys_alctr(&heap));
     defer_(heap_Arena_fini(&arena));

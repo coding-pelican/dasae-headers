@@ -126,7 +126,7 @@ fn_((daterm_ANSI_init(daterm_ANSI_Cfg cfg))(mem_E$daterm_ANSI) $guard) {
         .windows_mouse_buttons = 0,
 #endif /* plat_is_windows */
         .input_buf = {
-            .reader = io_Buf_Reader_init(io_TTY_reader(&tty), input_mem),
+            .reader = io_Buf_Reader_from(io_TTY_reader(&tty), input_mem),
             .is_owned = should_alloc_input_buf,
             .esc_started_at = none(),
             .esc_timeout = cfg.esc_timeout,

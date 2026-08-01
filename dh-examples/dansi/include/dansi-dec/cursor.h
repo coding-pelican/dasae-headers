@@ -55,7 +55,7 @@ typedef dansi_dec_mode_EnableBuf dansi_dec_cursor_ShowBuf;
 $attr($must_check)
 $extern fn_((dansi_dec_cursor_show(dansi_dec_cursor_ShowBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_dec_cursor_showWrite(io_Writer out))(E$void));
+$extern fn_((dansi_dec_cursor_showWrite(io_Writer out))(io_PrintE$void));
 
 #define dansi_dec_cursor_hide_static() \
     ____dansi_dec_cursor_hide_static()
@@ -63,19 +63,19 @@ typedef dansi_dec_mode_DisableBuf dansi_dec_cursor_HideBuf;
 $attr($must_check)
 $extern fn_((dansi_dec_cursor_hide(dansi_dec_cursor_HideBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_dec_cursor_hideWrite(io_Writer out))(E$void));
+$extern fn_((dansi_dec_cursor_hideWrite(io_Writer out))(io_PrintE$void));
 
 #define dansi_dec_cursor_save_static() \
     ____dansi_dec_cursor_save_static()
 $extern fn_((dansi_dec_cursor_save(void))(S_const$u8));
 $attr($must_check)
-$extern fn_((dansi_dec_cursor_saveWrite(io_Writer out))(E$void));
+$extern fn_((dansi_dec_cursor_saveWrite(io_Writer out))(io_WriteE$void));
 
 #define dansi_dec_cursor_restore_static() \
     ____dansi_dec_cursor_restore_static()
 $extern fn_((dansi_dec_cursor_restore(void))(S_const$u8));
 $attr($must_check)
-$extern fn_((dansi_dec_cursor_restoreWrite(io_Writer out))(E$void));
+$extern fn_((dansi_dec_cursor_restoreWrite(io_Writer out))(io_WriteE$void));
 
 #define dansi_dec_cursor_setStyle_static(_style_tok) \
     ____dansi_dec_cursor_setStyle_static(_style_tok)
@@ -85,7 +85,7 @@ $extern fn_((dansi_dec_cursor_setStyle(
     dansi_dec_cursor_Style style, dansi_dec_cursor_SetStyleBuf* buf
 ))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_dec_cursor_setStyleWrite(dansi_dec_cursor_Style style, io_Writer out))(E$void));
+$extern fn_((dansi_dec_cursor_setStyleWrite(dansi_dec_cursor_Style style, io_Writer out))(io_PrintE$void));
 
 /*========== Macros and Definitions =========================================*/
 

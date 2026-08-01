@@ -5,7 +5,7 @@
  * @file    start.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2026-05-27 (date of creation)
- * @updated 2026-07-30 (date of last update)
+ * @updated 2026-07-31 (date of last update)
  * @ingroup dasae-headers(dh)
  * @prefix  start
  */
@@ -29,9 +29,9 @@ extern "C" {
 
 /*========== Definitions ====================================================*/
 
-T_alias$((start_ExitCode)(i32));
 T_alias$((start_Fn)(fn_(((*)(void))(void) $T)));
 T_alias$((start_InitFn)(fn_(((*)(void))(i32) $T)));
+T_alias$((start_ExitCode)(i32));
 
 $attr($maybe_unused $no_return $inline)
 $static fn_((start_exit(start_ExitCode status))(void)) {

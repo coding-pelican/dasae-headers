@@ -510,7 +510,7 @@ fn_((fmt_formatUTF8(io_Writer writer, u32 codepoint, fmt_Spec spec))(E$void) $sc
 
 fn_((fmt_formatStrZ0(io_Writer writer, P_const$u8 str, fmt_Spec spec))(E$void)) {
     // printf("--- debug print: fmt_formatStrZ ---\n");
-    return fmt_formatStr(writer, mem_spanZ0$u8(str), spec);
+    return fmt_formatStr(writer, mem_spanZ0Bytes(str), spec);
 };
 fn_((fmt_format$P$u8(io_Writer writer, P_const$u8 str, fmt_Spec spec))(E$void)) {
     return fmt_formatStrZ0(writer, str, spec);
@@ -1642,7 +1642,7 @@ fn_((fmt__formatArgValue(io_Writer writer, fmt__ArgValue value, fmt_Spec spec))(
     } $end(patt);
     patt_((fmt__ArgValue_sli_z_u8)(value)) {
         let ptr = value;
-        let len = mem_lenZ0$u8(ptr);
+        let len = mem_lenZ0Bytes(ptr);
         return fmt_formatStr(writer, P_prefix$((S_const$u8)(ptr)(len)), spec);
     } $end(patt);
     patt_((fmt__ArgValue_sli_u8)(value)) {

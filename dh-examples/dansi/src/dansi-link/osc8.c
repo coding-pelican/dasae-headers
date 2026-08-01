@@ -21,17 +21,17 @@ $static fn_((dansi_link_osc8__idFromRawParams(S_const$u8 raw))(O$S_const$u8) $sc
     return_none();
 } $unscoped(fn);
 
-$static fn_((dansi_link_osc8__writeParams(dansi_link_osc8_Params params, io_Writer out))(E$void) $scope) {
+$static fn_((dansi_link_osc8__writeParams(dansi_link_osc8_Params params, io_Writer out))(io_WriteE$void) $scope) {
     match_(params) {
     patt_((dansi_link_osc8_Params_none)($ignore)) {
         return_ok({});
     } $end(patt);
     patt_((dansi_link_osc8_Params_id)(id)) {
         try_(io_Writer_writeBytes(out, u8_l(dansi_link_osc8_param_id_key)));
-        return io_Writer_writeBytes(out, id);
+        return_ok(try_(io_Writer_writeBytes(out, id)));
     } $end(patt);
     patt_((dansi_link_osc8_Params_raw)(raw)) {
-        return io_Writer_writeBytes(out, raw);
+        return_ok(try_(io_Writer_writeBytes(out, raw)));
     } $end(patt);
     }
     $end_match;
@@ -39,24 +39,24 @@ $static fn_((dansi_link_osc8__writeParams(dansi_link_osc8_Params params, io_Writ
 } $unscoped(fn);
 
 fn_((dansi_link_osc8_open(S_const$u8 uri, dansi_link_osc8_Params params, S$u8 buf))(E$S$u8) $scope) {
-    var writing = io_Fixed_Writer_init(io_Fixed_writing(buf));
+    var writing = io_Fixed_Writer_from(io_Fixed_writing(buf));
     try_(dansi_link_osc8_openWrite(uri, params, io_Fixed_writer(&writing)));
     return_ok(io_Fixed_written(writing.stream));
 } $unscoped(fn);
 
-fn_((dansi_link_osc8_openWrite(S_const$u8 uri, dansi_link_osc8_Params params, io_Writer out))(E$void) $scope) {
+fn_((dansi_link_osc8_openWrite(S_const$u8 uri, dansi_link_osc8_Params params, io_Writer out))(io_PrintE$void) $scope) {
     try_(io_Writer_writeBytes(out, u8_l(dansi_osc_7bit_prefix dansi_link_osc8_cmd dansi_osc_cmd_sep)));
     try_(dansi_link_osc8__writeParams(params, out));
     try_(io_Writer_writeByte(out, dansi_link_osc8_payload_sep_byte));
     try_(io_Writer_writeBytes(out, uri));
-    return dansi_Seq_EOS_write(dansi_Seq_EOS_st_7bit, out);
+    return_ok(try_(dansi_Seq_EOS_write(dansi_Seq_EOS_st_7bit, out)));
 } $unscoped(fn);
 
 fn_((dansi_link_osc8_openPlain(S_const$u8 uri, S$u8 buf))(E$S$u8)) {
     return dansi_link_osc8_open(uri, union_of$((dansi_link_osc8_Params)(dansi_link_osc8_Params_none){}), buf);
 };
 
-fn_((dansi_link_osc8_openPlainWrite(S_const$u8 uri, io_Writer out))(E$void)) {
+fn_((dansi_link_osc8_openPlainWrite(S_const$u8 uri, io_Writer out))(io_PrintE$void)) {
     return dansi_link_osc8_openWrite(uri, union_of$((dansi_link_osc8_Params)(dansi_link_osc8_Params_none){}), out);
 };
 
@@ -64,7 +64,7 @@ fn_((dansi_link_osc8_openWithId(S_const$u8 uri, S_const$u8 id, S$u8 buf))(E$S$u8
     return dansi_link_osc8_open(uri, union_of$((dansi_link_osc8_Params)(dansi_link_osc8_Params_id)(id)), buf);
 };
 
-fn_((dansi_link_osc8_openWithIdWrite(S_const$u8 uri, S_const$u8 id, io_Writer out))(E$void)) {
+fn_((dansi_link_osc8_openWithIdWrite(S_const$u8 uri, S_const$u8 id, io_Writer out))(io_PrintE$void)) {
     return dansi_link_osc8_openWrite(uri, union_of$((dansi_link_osc8_Params)(dansi_link_osc8_Params_id)(id)), out);
 };
 
@@ -72,19 +72,19 @@ fn_((dansi_link_osc8_openRaw(S_const$u8 uri, S_const$u8 params, S$u8 buf))(E$S$u
     return dansi_link_osc8_open(uri, union_of$((dansi_link_osc8_Params)(dansi_link_osc8_Params_raw)(params)), buf);
 };
 
-fn_((dansi_link_osc8_openRawWrite(S_const$u8 uri, S_const$u8 params, io_Writer out))(E$void)) {
+fn_((dansi_link_osc8_openRawWrite(S_const$u8 uri, S_const$u8 params, io_Writer out))(io_PrintE$void)) {
     return dansi_link_osc8_openWrite(uri, union_of$((dansi_link_osc8_Params)(dansi_link_osc8_Params_raw)(params)), out);
 };
 
 fn_((dansi_link_osc8_close(S$u8 buf))(E$S$u8) $scope) {
-    var writing = io_Fixed_Writer_init(io_Fixed_writing(buf));
+    var writing = io_Fixed_Writer_from(io_Fixed_writing(buf));
     try_(dansi_link_osc8_closeWrite(io_Fixed_writer(&writing)));
     return_ok(io_Fixed_written(writing.stream));
 } $unscoped(fn);
 
-fn_((dansi_link_osc8_closeWrite(io_Writer out))(E$void) $scope) {
+fn_((dansi_link_osc8_closeWrite(io_Writer out))(io_PrintE$void) $scope) {
     try_(io_Writer_writeBytes(out, u8_l(dansi_osc_7bit_prefix dansi_link_osc8_cmd dansi_osc_cmd_sep dansi_osc_cmd_sep)));
-    return dansi_Seq_EOS_write(dansi_Seq_EOS_st_7bit, out);
+    return_ok(try_(dansi_Seq_EOS_write(dansi_Seq_EOS_st_7bit, out)));
 } $unscoped(fn);
 
 fn_((dansi_link_osc8_parse(dansi_osc_Frame frame))(dansi_link_osc8_E$dansi_link_osc8_Frame) $scope) {

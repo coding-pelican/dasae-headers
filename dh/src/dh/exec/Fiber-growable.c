@@ -9,7 +9,8 @@
 #endif
 
 #if plat_is_windows || plat_based_unix
-$thrd_local $static var_(exec_Fiber__current, exec_Fiber*) = null;
+$attr($thrd_local)
+$static var_(exec_Fiber__current, exec_Fiber*) = null;
 #endif
 
 #define exec_Fiber__handler_state_uninit 0u
@@ -33,7 +34,8 @@ static void exec_Fiber__unixHandleSignal(i32 sig, sys_posix_siginfo* info, P$raw
 #endif
 
 #if TEST_enabled
-$thrd_local $static var_(exec_Fiber__ensureDiag, exec_Fiber_EnsureDiag);
+$attr($thrd_local)
+$static var_(exec_Fiber__ensureDiag, exec_Fiber_EnsureDiag);
 
 $static fn_((exec_Fiber_ensureDiagSet(
     exec_Fiber_EnsureDiag_Stage stage,

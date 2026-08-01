@@ -4,7 +4,7 @@
 #include <dh/mem/common.h>
 
 $static fn_((dansi_test_expectSeq(S_const$u8 input, dansi_Seq_Kind kind, S_const$u8 bytes))(E$void) $scope) {
-    var reader_impl = io_Fixed_Reader_init(io_Fixed_reading(input));
+    var reader_impl = io_Fixed_Reader_from(io_Fixed_reading(input));
     var_(buf, A$$(64, u8)) $undefined;
     let seq = try_(dansi_Seq_receive(io_Fixed_reader(&reader_impl), A_ref$((S$u8)(buf))));
     try_(TEST_expect(seq.kind == kind));
@@ -13,7 +13,7 @@ $static fn_((dansi_test_expectSeq(S_const$u8 input, dansi_Seq_Kind kind, S_const
 } $unscoped(fn);
 
 $static fn_((dansi_test_expectReceiveCSI(S_const$u8 input))(E$void) $scope) {
-    var reader_impl = io_Fixed_Reader_init(io_Fixed_reading(input));
+    var reader_impl = io_Fixed_Reader_from(io_Fixed_reading(input));
     var_(buf, A$$(32, u8)) $undefined;
     let seq = try_(dansi_Seq_receiveCSI(io_Fixed_reader(&reader_impl), A_ref$((S$u8)(buf))));
     try_(TEST_expect(mem_eqlBytes(seq.as_const, input)));
@@ -21,7 +21,7 @@ $static fn_((dansi_test_expectReceiveCSI(S_const$u8 input))(E$void) $scope) {
 } $unscoped(fn);
 
 $static fn_((dansi_test_expectReceiveOSC(S_const$u8 input))(E$void) $scope) {
-    var reader_impl = io_Fixed_Reader_init(io_Fixed_reading(input));
+    var reader_impl = io_Fixed_Reader_from(io_Fixed_reading(input));
     var_(buf, A$$(32, u8)) $undefined;
     let seq = try_(dansi_Seq_receiveOSC(io_Fixed_reader(&reader_impl), A_ref$((S$u8)(buf))));
     try_(TEST_expect(mem_eqlBytes(seq.as_const, input)));
@@ -59,12 +59,12 @@ TEST_fn_("dansi-core/Seq: typed receivers accept 7-bit and 8-bit introducers" $s
     try_(dansi_test_expectReceiveOSC(u8_l("\x1b]0;title\x1b\\")));
     try_(dansi_test_expectReceiveOSC(u8_l("\x9d" "0;title\x9c")));
 
-    var ss2_reader = io_Fixed_Reader_init(io_Fixed_reading(u8_l("\x8e" "A")));
+    var ss2_reader = io_Fixed_Reader_from(io_Fixed_reading(u8_l("\x8e" "A")));
     var_(ss2_buf, A$$(2, u8)) $undefined;
     let ss2 = try_(dansi_Seq_receiveSS2(io_Fixed_reader(&ss2_reader), A_ref$((S$u8)(ss2_buf))));
     try_(TEST_expect(mem_eqlBytes(ss2.as_const, u8_l("\x8e" "A"))));
 
-    var ss3_reader = io_Fixed_Reader_init(io_Fixed_reading(u8_l("\x8f" "P")));
+    var ss3_reader = io_Fixed_Reader_from(io_Fixed_reading(u8_l("\x8f" "P")));
     var_(ss3_buf, A$$(2, u8)) $undefined;
     let ss3 = try_(dansi_Seq_receiveSS3(io_Fixed_reader(&ss3_reader), A_ref$((S$u8)(ss3_buf))));
     try_(TEST_expect(mem_eqlBytes(ss3.as_const, u8_l("\x8f" "P"))));

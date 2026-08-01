@@ -50,7 +50,7 @@ typedef A$$(3 + uint_log10Ceil_static(u8_limit_max), u8) dansi_color_FgBuf;
 $attr($must_check)
 $extern fn_((dansi_color_fg(dansi_color_Std color, dansi_color_FgBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_color_fgWrite(dansi_color_Std color, io_Writer out))(E$void));
+$extern fn_((dansi_color_fgWrite(dansi_color_Std color, io_Writer out))(io_PrintE$void));
 
 #define dansi_color_bg_static(_color_tok) \
     ____dansi_color_bg_static(_color_tok)
@@ -58,7 +58,7 @@ typedef A$$(3 + uint_log10Ceil_static(u8_limit_max), u8) dansi_color_BgBuf;
 $attr($must_check)
 $extern fn_((dansi_color_bg(dansi_color_Std color, dansi_color_BgBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_color_bgWrite(dansi_color_Std color, io_Writer out))(E$void));
+$extern fn_((dansi_color_bgWrite(dansi_color_Std color, io_Writer out))(io_PrintE$void));
 
 #define dansi_color_resetFG_static() \
     ____dansi_color_resetFG_static()
@@ -66,7 +66,7 @@ typedef dansi_color_FgBuf dansi_color_ResetFGBuf;
 $attr($must_check)
 $extern fn_((dansi_color_resetFG(dansi_color_ResetFGBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_color_resetFGWrite(io_Writer out))(E$void));
+$extern fn_((dansi_color_resetFGWrite(io_Writer out))(io_PrintE$void));
 
 #define dansi_color_resetBG_static() \
     ____dansi_color_resetBG_static()
@@ -74,7 +74,7 @@ typedef dansi_color_BgBuf dansi_color_ResetBGBuf;
 $attr($must_check)
 $extern fn_((dansi_color_resetBG(dansi_color_ResetBGBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_color_resetBGWrite(io_Writer out))(E$void));
+$extern fn_((dansi_color_resetBGWrite(io_Writer out))(io_PrintE$void));
 
 /*========== Macros and Definitions =========================================*/
 

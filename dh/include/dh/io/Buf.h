@@ -38,7 +38,7 @@ typedef struct io_Buf_Reader {
     var_(end, usize);
 } io_Buf_Reader;
 /// Initialize buffered reader with external buffer
-$extern fn_((io_Buf_Reader_init(io_Reader inner, S$u8 buf))(io_Buf_Reader));
+$extern fn_((io_Buf_Reader_from(io_Reader inner, S$u8 buf))(io_Buf_Reader));
 /// Fill buffer with more data from inner reader
 $attr($must_check)
 $extern fn_((io_Buf_Reader_fill(io_Buf_Reader* self))(io_ReadE$void));
@@ -105,7 +105,7 @@ typedef struct io_Buf_Writer {
     var_(used, usize);
 } io_Buf_Writer;
 /// Initialize buffered writer with external buffer
-$extern fn_((io_Buf_Writer_init(io_Writer inner, S$u8 buf))(io_Buf_Writer));
+$extern fn_((io_Buf_Writer_from(io_Writer inner, S$u8 buf))(io_Buf_Writer));
 /// Return currently pending data
 $extern fn_((io_Buf_Writer_pending(io_Buf_Writer self))(S_const$u8));
 $extern fn_((io_Buf_Writer_pendingMut(io_Buf_Writer self))(S$u8));

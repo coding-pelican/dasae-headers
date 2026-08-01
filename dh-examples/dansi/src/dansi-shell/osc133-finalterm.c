@@ -4,7 +4,7 @@
 #include <dh/mem/common.h>
 
 $static fn_((dansi_shell_osc133__payload(S_const$u8 payload, S$u8 buf))(E$S$u8) $scope) {
-    var writing = io_Fixed_Writer_init(io_Fixed_writing(buf));
+    var writing = io_Fixed_Writer_from(io_Fixed_writing(buf));
     try_(dansi_osc_write(dansi_shell_osc133_cmd_u16, payload, io_Fixed_writer(&writing)));
     return_ok(io_Fixed_written(writing.stream));
 } $unscoped(fn);
@@ -15,25 +15,25 @@ fn_((dansi_shell_osc133_mark(dansi_shell_osc133_Mark mark, S$u8 buf))(E$S$u8) $s
     return dansi_shell_osc133__payload(A_ref$((S$u8)(payload)).as_const, buf);
 } $unscoped(fn);
 
-fn_((dansi_shell_osc133_markWrite(dansi_shell_osc133_Mark mark, io_Writer out))(E$void) $scope) {
+fn_((dansi_shell_osc133_markWrite(dansi_shell_osc133_Mark mark, io_Writer out))(io_PrintE$void) $scope) {
     var_(payload, A$$(1, u8)) $undefined;
     *S_at((A_ref$((S$u8)(payload)))[0]) = as$(u8)(mark);
     return dansi_osc_write(dansi_shell_osc133_cmd_u16, A_ref$((S$u8)(payload)).as_const, out);
 } $unscoped(fn);
 
 fn_((dansi_shell_osc133_commandEnd(O$i32 exit_code, S$u8 buf))(E$S$u8) $scope) {
-    var writing = io_Fixed_Writer_init(io_Fixed_writing(buf));
+    var writing = io_Fixed_Writer_from(io_Fixed_writing(buf));
     try_(dansi_shell_osc133_commandEndWrite(exit_code, io_Fixed_writer(&writing)));
     return_ok(io_Fixed_written(writing.stream));
 } $unscoped(fn);
 
-fn_((dansi_shell_osc133_commandEndWrite(O$i32 exit_code, io_Writer out))(E$void) $scope) {
+fn_((dansi_shell_osc133_commandEndWrite(O$i32 exit_code, io_Writer out))(io_PrintE$void) $scope) {
     try_(io_Writer_writeBytes(out, u8_l(dansi_osc_7bit_prefix dansi_shell_osc133_cmd dansi_osc_cmd_sep dansi_shell_osc133_command_end)));
     if_some((exit_code)(code)) {
         try_(io_Writer_writeByte(out, dansi_shell_osc133_sep_byte));
         try_(io_Writer_print(out, u8_l("{:d}"), code));
     }
-    return dansi_Seq_EOS_write(dansi_Seq_EOS_st_7bit, out);
+    return_ok(try_(dansi_Seq_EOS_write(dansi_Seq_EOS_st_7bit, out)));
 } $unscoped(fn);
 
 fn_((dansi_shell_osc133_parse(dansi_osc_Frame frame))(dansi_shell_osc133_E$dansi_shell_osc133_Frame) $scope) {

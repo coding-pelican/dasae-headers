@@ -40,11 +40,11 @@ $extern fn_((dansi_apc_parse(S_const$u8 bytes))(dansi_apc_E$dansi_apc_Frame));
 $attr($must_check)
 $extern fn_((dansi_apc_make(S_const$u8 payload, S$u8 buf))(E$S$u8));
 $attr($must_check)
-$extern fn_((dansi_apc_write(S_const$u8 payload, io_Writer out))(E$void));
+$extern fn_((dansi_apc_write(S_const$u8 payload, io_Writer out))(io_PrintE$void));
 $attr($must_check)
 $extern fn_((dansi_apc_makeWithEOS(S_const$u8 payload, dansi_Seq_EOS eos, S$u8 buf))(E$S$u8));
 $attr($must_check)
-$extern fn_((dansi_apc_writeWithEOS(S_const$u8 payload, dansi_Seq_EOS eos, io_Writer out))(E$void));
+$extern fn_((dansi_apc_writeWithEOS(S_const$u8 payload, dansi_Seq_EOS eos, io_Writer out))(io_PrintE$void));
 
 struct dansi_apc_Frame {
     var_(payload, S_const$u8);

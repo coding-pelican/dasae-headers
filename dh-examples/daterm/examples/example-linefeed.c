@@ -5,21 +5,27 @@
 #include <dh/io/stream.h>
 #include <dh/ascii.h>
 
-fn_((main(S$S_const$u8 args))(E$void) $guard) {
-    if (args.len < 2) {
-        io_stream_eprintln(u8_l("Usage: {:s} <on|off>"), *S_at((args)[0]));
-        start_exit(1);
-    }
+fn_((main(proc_Entry entry))(E$void) $guard) {
+    var_(arg_mem, A$$(16, u8)) $undefined;
+    let output_mode_arg = local_({
+        var args = proc_Args_iter(entry.args);
+        let_ignore = try_(proc_Args_Iter_skip(&args));
+        let scratch = A_ref$((S$u8)(arg_mem));
+        local_return_(orelse_((try_(proc_Args_Iter_next(&args, scratch)))({
+            io_stream_eprintln(u8_l("Usage: example-linefeed <on|off>"));
+            start_exit(1);
+        })));
+    });
     var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     var arena = heap_Arena_init(heap_Sys_alctr(&heap));
     defer_(heap_Arena_fini(&arena));
-    var ansi = try_(daterm_ANSI_init(with_((daterm_ANSI_Cfg_default(heap_Sys_alctr(&heap)))(
-        (.output_mode)(when_(ascii_eqlSenseCase(*S_at((args)[1]), u8_l("on")))(
-            provide_(daterm_ANSI_OutputMode_processed),
-            instead_(daterm_ANSI_OutputMode_raw),
-        )),
-    ))));
+    var ansi = try_(daterm_ANSI_init(with_((unwrap_(
+        daterm_ANSI_Cfg_direct(heap_Sys_alctr(&heap))
+    ))((.output_mode)(when_(ascii_eqlSenseCase(output_mode_arg, u8_l("on")))(
+        provide_(daterm_ANSI_OutputMode_processed),
+        instead_(daterm_ANSI_OutputMode_raw),
+    ))))));
     defer_(daterm_ANSI_fini(&ansi));
     try_(daterm_ANSI_enableRawMode(&ansi));
     defer_(daterm_ANSI_disableRawMode(&ansi));
