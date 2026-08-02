@@ -33,13 +33,12 @@ extern "C" {
 #define TypeInfo_size_bits_on_16bit 13
 #define TypeInfo_align_bits_on_16bit 3
 claim_assert_static((TypeInfo_size_bits_on_16bit + TypeInfo_align_bits_on_16bit) == abi_bits_16);
-
-#define TypeInfo_size_bits_on_64bit 58
-#define TypeInfo_align_bits_on_64bit 6
-claim_assert_static((TypeInfo_size_bits_on_64bit + TypeInfo_align_bits_on_64bit) == abi_bits_64);
 #define TypeInfo_size_bits_on_32bit 28
 #define TypeInfo_align_bits_on_32bit 4
 claim_assert_static((TypeInfo_size_bits_on_32bit + TypeInfo_align_bits_on_32bit) == abi_bits_32);
+#define TypeInfo_size_bits_on_64bit 58
+#define TypeInfo_align_bits_on_64bit 6
+claim_assert_static((TypeInfo_size_bits_on_64bit + TypeInfo_align_bits_on_64bit) == abi_bits_64);
 
 /// Core type information packed in the native size integer domain.
 typedef usize TypeInfoPacked;

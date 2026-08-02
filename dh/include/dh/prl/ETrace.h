@@ -11,9 +11,9 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-#if !defined(ETrace_comp_enabled)
-#define ETrace_comp_enabled debug_enabled
-#endif /* !defined(ETrace_comp_enabled) */
+#if !defined(ETrace_enabled)
+#define ETrace_enabled debug_enabled
+#endif /* !defined(ETrace_enabled) */
 
 #define ETrace_max_frames /* Platform-specific stack trace size optimization */ __comp_int__ETrace_max_frames
 /// Stack frame info
@@ -68,7 +68,7 @@ struct ETrace {
 };
 
 #if in_comptime
-#if !ETrace_comp_enabled
+#if !ETrace_enabled
 
 #define ETrace_reset() $unused(0)
 #define ETrace_enable() $unused(0)
@@ -78,7 +78,7 @@ struct ETrace {
 #define ETrace_captureFrame() $unused(0)
 #define ETrace_print() $unused(0)
 
-#else /* ETrace_comp_enabled */
+#else /* ETrace_enabled */
 
 #define ETrace_reset() ETrace_reset_callDebug()
 #define ETrace_enable() ETrace_enable_callDebug()
@@ -101,7 +101,7 @@ struct ETrace {
 #define ETrace_captureFrame_callDebug() ETrace_captureFrame_debug(srcLoc(), __builtin_return_address(0))
 #endif
 
-#endif /* ETrace_comp_enabled */
+#endif /* ETrace_enabled */
 #endif /* in_comptime */
 
 $extern fn_((ETrace_reset_debug(void))(void));

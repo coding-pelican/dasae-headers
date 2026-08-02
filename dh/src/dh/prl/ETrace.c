@@ -1,5 +1,5 @@
 #include "dh/prl/ETrace.h"
-#if ETrace_comp_enabled
+#if ETrace_enabled
 #include "dh/mem/common.h"
 #include "dh/io/stream.h"
 
@@ -87,4 +87,4 @@ fn_((ETrace_print_debug(void))(void) $guard) {
         ))($ignore, $do_nothing));
     }
 } $unguarded(fn);
-#endif /* ETrace_comp_enabled */
+#endif /* ETrace_enabled */
