@@ -107,3 +107,54 @@ TEST_fn_("core/pri/bitfield: packed unions preserve numeric layout" $scope) {
     let ver = Ver_from(1, 2, 3, Ver_Label_rc, 4);
     try_(TEST_expect(ver.packed == ver_calc(1, 2, 3, ver_label_prefix_as_num_rc, 4)));
 } $unscoped(TEST_fn);
+
+/*
+ * Contract probe:
+ * - source fields are declared in canonical numeric order, MSB -> LSB;
+ * - `packed` has the same numeric value on little- and big-endian targets;
+ * - the byte representation of `packed` remains native-endian.
+ */
+bitfield_((test_core_pri_bitfield__EndianContract)(u16)(
+    (high, u8, 4),
+    (middle, u8, 8),
+    (low, u8, 4)
+));
+claim_assert_static(bitfield_shift_(high, test_core_pri_bitfield__EndianContract) == 12);
+claim_assert_static(bitfield_shift_(middle, test_core_pri_bitfield__EndianContract) == 4);
+claim_assert_static(bitfield_shift_(low, test_core_pri_bitfield__EndianContract) == 0);
+claim_assert_static(bitfield_mask_(high, test_core_pri_bitfield__EndianContract) == 0xf000u);
+claim_assert_static(bitfield_mask_(middle, test_core_pri_bitfield__EndianContract) == 0x0ff0u);
+claim_assert_static(bitfield_mask_(low, test_core_pri_bitfield__EndianContract) == 0x000fu);
+
+TEST_fn_("core/pri/bitfield: declaration order is canonical MSB to LSB" $scope) {
+    let value = l$((test_core_pri_bitfield__EndianContract){
+        .high = 0xa,
+        .middle = 0xbc,
+        .low = 0xd,
+    });
+
+    try_(TEST_expect(value.high == 0xa));
+    try_(TEST_expect(value.middle == 0xbc));
+    try_(TEST_expect(value.low == 0xd));
+    try_(TEST_expect(value.packed == 0xabcdu));
+} $unscoped(TEST_fn);
+
+TEST_fn_("core/pri/bitfield: packed bytes follow native endian only" $scope) {
+    let value = l$((test_core_pri_bitfield__EndianContract){ .packed = 0xabcdu });
+    let bytes = ptrCast$((P_const$u8)(&value.packed));
+
+    try_(TEST_expect(value.high == 0xa));
+    try_(TEST_expect(value.middle == 0xbc));
+    try_(TEST_expect(value.low == 0xd));
+
+    pp_if_(arch_byte_order_is_little_endian)(
+        pp_then_(
+            try_(TEST_expect(bytes[0] == 0xcdu));
+            try_(TEST_expect(bytes[1] == 0xabu));
+        ),
+        pp_else_(
+            try_(TEST_expect(bytes[0] == 0xabu));
+            try_(TEST_expect(bytes[1] == 0xcdu));
+        )
+    );
+} $unscoped(TEST_fn);

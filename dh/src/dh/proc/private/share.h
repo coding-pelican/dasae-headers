@@ -40,7 +40,7 @@ $attr($must_check)
 $extern fn_((proc__NativeStrs_fromEnv(
     mem_Alctr gpa,
     proc_Env inherited,
-    O$proc_Cmd_Env override
+    O$proc_Spawn_Env override
 ))(mem_E$proc__NativeStrs));
 $extern fn_((proc__NativeStrs_raw(proc__NativeStrs self))(char**));
 $extern fn_((proc__NativeStrs_at(
@@ -52,7 +52,7 @@ $attr($must_check)
 $extern fn_((proc__envWTF16(
     mem_Alctr gpa,
     proc_Env inherited,
-    O$proc_Cmd_Env override
+    O$proc_Spawn_Env override
 ))(proc__envWTF16_E$S$u16));
 
 $extern fn_((proc__child(

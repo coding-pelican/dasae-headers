@@ -68,7 +68,7 @@ fn_((proc__NativeStrs_from(
 fn_((proc__NativeStrs_fromEnv(
     mem_Alctr gpa,
     proc_Env inherited,
-    O$proc_Cmd_Env override
+    O$proc_Spawn_Env override
 ))(mem_E$proc__NativeStrs) $guard) {
     if_some((override)(items)) {
         return_ok(try_(proc__NativeStrs_from(gpa, items)));
@@ -118,7 +118,7 @@ fn_((proc__NativeStrs_at(
 fn_((proc__envWTF16(
     mem_Alctr gpa,
     proc_Env inherited,
-    O$proc_Cmd_Env override
+    O$proc_Spawn_Env override
 ))(proc__envWTF16_E$S$u16) $guard) {
     var items = try_(proc__NativeStrs_fromEnv(gpa, inherited, override));
     defer_(proc__NativeStrs_fini(&items, gpa));

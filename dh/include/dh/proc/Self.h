@@ -21,43 +21,212 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "Env.h"
-#include "Stream.h"
+#include "../fs/File.h"
 #include "Child.h"
 #include "../mem/Alctr.h"
 
 /*========== Macros and Declarations ========================================*/
 
+/*--- Process-operation errors ---------------------------------------------*/
+
+errset_((proc_FileBusy_E)(proc_FileBusy));
+errset_((proc_FileSystem_E)(proc_FileSystem));
+errset_((proc_FileNotFound_E)(proc_FileNotFound));
+errset_((proc_InvalidExe_E)(proc_InvalidExe));
+errset_((proc_InvalidName_E)(proc_InvalidName));
+errset_((proc_IsDir_E)(proc_IsDir));
+errset_((proc_NameTooLong_E)(proc_NameTooLong));
+errset_((proc_NoDevice_E)(proc_NoDevice));
+errset_((proc_NotDir_E)(proc_NotDir));
+errset_((proc_OperationUnsupported_E)(proc_OperationUnsupported));
+errset_((proc_PermissionDenied_E)(proc_PermissionDenied));
+errset_((proc_ProcessFdQuotaExceeded_E)(proc_ProcessFdQuotaExceeded));
+errset_((proc_SymLinkLoop_E)(proc_SymLinkLoop));
+errset_((proc_SystemFdQuotaExceeded_E)(proc_SystemFdQuotaExceeded));
+
+errset_((proc_ExePath_E)() $union_errset_(
+    proc_AccessDenied_E,
+    proc_FileSystem_E,
+    proc_FileNotFound_E,
+    proc_OperationUnsupported_E,
+    proc_ResourceLimitReached_E,
+    proc_SymLinkLoop_E,
+    proc_SystemResources_E
+));
+T_use_E$($set(proc_ExePath_E)(S$u8));
+errset_((proc_ExePathAlloc_E)() $union_errset_(
+    proc_ExePath_E,
+    mem_E
+));
+T_use_E$($set(proc_ExePathAlloc_E)(S$u8));
+
+errset_((proc_CurrPath_E)() $union_errset_(
+    proc_AccessDenied_E,
+    proc_FileNotFound_E,
+    proc_OperationUnsupported_E,
+    proc_ResourceLimitReached_E,
+    proc_SystemResources_E
+));
+T_use_E$($set(proc_CurrPath_E)(S$u8));
+errset_((proc_CurrPathAlloc_E)() $union_errset_(
+    proc_CurrPath_E,
+    mem_E
+));
+T_use_E$($set(proc_CurrPathAlloc_E)(S$u8));
+
+errset_((proc_SetCurrPath_E)() $union_errset_(
+    mem_E,
+    proc_AccessDenied_E,
+    proc_FileNotFound_E,
+    proc_FileSystem_E,
+    proc_InvalidName_E,
+    proc_NameTooLong_E,
+    proc_NotDir_E,
+    proc_OperationUnsupported_E,
+    proc_ResourceLimitReached_E,
+    proc_SymLinkLoop_E,
+    proc_SystemResources_E
+));
+errset_((proc_SetCurrDir_E)() $union_errset_(
+    mem_E,
+    proc_AccessDenied_E,
+    proc_FileSystem_E,
+    proc_FileNotFound_E,
+    proc_NotDir_E,
+    proc_OperationUnsupported_E,
+    proc_ResourceLimitReached_E,
+    proc_SystemResources_E
+));
+
+errset_((proc_Spawn_E)() $union_errset_(
+    proc_SetCurrPath_E,
+    mem_E,
+    proc_FileBusy_E,
+    proc_FileSystem_E,
+    proc_InvalidExe_E,
+    proc_IsDir_E,
+    proc_NoDevice_E,
+    proc_PermissionDenied_E,
+    proc_ProcessFdQuotaExceeded_E,
+    proc_SystemFdQuotaExceeded_E
+));
+errset_((proc_Replace_E)() $union_errset_(
+    mem_E,
+    proc_AccessDenied_E,
+    proc_FileBusy_E,
+    proc_FileSystem_E,
+    proc_FileNotFound_E,
+    proc_InvalidExe_E,
+    proc_InvalidName_E,
+    proc_IsDir_E,
+    proc_NameTooLong_E,
+    proc_NotDir_E,
+    proc_OperationUnsupported_E,
+    proc_PermissionDenied_E,
+    proc_ProcessFdQuotaExceeded_E,
+    proc_ResourceLimitReached_E,
+    proc_SystemFdQuotaExceeded_E,
+    proc_SystemResources_E
+));
+errset_((proc_GetUserInfo_E)(
+    proc_GetUserInfo_Unsupported,
+    proc_GetUserInfo_UserNotFound,
+    proc_GetUserInfo_CorruptDatabase,
+    proc_GetUserInfo_SystemResources
+));
+errset_((proc_GetBaseAddress_E)(
+    proc_GetBaseAddress_Unsupported,
+    proc_GetBaseAddress_SystemResources,
+    proc_GetBaseAddress_CorruptImage
+));
+T_use_E$($set(proc_GetBaseAddress_E)(usize));
+errset_((proc_Run_Local_E)(
+    proc_Run_StreamTooLong,
+    proc_Run_ReadFailed,
+    proc_Run_ThreadFailed
+));
+errset_((proc_Run_E)() $union_errset_(
+    proc_Spawn_E,
+    proc_Child_Wait_E,
+    proc_Run_Local_E,
+    mem_E
+));
+T_use_E$($set(proc_Spawn_E)(proc_Child));
+
+
+/*--- Spawn contract --------------------------------------------------------*/
+
+T_alias$((proc_Spawn_StdIO)(variant_((proc_Spawn_StdIO $fits($packed))(
+    (proc_Spawn_StdIO_inherit, Void),
+    (proc_Spawn_StdIO_file, fs_File),
+    (proc_Spawn_StdIO_ignore, Void),
+    (proc_Spawn_StdIO_pipe, Void),
+    (proc_Spawn_StdIO_close, Void)
+))));
+$attr($inline_always)
+$static fn_((proc_Spawn_StdIO_fromFile(fs_File file))(proc_Spawn_StdIO));
+
 /// Explicit child-process environment override.
 ///
 /// `none()` inherits the environment present at process entry; `some(entries)`
 /// replaces it with the exact `KEY=VALUE` entries in this slice.
-T_alias$((proc_Cmd_Env)(S$S_const$u8));
-T_use_O$(proc_Cmd_Env);
-T_alias$((proc_Cmd_CWD)(variant_((proc_Cmd_CWD $fits($packed))(
-    (proc_Cmd_CWD_inherit, Void),
-    (proc_Cmd_CWD_dir, fs_Dir),
-    (proc_Cmd_CWD_path, S_const$u8)
+T_alias$((proc_Spawn_Env)(S$S_const$u8));
+T_use_O$(proc_Spawn_Env);
+T_alias$((proc_Spawn_CWD)(variant_((proc_Spawn_CWD $fits($packed))(
+    (proc_Spawn_CWD_inherit, Void),
+    (proc_Spawn_CWD_dir, fs_Dir),
+    (proc_Spawn_CWD_path, S_const$u8)
 ))));
-T_alias$((proc_Cmd_ArgExpsn)(enum_((proc_Cmd_ArgExpsn $fits($packed))(
-    proc_Cmd_ArgExpsn_no_expand = 0,
-    proc_Cmd_ArgExpsn_expand
+T_alias$((proc_ArgExpsn)(enum_((proc_ArgExpsn $fits($packed))(
+    proc_ArgExpsn_no_expand = 0,
+    proc_ArgExpsn_expand
 ))));
-T_alias$((proc_Cmd)(struct proc_Cmd {
+T_alias$((proc_Spawn_Opts)(struct proc_Spawn_Opts {
     var_(argv, S$S_const$u8);
-    var_(env, O$proc_Cmd_Env);
-    var_(cwd, proc_Cmd_CWD);
-    var_(std_in, proc_Stream);
-    var_(std_out, proc_Stream);
-    var_(std_err, proc_Stream);
-    var_(expand_arg0, proc_Cmd_ArgExpsn);
+    var_(env, O$proc_Spawn_Env);
+    var_(cwd, proc_Spawn_CWD);
+    var_(std_in, proc_Spawn_StdIO);
+    var_(std_out, proc_Spawn_StdIO);
+    var_(std_err, proc_Spawn_StdIO);
+    var_(expand_arg0, proc_ArgExpsn);
     var_(start_suspended, bool);
     var_(create_no_window, bool);
 }));
-T_alias$((proc_Cmd_Replace_Opts)(struct proc_Cmd_Replace_Opts {
+T_alias$((proc_Replace_Opts)(struct proc_Replace_Opts {
     var_(argv, S$S_const$u8);
-    var_(env, O$proc_Cmd_Env);
-    var_(expand_arg0, proc_Cmd_ArgExpsn);
+    var_(env, O$proc_Spawn_Env);
+    var_(expand_arg0, proc_ArgExpsn);
 }));
+T_alias$((proc_UserInfo)(struct proc_UserInfo {
+    var_(uid, u32);
+    var_(gid, u32);
+}));
+T_use_prl$(proc_UserInfo);
+T_use_E$($set(proc_GetUserInfo_E)(proc_UserInfo));
+
+T_alias$((proc_Run_Opts)(struct proc_Run_Opts {
+    var_(spawn, proc_Spawn_Opts);
+    var_(stdout_limit, usize);
+    var_(stderr_limit, usize);
+    var_(reserve_amount, usize);
+}));
+T_alias$((proc_Run_Res)(struct proc_Run_Res {
+    var_(term, proc_Child_Trm);
+    var_(out, S$u8);
+    var_(err, S$u8);
+}));
+T_use_E$($set(proc_Run_E)(proc_Run_Res));
+$attr($inline_always)
+$static fn_((proc_Spawn_Opts_default(S$S_const$u8 argv))(proc_Spawn_Opts));
+$attr($inline_always)
+$static fn_((proc_Replace_Opts_default(S$S_const$u8 argv))(proc_Replace_Opts));
+$attr($inline_always)
+$static fn_((proc_Run_Opts_default(S$S_const$u8 argv))(proc_Run_Opts));
+
+
+$static const bool proc_canSpawn = bool_(pp_or(plat_is_windows, plat_is_linux));
+$static const bool proc_canReplace = bool_(plat_is_linux);
+
 
 T_alias$((proc_Self_VTbl)(struct proc_Self_VTbl));
 struct proc_Self {
@@ -79,60 +248,75 @@ $attr($must_check)
 $extern fn_((proc_direct(void))(proc_direct_E$proc_Self));
 
 $attr($must_check)
-$extern fn_((proc_exePath(proc_Self self, S$u8 out_buf))(proc_ExecutablePath_E$S$u8));
+$extern fn_((proc_exePath(proc_Self self, S$u8 out_buf))(proc_ExePath_E$S$u8));
 $attr($must_check)
-$extern fn_((proc_exePathAlloc(proc_Self self, mem_Alctr gpa))(proc_ExecutablePathAlloc_E$S$u8));
+$extern fn_((proc_exePathAlloc(proc_Self self, mem_Alctr gpa))(proc_ExePathAlloc_E$S$u8));
 $attr($must_check)
-$extern fn_((proc_exeDirPath(proc_Self self, S$u8 out_buf))(proc_ExecutablePath_E$S$u8));
+$extern fn_((proc_exeDirPath(proc_Self self, S$u8 out_buf))(proc_ExePath_E$S$u8));
 $attr($must_check)
-$extern fn_((proc_exeDirPathAlloc(proc_Self self, mem_Alctr gpa))(proc_ExecutablePathAlloc_E$S$u8));
+$extern fn_((proc_exeDirPathAlloc(proc_Self self, mem_Alctr gpa))(proc_ExePathAlloc_E$S$u8));
 $attr($must_check)
-$extern fn_((proc_currPath(proc_Self self, S$u8 out_buf))(proc_CurrentPath_E$S$u8));
+$extern fn_((proc_currPath(proc_Self self, S$u8 out_buf))(proc_CurrPath_E$S$u8));
 $attr($must_check)
-$extern fn_((proc_currPathAlloc(proc_Self self, mem_Alctr gpa))(proc_CurrentPathAlloc_E$S$u8));
+$extern fn_((proc_currPathAlloc(proc_Self self, mem_Alctr gpa))(proc_CurrPathAlloc_E$S$u8));
 $attr($must_check)
-$extern fn_((proc_setCurrPath(proc_Self self, mem_Alctr gpa, S_const$u8 path))(proc_SetCurrentPath_E$void));
+$extern fn_((proc_setCurrPath(proc_Self self, mem_Alctr gpa, S_const$u8 path))(proc_SetCurrPath_E$void));
 $attr($must_check)
-$extern fn_((proc_setCurrDir(proc_Self self, mem_Alctr gpa, fs_Dir dir))(proc_SetCurrentDir_E$void));
+$extern fn_((proc_setCurrDir(proc_Self self, mem_Alctr gpa, fs_Dir dir))(proc_SetCurrDir_E$void));
 $attr($must_check)
-$extern fn_((proc_replace(proc_Self self, mem_Alctr gpa, proc_Env env, proc_Cmd_Replace_Opts opts))(proc_Replace_E$void));
+$extern fn_((proc_replace(proc_Self self, mem_Alctr gpa, proc_Env env, proc_Replace_Opts opts))(proc_Replace_E$void));
 $attr($must_check)
-$extern fn_((proc_replacePath(proc_Self self, mem_Alctr gpa, proc_Env env, fs_Dir dir, proc_Cmd_Replace_Opts opts))(proc_Replace_E$void));
+$extern fn_((proc_replacePath(proc_Self self, mem_Alctr gpa, proc_Env env, fs_Dir dir, proc_Replace_Opts opts))(proc_Replace_E$void));
 
 $attr($must_check)
-$extern fn_((proc_spawn(proc_Self self, mem_Alctr gpa, proc_Env env, proc_Cmd cmd))(proc_Spawn_E$proc_Child));
+$extern fn_((proc_spawn(proc_Self self, mem_Alctr gpa, proc_Env env, proc_Spawn_Opts cmd))(proc_Spawn_E$proc_Child));
 $attr($must_check)
-$extern fn_((proc_spawnPath(proc_Self self, mem_Alctr gpa, proc_Env env, fs_Dir dir, proc_Cmd cmd))(proc_Spawn_E$proc_Child));
+$extern fn_((proc_spawnPath(proc_Self self, mem_Alctr gpa, proc_Env env, fs_Dir dir, proc_Spawn_Opts cmd))(proc_Spawn_E$proc_Child));
+
+$attr($must_check)
+$extern fn_((proc_getUserInfo(proc_Self self, S_const$u8 name))(proc_GetUserInfo_E$proc_UserInfo));
+$attr($must_check)
+$extern fn_((proc_getBaseAddress(proc_Self self))(proc_GetBaseAddress_E$usize));
+$attr($must_check)
+$extern fn_((proc_run(proc_Self self, mem_Alctr gpa, proc_Env env, proc_Run_Opts opts))(proc_Run_E$proc_Run_Res));
+$extern fn_((proc_Run_Res_fini(proc_Run_Res* self, mem_Alctr gpa))(void));
 
 $attr($no_return)
 $extern fn_((proc_exit(proc_Self self, u8 status))(void));
+/// In debug builds this returns so normal cleanup and leak checks execute.
+/// In non-debug builds this terminates successfully through `self`.
+$extern fn_((proc_cleanExit(proc_Self self))(void));
 $attr($no_return $branch_cold)
 $extern fn_((proc_abort(proc_Self self))(void));
 
 struct proc_Self_VTbl {
     $attr($must_check)
-    fn_(((*exePathFn)(P$raw ctx, S$u8 out_buf))(proc_ExecutablePath_E$S$u8));
+    fn_(((*exePathFn)(P$raw ctx, S$u8 out_buf))(proc_ExePath_E$S$u8));
     $attr($must_check)
-    fn_(((*currPathFn)(P$raw ctx, S$u8 out_buf))(proc_CurrentPath_E$S$u8));
+    fn_(((*currPathFn)(P$raw ctx, S$u8 out_buf))(proc_CurrPath_E$S$u8));
     $attr($must_check)
-    fn_(((*setCurrPathFn)(P$raw ctx, mem_Alctr gpa, S_const$u8 path))(proc_SetCurrentPath_E$void));
+    fn_(((*setCurrPathFn)(P$raw ctx, mem_Alctr gpa, S_const$u8 path))(proc_SetCurrPath_E$void));
     $attr($must_check)
-    fn_(((*setCurrDirFn)(P$raw ctx, mem_Alctr gpa, fs_Dir dir))(proc_SetCurrentDir_E$void));
+    fn_(((*setCurrDirFn)(P$raw ctx, mem_Alctr gpa, fs_Dir dir))(proc_SetCurrDir_E$void));
     $attr($must_check)
-    fn_(((*replaceFn)(P$raw ctx, mem_Alctr gpa, proc_Env env, proc_Cmd_Replace_Opts opts))(proc_Replace_E$void));
+    fn_(((*replaceFn)(P$raw ctx, mem_Alctr gpa, proc_Env env, proc_Replace_Opts opts))(proc_Replace_E$void));
     $attr($must_check)
-    fn_(((*replacePathFn)(P$raw ctx, mem_Alctr gpa, proc_Env env, fs_Dir dir, proc_Cmd_Replace_Opts opts))(proc_Replace_E$void));
+    fn_(((*replacePathFn)(P$raw ctx, mem_Alctr gpa, proc_Env env, fs_Dir dir, proc_Replace_Opts opts))(proc_Replace_E$void));
 
     $attr($must_check)
-    fn_(((*spawnFn)(P$raw ctx, mem_Alctr gpa, proc_Env env, proc_Cmd cmd))(proc_Spawn_E$proc_Child));
+    fn_(((*spawnFn)(P$raw ctx, mem_Alctr gpa, proc_Env env, proc_Spawn_Opts cmd))(proc_Spawn_E$proc_Child));
     $attr($must_check)
-    fn_(((*spawnPathFn)(P$raw ctx, mem_Alctr gpa, proc_Env env, fs_Dir dir, proc_Cmd cmd))(proc_Spawn_E$proc_Child));
+    fn_(((*spawnPathFn)(P$raw ctx, mem_Alctr gpa, proc_Env env, fs_Dir dir, proc_Spawn_Opts cmd))(proc_Spawn_E$proc_Child));
     var_(child, struct proc_Self_VTbl_Child {
         $attr($must_check)
         fn_(((*waitFn)(P$raw ctx, P$$(proc_Child) child))(proc_Child_Wait_E$proc_Child_Trm));
         fn_(((*killFn)(P$raw ctx, P$$(proc_Child) child))(void));
     });
 
+    $attr($must_check)
+    fn_(((*getUserInfoFn)(P$raw ctx, S_const$u8 name))(proc_GetUserInfo_E$proc_UserInfo));
+    $attr($must_check)
+    fn_(((*getBaseAddressFn)(P$raw ctx))(proc_GetBaseAddress_E$usize));
     $attr($no_return)
     fn_(((*exitFn)(P$raw ctx, u8 status))(void));
     $attr($no_return)
@@ -142,6 +326,37 @@ struct proc_Self_VTbl {
 /*========== Macros and Definitions =========================================*/
 
 #if in_analysis_active_only || in_comptime
+fn_((proc_Spawn_StdIO_fromFile(fs_File file))(proc_Spawn_StdIO)) {
+    return union_of$((proc_Spawn_StdIO)(proc_Spawn_StdIO_file)(file));
+};
+fn_((proc_Spawn_Opts_default(S$S_const$u8 argv))(proc_Spawn_Opts)) {
+    return (proc_Spawn_Opts){
+        .argv = argv,
+        .env = none$((O$proc_Spawn_Env)),
+        .cwd = union_of((proc_Spawn_CWD_inherit){}),
+        .std_in = union_of((proc_Spawn_StdIO_inherit){}),
+        .std_out = union_of((proc_Spawn_StdIO_inherit){}),
+        .std_err = union_of((proc_Spawn_StdIO_inherit){}),
+        .expand_arg0 = proc_ArgExpsn_no_expand,
+        .start_suspended = false,
+        .create_no_window = false,
+    };
+};
+fn_((proc_Replace_Opts_default(S$S_const$u8 argv))(proc_Replace_Opts)) {
+    return (proc_Replace_Opts){
+        .argv = argv,
+        .env = none$((O$proc_Spawn_Env)),
+        .expand_arg0 = proc_ArgExpsn_no_expand,
+    };
+};
+fn_((proc_Run_Opts_default(S$S_const$u8 argv))(proc_Run_Opts)) {
+    return (proc_Run_Opts){
+        .spawn = proc_Spawn_Opts_default(argv),
+        .stdout_limit = usize_limit_max,
+        .stderr_limit = usize_limit_max,
+        .reserve_amount = usize_(64),
+    };
+};
 fn_((proc_isValid(proc_Self self))(bool)) {
     return isNonnull(self.ctx)
         && isNonnull(self.vtbl)
@@ -153,6 +368,8 @@ fn_((proc_isValid(proc_Self self))(bool)) {
         && isNonnull(self.vtbl->replacePathFn)
         && isNonnull(self.vtbl->spawnFn)
         && isNonnull(self.vtbl->spawnPathFn)
+        && isNonnull(self.vtbl->getUserInfoFn)
+        && isNonnull(self.vtbl->getBaseAddressFn)
         && isNonnull(self.vtbl->child.waitFn)
         && isNonnull(self.vtbl->child.killFn)
         && isNonnull(self.vtbl->exitFn)
@@ -169,6 +386,8 @@ fn_((proc_assertValid(P$raw ctx, P_const$$(proc_Self_VTbl) vtbl))(void)) {
     claim_assert_nonnull(vtbl->replacePathFn);
     claim_assert_nonnull(vtbl->spawnFn);
     claim_assert_nonnull(vtbl->spawnPathFn);
+    claim_assert_nonnull(vtbl->getUserInfoFn);
+    claim_assert_nonnull(vtbl->getBaseAddressFn);
     claim_assert_nonnull(vtbl->child.waitFn);
     claim_assert_nonnull(vtbl->child.killFn);
     claim_assert_nonnull(vtbl->exitFn);

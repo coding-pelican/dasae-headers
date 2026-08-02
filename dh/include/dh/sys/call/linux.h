@@ -30,6 +30,34 @@ typedef u32 sys_call_linux_mode_t;
 
 typedef i32 (*sys_call_linux_clone_entry_fn)(P$raw arg);
 
+/*---------- <sys/sysinfo.h> ------------------------------------------------*/
+
+typedef struct sys_call_linux_sysinfo {
+    var_(uptime, sys_call_linux_word);
+    var_(loads, A$$(3, usize));
+    var_(totalram, usize);
+    var_(freeram, usize);
+    var_(sharedram, usize);
+    var_(bufferram, usize);
+    var_(totalswap, usize);
+    var_(freeswap, usize);
+    var_(procs, u16);
+    var_(pad, u16);
+    var_(totalhigh, usize);
+    var_(freehigh, usize);
+    var_(mem_unit, u32);
+    var_(_f, A$$(pp_if_(arch_bits_is_64bit)(pp_then_(0), pp_else_(8)), u8));
+} sys_call_linux_sysinfo;
+
+typedef struct sys_call_linux_rlimit64 {
+    var_(cur, u64);
+    var_(max, u64);
+} sys_call_linux_rlimit64;
+
+enum {
+    sys_call_linux_RLIMIT_NOFILE = 7,
+};
+
 /*---------- <time.h> -------------------------------------------------------*/
 
 typedef struct sys_call_linux_timespec {
@@ -958,6 +986,24 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_riscv32)(172)),
         pp_default_(()(0))
     )),
+    sys_call_linux_SYS_sysinfo = pp_switch_((arch_type)(
+        pp_case_((arch_type_x86_64)(99)),
+        pp_case_((arch_type_x86)(116)),
+        pp_case_((arch_type_aarch64)(179)),
+        pp_case_((arch_type_arm)(116)),
+        pp_case_((arch_type_riscv64)(179)),
+        pp_case_((arch_type_riscv32)(179)),
+        pp_default_(()(0))
+    )),
+    sys_call_linux_SYS_prlimit64 = pp_switch_((arch_type)(
+        pp_case_((arch_type_x86_64)(302)),
+        pp_case_((arch_type_x86)(340)),
+        pp_case_((arch_type_aarch64)(261)),
+        pp_case_((arch_type_arm)(369)),
+        pp_case_((arch_type_riscv64)(261)),
+        pp_case_((arch_type_riscv32)(261)),
+        pp_default_(()(0))
+    )),
     sys_call_linux_SYS_sched_getaffinity = pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(204)),
         pp_case_((arch_type_x86)(242)),
@@ -1078,6 +1124,15 @@ $attr($inline)
 $static fn_((sys_call_linux_gettid(void))(sys_call_linux_pid_t));
 $attr($inline)
 $static fn_((sys_call_linux_getpid(void))(sys_call_linux_pid_t));
+$attr($inline)
+$static fn_((sys_call_linux_sysinfo_get(sys_call_linux_sysinfo* info))(sys_call_linux_word));
+$attr($inline)
+$static fn_((sys_call_linux_prlimit64(
+    sys_call_linux_pid_t pid,
+    i32 resource,
+    const sys_call_linux_rlimit64* new_limit,
+    sys_call_linux_rlimit64* old_limit
+))(sys_call_linux_word));
 
 /*---------- <fcntl.h> ------------------------------------------------------*/
 
@@ -2146,6 +2201,30 @@ fn_((sys_call_linux_getpid(void))(sys_call_linux_pid_t)) {
     return as$(sys_call_linux_pid_t)(sys_call_linux_syscall0(sys_call_linux_SYS_getpid));
 };
 
+
+fn_((sys_call_linux_sysinfo_get(
+    sys_call_linux_sysinfo* info
+))(sys_call_linux_word)) {
+    return sys_call_linux_syscall1(
+        sys_call_linux_SYS_sysinfo,
+        as$(sys_call_linux_word)(info)
+    );
+};
+
+fn_((sys_call_linux_prlimit64(
+    sys_call_linux_pid_t pid,
+    i32 resource,
+    const sys_call_linux_rlimit64* new_limit,
+    sys_call_linux_rlimit64* old_limit
+))(sys_call_linux_word)) {
+    return sys_call_linux_syscall4(
+        sys_call_linux_SYS_prlimit64,
+        as$(sys_call_linux_word)(pid),
+        as$(sys_call_linux_word)(resource),
+        as$(sys_call_linux_word)(new_limit),
+        as$(sys_call_linux_word)(old_limit)
+    );
+};
 fn_((sys_call_linux_fork(void))(sys_call_linux_word)) {
     return sys_call_linux_syscall5(sys_call_linux_SYS_clone, 17, 0, 0, 0, 0);
 };

@@ -113,7 +113,7 @@ T_use_E$($set(io_PTY_SpawnE)(io_PTY_Session));
 T_alias$((io_PTY_SpawnCfg)(struct io_PTY_SpawnCfg {
     var_(gpa, mem_Alctr);
     var_(env, proc_Env);
-    var_(cmd, proc_Cmd);
+    var_(cmd, proc_Spawn_Opts);
     var_(pty, io_PTY_OpenCfg);
 }));
 T_use_prl$(io_PTY_SpawnCfg);
@@ -121,7 +121,7 @@ $attr($inline_always)
 $static fn_((io_PTY_SpawnCfg_default(
     mem_Alctr gpa,
     proc_Env env,
-    proc_Cmd cmd
+    proc_Spawn_Opts cmd
 ))(io_PTY_SpawnCfg));
 
 /*---------- PTY Session Lifecycle ------------------------------------------*/
@@ -161,7 +161,7 @@ fn_((io_PTY_OpenCfg_default(void))(io_PTY_OpenCfg)) {
 fn_((io_PTY_SpawnCfg_default(
     mem_Alctr gpa,
     proc_Env env,
-    proc_Cmd cmd
+    proc_Spawn_Opts cmd
 ))(io_PTY_SpawnCfg)) {
     return (io_PTY_SpawnCfg){
         .gpa = gpa,

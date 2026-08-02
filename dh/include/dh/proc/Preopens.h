@@ -20,11 +20,13 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "common.h"
+#include "base.h"
 #include "../fs/Dir.h"
 #include "../fs/File/self.h"
 
 /*========== Macros and Declarations ========================================*/
+
+errset_((proc_Preopens_direct_E)(proc_Preopens_direct_Unsupported));
 
 T_alias$((proc_Preopens_Resrc)(variant_((proc_Preopens_Resrc $fits($packed))(
     (proc_Preopens_Resrc_file, fs_File),

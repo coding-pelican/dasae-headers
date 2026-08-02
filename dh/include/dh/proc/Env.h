@@ -24,6 +24,9 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
+errset_((proc_Env_E)() $union_errset_(proc_ResourceLimitReached_E));
+T_use_E$($set(proc_Env_E)(O$S_const$u8));
+
 T_alias$((proc_Env_VTbl)(struct proc_Env_VTbl));
 T_alias$((proc_Env)(struct proc_Env {
     var_(ctx, P$raw);

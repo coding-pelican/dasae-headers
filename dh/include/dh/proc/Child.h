@@ -7,15 +7,20 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "common.h"
+#include "base.h"
 #include "../fs/File/self.h"
 
 /*========== Macros and Declarations ========================================*/
 
+errset_((proc_Child_Wait_E)() $union_errset_(
+    proc_AccessDenied_E,
+    proc_SystemResources_E
+));
+
 T_alias$((proc_Child_Handle)(proc_Handle));
 T_use_O$(proc_Child_Handle);
 T_alias$((proc_Child_Id)(u64));
-T_alias$((proc_Child_Sig)(sys_posix_signal_t));
+T_alias$((proc_Child_Sig)(u8));
 T_alias$((proc_Child)(struct proc_Child));
 
 T_alias$((proc_Child_IO)(struct proc_Child_IO {
@@ -42,7 +47,6 @@ struct proc_Child {
     var_(io, proc_Child_IO);
 };
 T_use_prl$(proc_Child);
-T_use_E$($set(proc_Spawn_E)(proc_Child));
 /// Wait for an active child. Calling this after completion is a contract error.
 $attr($must_check)
 $extern fn_((proc_Child_wait(proc_Child* self, proc_Self proc))(proc_Child_Wait_E$proc_Child_Trm));

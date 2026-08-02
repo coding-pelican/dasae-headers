@@ -37,19 +37,19 @@ fn_((main(proc_Entry entry))(E$void) $guard) {
             )),
             pp_default_(()(local_({
                 io_stream_eprintln(u8_l("unsupported platform: {:s}"), u8_l(plat_name));
-                proc_exit(1);
+                proc_exit(proc, 1);
                 local_return_(u8_l(""));
             })))
         )),
     });
-    let_(cmd, proc_Cmd) = {
+    let_(cmd, proc_Spawn_Opts) = {
         .argv = A_ref$((S$S_const$u8)(argv)),
         .env = none(),
-        .cwd = union_of((proc_Cmd_CWD_inherit){}),
-        .std_in = union_of((proc_Stream_inherit){}),
-        .std_out = union_of((proc_Stream_inherit){}),
-        .std_err = union_of((proc_Stream_inherit){}),
-        .expand_arg0 = proc_Cmd_ArgExpsn_no_expand,
+        .cwd = union_of((proc_Spawn_CWD_inherit){}),
+        .std_in = union_of((proc_Spawn_StdIO_inherit){}),
+        .std_out = union_of((proc_Spawn_StdIO_inherit){}),
+        .std_err = union_of((proc_Spawn_StdIO_inherit){}),
+        .expand_arg0 = proc_ArgExpsn_no_expand,
         .start_suspended = false,
         .create_no_window = false,
     };

@@ -30,6 +30,12 @@ $attr($maybe_unused)
 $static fn_((proc_Mem__unsupportedUnlockAll(
     P$raw ctx
 ))(proc_Mem_Unlock_E$void));
+$attr($maybe_unused)
+$static fn_((proc_Mem__unsupportedProtect(
+    P$raw ctx,
+    S$u8 memory,
+    proc_Mem_Protcn protection
+))(proc_Mem_Protect_E$void));
 
 pp_if_(plat_is_windows)(pp_then_(
     $static fn_((proc_Mem__windowsLock(
@@ -41,6 +47,11 @@ pp_if_(plat_is_windows)(pp_then_(
         P$raw ctx,
         S_const$u8 memory
     ))(proc_Mem_Unlock_E$void));
+    $static fn_((proc_Mem__windowsProtect(
+        P$raw ctx,
+        S$u8 memory,
+        proc_Mem_Protcn protection
+    ))(proc_Mem_Protect_E$void));
 ));
 
 pp_if_(plat_is_linux)(pp_then_(
@@ -60,6 +71,11 @@ pp_if_(plat_is_linux)(pp_then_(
     $static fn_((proc_Mem__linuxUnlockAll(
         P$raw ctx
     ))(proc_Mem_Unlock_E$void));
+    $static fn_((proc_Mem__linuxProtect(
+        P$raw ctx,
+        S$u8 memory,
+        proc_Mem_Protcn protection
+    ))(proc_Mem_Protect_E$void));
 ));
 
 $static let proc_Mem__lock = pp_if_(plat_is_windows)(
@@ -80,12 +96,19 @@ $static let proc_Mem__lockAll = pp_if_(plat_is_linux)(
 $static let proc_Mem__unlockAll = pp_if_(plat_is_linux)(
     pp_then_(proc_Mem__linuxUnlockAll),
     pp_else_(proc_Mem__unsupportedUnlockAll));
+$static let proc_Mem__protect = pp_if_(plat_is_windows)(
+    pp_then_(proc_Mem__windowsProtect),
+    pp_else_(pp_if_(plat_is_linux)(
+        pp_then_(proc_Mem__linuxProtect),
+        pp_else_(proc_Mem__unsupportedProtect)
+    )));
 
 $static let_(proc_Mem__direct_vtbl, proc_Mem_VTbl) = {
     .lockFn = proc_Mem__lock,
     .unlockFn = proc_Mem__unlock,
     .lockAllFn = proc_Mem__lockAll,
     .unlockAllFn = proc_Mem__unlockAll,
+    .protectFn = proc_Mem__protect,
 };
 
 /*========== External Definitions ===========================================*/
@@ -135,6 +158,15 @@ fn_((proc_Mem_unlockAll(proc_Mem self))(proc_Mem_Unlock_E$void)) {
     return self.vtbl->unlockAllFn(self.ctx);
 };
 
+fn_((proc_Mem_protect(
+    proc_Mem self,
+    S$u8 memory,
+    proc_Mem_Protcn protection
+))(proc_Mem_Protect_E$void)) {
+    self = proc_Mem_ensureValid(self);
+    return self.vtbl->protectFn(self.ctx, memory, protection);
+};
+
 /*========== Internal Definitions ===========================================*/
 
 /*--- Unsupported ---*/
@@ -173,6 +205,17 @@ fn_((proc_Mem__unsupportedUnlockAll(
 ))(proc_Mem_Unlock_E$void) $scope) {
     claim_assert_nonnull(ctx);
     return_err(E_cause$proc_Mem_Unlock_Unsupported());
+} $unscoped(fn);
+
+fn_((proc_Mem__unsupportedProtect(
+    P$raw ctx,
+    S$u8 memory,
+    proc_Mem_Protcn protection
+))(proc_Mem_Protect_E$void) $scope) {
+    claim_assert_nonnull(ctx);
+    let_ignore = memory;
+    let_ignore = protection;
+    return_err(E_cause$proc_Mem_Protect_Unsupported());
 } $unscoped(fn);
 
 /*--- Windows ---*/
@@ -218,6 +261,39 @@ fn_((proc_Mem__windowsUnlock(
         ;
     }
 } $unscoped(fn);
+fn_((proc_Mem__windowsProtect(
+    P$raw ctx,
+    S$u8 memory,
+    proc_Mem_Protcn protection
+))(proc_Mem_Protect_E$void) $scope) {
+    claim_assert_nonnull(ctx);
+    if (memory.len == 0) return_ok({});
+
+    DWORD native = PAGE_NOACCESS;
+    if (protection.execute) {
+        native = protection.write ? PAGE_EXECUTE_READWRITE
+               : protection.read  ? PAGE_EXECUTE_READ
+                                  : PAGE_EXECUTE;
+    } else if (protection.write) {
+        native = PAGE_READWRITE;
+    } else if (protection.read) {
+        native = PAGE_READONLY;
+    }
+
+    DWORD old = 0;
+    if (VirtualProtect(memory.ptr, memory.len, native, &old)) return_ok({});
+    switch (GetLastError()) {
+    case ERROR_ACCESS_DENIED:
+        return_err(E_cause$proc_Mem_Protect_AccessDenied());
+    case ERROR_NOT_ENOUGH_MEMORY:
+        return_err(E_cause$proc_Mem_Protect_OutOfMemory());
+    default_()
+        return_err(E_cause$proc_Mem_Protect_SystemResources());
+            $end(default)
+        ;
+    }
+} $unscoped(fn);
+
 #endif /* plat_is_windows */
 
 /*--- Linux ---*/
@@ -331,4 +407,36 @@ fn_((proc_Mem__linuxUnlockAll(
         ;
     }
 } $unscoped(fn);
+fn_((proc_Mem__linuxProtect(
+    P$raw ctx,
+    S$u8 memory,
+    proc_Mem_Protcn protection
+))(proc_Mem_Protect_E$void) $scope) {
+    claim_assert_nonnull(ctx);
+    if (memory.len == 0) return_ok({});
+
+    var_(native, sys_call_linux_mmap_prot_t) = sys_call_linux_PROT_NONE;
+    if (protection.read) native |= sys_call_linux_PROT_READ;
+    if (protection.write) native |= sys_call_linux_PROT_WRITE;
+    if (protection.execute) native |= sys_call_linux_PROT_EXEC;
+
+    let rc = sys_call_linux_mprotect(memory.ptr, memory.len, native);
+    if (!sys_call_linux_syscall_isErr(rc)) return_ok({});
+    switch (sys_call_linux_syscall_err(rc)) {
+    case sys_call_linux_EACCES:
+    case sys_call_linux_EPERM:
+        return_err(E_cause$proc_Mem_Protect_AccessDenied());
+    case sys_call_linux_ENOMEM:
+        return_err(E_cause$proc_Mem_Protect_OutOfMemory());
+    case sys_call_linux_ENOSYS:
+        return_err(E_cause$proc_Mem_Protect_Unsupported());
+    case sys_call_linux_EINVAL:
+        claim_unreachable;
+    default_()
+        return_err(E_cause$proc_Mem_Protect_SystemResources());
+            $end(default)
+        ;
+    }
+} $unscoped(fn);
+
 #endif /* plat_is_linux */

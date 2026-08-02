@@ -8,14 +8,12 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "proc/base.h"
-#include "proc/common.h"
 
 #include "proc/Args.h"
 #include "proc/Env.h"
 #include "proc/Preopens.h"
 #include "proc/Entry.h"
 
-#include "proc/Stream.h"
 #include "proc/Child.h"
 #include "proc/Self.h"
 

@@ -20,9 +20,12 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "common.h"
+#include "base.h"
 
 /*========== Macros and Declarations ========================================*/
+
+errset_((proc_Args_E)() $union_errset_(proc_ResourceLimitReached_E));
+T_useBy$(($spec(E, $set(proc_Args_E)))(O$S_const$u8, bool));
 
 T_alias$((proc_Args_VTbl)(struct proc_Args_VTbl));
 T_alias$((proc_Args)(struct proc_Args {

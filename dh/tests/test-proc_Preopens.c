@@ -3,11 +3,11 @@
 #include "dh/mem/common.h"
 
 $static fn_((test_proc_Preopens__by(P$raw ctx, S_const$u8 name))(O$proc_Preopens_Resrc) $scope) {
-    let dir = ptrCast$((fs_Dir*)(ensureNonnull(ctx)));
+    let file = ptrCast$((fs_File*)(ensureNonnull(ctx)));
     if (!mem_eqlBytes(name, u8_l("workspace"))) {
         return_none();
     }
-    return_some(union_of$((proc_Preopens_Resrc)(proc_Preopens_Resrc_dir)(*dir)));
+    return_some(union_of$((proc_Preopens_Resrc)(proc_Preopens_Resrc_file)(*file)));
 } $unscoped(fn);
 $static let_(test_proc_Preopens__vtbl, proc_Preopens_VTbl) = {
     .byFn = test_proc_Preopens__by,
@@ -17,21 +17,22 @@ TEST_fn_("proc/Preopens: empty set has no named resources" $scope) {
     try_(TEST_expect(isNone(proc_Preopens_by(proc_Preopens_empty, u8_l("stdin")))));
 } $unscoped(TEST_fn);
 
-TEST_fn_("proc/Preopens: caller set injects named resources" $scope) {
-    var_(handle_token, u8) = 0;
-    var dir = fs_Dir_Handle_promote(&handle_token);
+TEST_fn_("proc/Preopens: caller set injects a real resource" $scope) {
+    let direct = try_(proc_Preopens_direct());
+    let native_stdout = unwrap_(proc_Preopens_by(direct, u8_l("stdout")));
+    try_(TEST_expect(matches(native_stdout, proc_Preopens_Resrc_file)));
+
+    var file = union_to((native_stdout)(proc_Preopens_Resrc_file));
     let preopens = proc_Preopens_ensureValid((proc_Preopens){
-        .ctx = &dir,
+        .ctx = &file,
         .vtbl = &test_proc_Preopens__vtbl,
     });
-    let resource = unwrap_(proc_Preopens_by(
-        preopens, u8_l("workspace")
-    ));
+    let resource = unwrap_(proc_Preopens_by(preopens, u8_l("workspace")));
 
-    try_(TEST_expect(matches(resource, proc_Preopens_Resrc_dir)));
+    try_(TEST_expect(matches(resource, proc_Preopens_Resrc_file)));
     try_(TEST_expect(
-        fs_Dir_handle(union_to((resource)(proc_Preopens_Resrc_dir)))
-        == as$(fs_Dir_Handle)(&handle_token)
+        fs_File_handle(union_to((resource)(proc_Preopens_Resrc_file)))
+        == fs_File_handle(file)
     ));
 } $unscoped(TEST_fn);
 

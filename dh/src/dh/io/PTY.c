@@ -25,7 +25,7 @@ T_use_E$($set(io_PTY_SpawnE)(S$u16));
 #if plat_is_linux
 $static fn_((io_PTY__linux_slavePath(u32 number, S$u8 out))(S_const$u8));
 $static fn_((io_PTY__linux_exec(
-    proc_Cmd cmd,
+    proc_Spawn_Opts cmd,
     proc__NativeStrs argv,
     proc__NativeStrs env
 ))(void));
@@ -83,13 +83,13 @@ fn_((io_PTY__linux_slavePath(u32 number, S$u8 out))(S_const$u8)) {
 };
 
 fn_((io_PTY__linux_exec(
-    proc_Cmd cmd,
+    proc_Spawn_Opts cmd,
     proc__NativeStrs argv,
     proc__NativeStrs env
 ))(void)) {
-    if (matches(cmd.cwd, proc_Cmd_CWD_dir)) {
+    if (matches(cmd.cwd, proc_Spawn_CWD_dir)) {
         if (
-            sys_call_linux_fchdir(as$(sys_call_linux_word)(fs_Dir_handle(union_to((cmd.cwd)(proc_Cmd_CWD_dir))))) != 0
+            sys_call_linux_fchdir(as$(sys_call_linux_word)(fs_Dir_handle(union_to((cmd.cwd)(proc_Spawn_CWD_dir))))) != 0
         ) {
             sys_call_linux_exit_group(127);
         }
@@ -333,7 +333,7 @@ fn_((io_PTY_resize(io_PTY* self, io_PTY_Size size))(io_PTY_ResizeE$void) $scope)
 fn_((io_PTY_spawn(io_PTY_SpawnCfg cfg))(io_PTY_SpawnE$io_PTY_Session) $guard) {
     if (cfg.cmd.argv.len == 0) return_err(E_cause$io_PTY_InvalidCommand());
 #if plat_is_windows
-    if (!matches(cfg.cmd.cwd, proc_Cmd_CWD_inherit)) {
+    if (!matches(cfg.cmd.cwd, proc_Spawn_CWD_inherit)) {
         return_err(E_cause$io_PTY_Unsupported());
     }
     var pty = try_(io_PTY_open(cfg.pty));
@@ -400,8 +400,8 @@ fn_((io_PTY_spawn(io_PTY_SpawnCfg cfg))(io_PTY_SpawnE$io_PTY_Session) $guard) {
         ),
     });
 #elif plat_is_linux
-    if (cfg.cmd.expand_arg0 == proc_Cmd_ArgExpsn_expand) return_err(E_cause$io_PTY_InvalidCommand());
-    if (matches(cfg.cmd.cwd, proc_Cmd_CWD_path)) {
+    if (cfg.cmd.expand_arg0 == proc_ArgExpsn_expand) return_err(E_cause$io_PTY_InvalidCommand());
+    if (matches(cfg.cmd.cwd, proc_Spawn_CWD_path)) {
         return_err(E_cause$io_PTY_Unsupported());
     }
     var pty = try_(io_PTY_open(cfg.pty));
