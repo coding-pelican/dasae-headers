@@ -25,7 +25,7 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "cfg.h"
-#include "switch.h"
+#include "enum.h"
 
 /*========== Macros and Declarations ========================================*/
 

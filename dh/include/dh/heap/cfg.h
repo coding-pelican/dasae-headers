@@ -44,7 +44,7 @@ extern "C" {
             pp_then_(pp_some((64 << 10))), \
             pp_else_(claim_assert_static(false)) \
         ))), \
-        pp_default_(pp_none()) \
+        pp_default_(()(pp_none())) \
     ) pp_end \
 )
 

@@ -116,12 +116,74 @@ extern "C" {
 #define __pp_and_0_1 0
 #define __pp_and_1_0 0
 #define __pp_and_1_1 1
+#define pp_and2(_$Lhs, _$Rhs...) pp_join3(_, __pp_and2, _$Lhs, _$Rhs)
+#define __pp_and2_0_0 0
+#define __pp_and2_0_1 0
+#define __pp_and2_1_0 0
+#define __pp_and2_1_1 1
+#define pp_and3(_$Lhs, _$Mhs, _$Rhs...) pp_join4(_, __pp_and3, _$Lhs, _$Mhs, _$Rhs)
+#define __pp_and3_0_0_0 0
+#define __pp_and3_0_0_1 0
+#define __pp_and3_0_1_0 0
+#define __pp_and3_0_1_1 0
+#define __pp_and3_1_0_0 0
+#define __pp_and3_1_0_1 0
+#define __pp_and3_1_1_0 0
+#define __pp_and3_1_1_1 1
+#define pp_and4(_$Lhs, _$LMTok, _$RMTok, _$RTok...) pp_join5(_, __pp_and4, _$Lhs, _$LMTok, _$RMTok, _$RTok)
+#define __pp_and4_0_0_0_0 0
+#define __pp_and4_0_0_0_1 0
+#define __pp_and4_0_0_1_0 0
+#define __pp_and4_0_0_1_1 0
+#define __pp_and4_0_1_0_0 0
+#define __pp_and4_0_1_0_1 0
+#define __pp_and4_0_1_1_0 0
+#define __pp_and4_0_1_1_1 0
+#define __pp_and4_1_0_0_0 0
+#define __pp_and4_1_0_0_1 0
+#define __pp_and4_1_0_1_0 0
+#define __pp_and4_1_0_1_1 0
+#define __pp_and4_1_1_0_0 0
+#define __pp_and4_1_1_0_1 0
+#define __pp_and4_1_1_1_0 0
+#define __pp_and4_1_1_1_1 1
 
 #define pp_or(_$Lhs, _$Rhs...) pp_join3(_, __pp_or, _$Lhs, _$Rhs)
 #define __pp_or_0_0 0
 #define __pp_or_0_1 1
 #define __pp_or_1_0 1
 #define __pp_or_1_1 1
+#define pp_or2(_$Lhs, _$Rhs...) pp_join3(_, __pp_or2, _$Lhs, _$Rhs)
+#define __pp_or2_0_0 0
+#define __pp_or2_0_1 1
+#define __pp_or2_1_0 1
+#define __pp_or2_1_1 1
+#define pp_or3(_$Lhs, _$Mhs, _$Rhs...) pp_join4(_, __pp_or3, _$Lhs, _$Mhs, _$Rhs)
+#define __pp_or3_0_0_0 0
+#define __pp_or3_0_0_1 1
+#define __pp_or3_0_1_0 1
+#define __pp_or3_0_1_1 1
+#define __pp_or3_1_0_0 1
+#define __pp_or3_1_0_1 1
+#define __pp_or3_1_1_0 1
+#define __pp_or3_1_1_1 1
+#define pp_or4(_$Lhs, _$LMTok, _$RMTok, _$RTok...) pp_join5(_, __pp_or4, _$Lhs, _$LMTok, _$RMTok, _$RTok)
+#define __pp_or4_0_0_0_0 0
+#define __pp_or4_0_0_0_1 1
+#define __pp_or4_0_0_1_0 1
+#define __pp_or4_0_0_1_1 1
+#define __pp_or4_0_1_0_0 1
+#define __pp_or4_0_1_0_1 1
+#define __pp_or4_0_1_1_0 1
+#define __pp_or4_0_1_1_1 1
+#define __pp_or4_1_0_0_0 1
+#define __pp_or4_1_0_0_1 1
+#define __pp_or4_1_0_1_0 1
+#define __pp_or4_1_0_1_1 1
+#define __pp_or4_1_1_0_0 1
+#define __pp_or4_1_1_0_1 1
+#define __pp_or4_1_1_1_0 1
+#define __pp_or4_1_1_1_1 1
 
 #define pp_xor(_$Lhs, _$Rhs...) pp_join3(_, __pp_xor, _$Lhs, _$Rhs)
 #define __pp_xor_0_0 0
@@ -134,12 +196,6 @@ extern "C" {
 #define __pp_eql_0_1 0
 #define __pp_eql_1_0 0
 #define __pp_eql_1_1 1
-
-#define pp_neq(_$Lhs, _$Rhs...) pp_join3(_, __pp_neq, _$Lhs, _$Rhs)
-#define __pp_neq_0_0 0
-#define __pp_neq_0_1 1
-#define __pp_neq_1_0 1
-#define __pp_neq_1_1 0
 
 #define __call__pp_if() pp_if_
 #define pp_if_(_$Cond...) pp_join(_, ____pp_if, _$Cond)
@@ -175,7 +231,8 @@ extern "C" {
 #define __step__pp_switch___parseCases(_$pp_cases...) _$pp_cases
 #define __step__pp_switch_(...) __pp_switch_(__VA_ARGS__)
 #define __pp_switch_(_$pp_cond, _$pp_cases...) __pp_switch__expand(__pp_switch___eval(_$pp_cond, _$pp_cases))
-#define __pp_switch__expand(...) /* evaluate 2^5 */ __pp_switch__expand5(__VA_ARGS__)
+#define __pp_switch__expand(...) /* evaluate 2^6 */ __pp_switch__expand6(__VA_ARGS__)
+#define __pp_switch__expand6(...) __pp_switch__expand5(__pp_switch__expand5(__VA_ARGS__))
 #define __pp_switch__expand5(...) __pp_switch__expand4(__pp_switch__expand4(__VA_ARGS__))
 #define __pp_switch__expand4(...) __pp_switch__expand3(__pp_switch__expand3(__VA_ARGS__))
 #define __pp_switch__expand3(...) __pp_switch__expand2(__pp_switch__expand2(__VA_ARGS__))
@@ -188,13 +245,31 @@ extern "C" {
     pp_defer(__call__pp_if)()(pp_Tok_eql(_$pp_cond, _$pp_enum))(_$pp_expr, (__call__pp_switch___eval)()(_$pp_cond, __VA_ARGS__))
 #define __pp_switch___eval$_pp_default(_$pp_cond, _$pp_expr...) \
     _$pp_expr
-
+#define __pp_switch___eval$_pp_delim(_$pp_cond, ...) __VA_OPT__( \
+    pp_defer(__call__pp_switch___eval)()(_$pp_cond, __VA_ARGS__) \
+)
 #define pp_case_(/*(_$pp_enum)(_$pp_expr)*/...) __step__pp_case_(__step__pp_case___parse __VA_ARGS__)
 #define __step__pp_case___parse(_$pp_enum...) _$pp_enum,
 #define __step__pp_case_(...) __pp_case_(__VA_ARGS__)
 #define __pp_case_(_$pp_enum, _$pp_expr...) $_pp_case, _$pp_enum, _$pp_expr
-#define pp_default_(_$pp_expr...) __pp_default_(_$pp_expr)
-#define __pp_default_(_$pp_expr...) $_pp_default, _$pp_expr
+#define pp_cases_(/*(_$pp_enums)(_$pp_expr)*/...) __step__pp_cases_(__step__pp_cases___parse __VA_ARGS__)
+#define __step__pp_cases___parse(_$pp_enums...) (_$pp_enums),
+#define __step__pp_cases_(...) __step__pp_cases___eval(__VA_ARGS__)
+#define __step__pp_cases___eval(_$pp_enums, _$pp_expr...) \
+    __step__pp_cases___emit((_$pp_expr), __step__pp_cases___expandEnums _$pp_enums)
+#define __step__pp_cases___expandEnums(...) __VA_ARGS__
+#define __step__pp_cases___emit(...) __pp_cases_(__VA_ARGS__)
+#define __pp_cases_(_$pp_expr, _$pp_enums...) \
+    pp_foreach(__pp_cases___each, _$pp_expr, _$pp_enums) pp_delim()
+#define __pp_cases___each(_$pp_expr, _$pp_enum...) \
+    $_pp_case, _$pp_enum, __pp_cases___expandExpr _$pp_expr,
+#define __pp_cases___expandExpr(...) __VA_ARGS__
+#define pp_default_(/*(_$pp_enums)(_$pp_expr)*/...) __step__pp_default_(__step__pp_default___parse __VA_ARGS__)
+#define __step__pp_default___parse(_$pp_enums...) (_$pp_enums),
+#define __step__pp_default_(...) __pp_default_(__VA_ARGS__)
+#define __pp_default_(_$pp_enums, _$pp_expr...) $_pp_default, __pp_default___expandExpr _$pp_expr
+#define __pp_default___expandExpr(...) __VA_ARGS__
+#define pp_delim() $_pp_delim
 
 /*========== Macros and Definitions =========================================*/
 

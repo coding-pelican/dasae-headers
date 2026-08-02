@@ -189,9 +189,15 @@ $static fn_((sys_posix_fionread(sys_posix_fd_t fd, int* count))(i32));
 
 /*========== Macros and Definitions =========================================*/
 
-#define comp_const__sys_posix_STDIN_FILENO (as$(sys_posix_fd_t)(0))
-#define comp_const__sys_posix_STDOUT_FILENO (as$(sys_posix_fd_t)(1))
-#define comp_const__sys_posix_STDERR_FILENO (as$(sys_posix_fd_t)(2))
+#define comp_const__sys_posix_STDIN_FILENO (as$(sys_posix_fd_t)( \
+    pp_if_(pp_not(pp_or(plat_is_windows, plat_is_posix)))(pp_then_(Void_))(0) \
+))
+#define comp_const__sys_posix_STDOUT_FILENO (as$(sys_posix_fd_t)( \
+    pp_if_(pp_not(pp_or(plat_is_windows, plat_is_posix)))(pp_then_(Void_))(1) \
+))
+#define comp_const__sys_posix_STDERR_FILENO (as$(sys_posix_fd_t)( \
+    pp_if_(pp_not(pp_or(plat_is_windows, plat_is_posix)))(pp_then_(Void_))(2) \
+))
 
 #define comp_const__sys_posix_CLOCK_REALTIME pp_if_(plat_is_linux)( \
     pp_then_(sys_call_linux_CLOCK_REALTIME), \
@@ -270,11 +276,11 @@ fn_((sys_posix_clock_gettime(sys_posix_clockid_t clock_id, sys_posix_timespec* t
         pp_case_((plat_type_darwin)(
             return sys_libc_darwin_clock_gettime(clock_id, ts)
         )),
-        pp_default_({
+        pp_default_(()({
             let_ignore = clock_id;
             let_ignore = ts;
             claim_unreachable_msg(nameOf(sys_posix_clock_gettime) "is not supported on this platform");
-        })
+        }))
     ));
 };
 fn_((sys_posix_clock_getres(sys_posix_clockid_t clock_id, sys_posix_timespec* ts))(i32)) {
@@ -285,11 +291,11 @@ fn_((sys_posix_clock_getres(sys_posix_clockid_t clock_id, sys_posix_timespec* ts
         pp_case_((plat_type_darwin)(
             return sys_libc_darwin_clock_getres(clock_id, ts)
         )),
-        pp_default_({
+        pp_default_(()({
             let_ignore = clock_id;
             let_ignore = ts;
             claim_unreachable_msg(nameOf(sys_posix_clock_getres) "is not supported on this platform");
-        })
+        }))
     ));
 };
 fn_((sys_posix_nanosleep(const sys_posix_timespec* req, sys_posix_timespec* rem))(i32)) {
@@ -300,11 +306,11 @@ fn_((sys_posix_nanosleep(const sys_posix_timespec* req, sys_posix_timespec* rem)
         pp_case_((plat_type_darwin)(
             return sys_libc_darwin_nanosleep(req, rem)
         )),
-        pp_default_({
+        pp_default_(()({
             let_ignore = req;
             let_ignore = rem;
             claim_unreachable_msg(nameOf(sys_posix_nanosleep) "is not supported on this platform");
-        })
+        }))
     ));
 };
 fn_((sys_posix_gettimeofday(sys_posix_timeval* tv))(i32)) {
@@ -315,10 +321,10 @@ fn_((sys_posix_gettimeofday(sys_posix_timeval* tv))(i32)) {
         pp_case_((plat_type_darwin)(
             return sys_libc_darwin_gettimeofday(tv)
         )),
-        pp_default_({
+        pp_default_(()({
             let_ignore = tv;
             claim_unreachable_msg(nameOf(sys_posix_gettimeofday) "is not supported on this platform");
-        })
+        }))
     ));
 };
 fn_((sys_posix_sigemptyset(sys_posix_sigset* set))(i32)) {
@@ -330,10 +336,10 @@ fn_((sys_posix_sigemptyset(sys_posix_sigset* set))(i32)) {
         pp_case_((plat_type_darwin)(
             return sys_libc_darwin_sigemptyset(set)
         )),
-        pp_default_({
+        pp_default_(()({
             let_ignore = set;
             claim_unreachable_msg(nameOf(sys_posix_sigemptyset) "is not supported on this platform");
-        })
+        }))
     ));
 };
 fn_((sys_posix_siginfo_addr(const sys_posix_siginfo* info))(void*)) {
@@ -344,10 +350,10 @@ fn_((sys_posix_siginfo_addr(const sys_posix_siginfo* info))(void*)) {
         pp_case_((plat_type_darwin)(
             return sys_libc_darwin_siginfo_addr(info)
         )),
-        pp_default_({
+        pp_default_(()({
             let_ignore = info;
             claim_unreachable_msg(nameOf(sys_posix_siginfo_addr) "is not supported on this platform");
-        })
+        }))
     ));
 };
 fn_((sys_posix_sigaction_set(sys_posix_signal_t signal, O$P$raw act, O$P$raw old_act))(i32)) {
@@ -371,12 +377,12 @@ fn_((sys_posix_sigaction_set(sys_posix_signal_t signal, O$P$raw act, O$P$raw old
                 as$(sys_libc_darwin_sigaction*)(orelse_((old_act)(null)))
             )
         )),
-        pp_default_({
+        pp_default_(()({
             let_ignore = signal;
             let_ignore = act;
             let_ignore = old_act;
             claim_unreachable_msg(nameOf(sys_posix_sigaction_set) "is not supported on this platform");
-        })
+        }))
     ));
 };
 fn_((sys_posix_raise(sys_posix_signal_t signal))(i32)) {
@@ -389,10 +395,10 @@ fn_((sys_posix_raise(sys_posix_signal_t signal))(i32)) {
         pp_case_((plat_type_darwin)(
             return sys_libc_darwin_raise(signal)
         )),
-        pp_default_({
+        pp_default_(()({
             let_ignore = signal;
             claim_unreachable_msg(nameOf(sys_posix_raise) "is not supported on this platform");
-        })
+        }))
     ));
 };
 fn_((sys_posix_tcgetattr(sys_posix_fd_t fd, sys_posix_termios* termios))(i32)) {
@@ -403,11 +409,11 @@ fn_((sys_posix_tcgetattr(sys_posix_fd_t fd, sys_posix_termios* termios))(i32)) {
         pp_case_((plat_type_darwin)(
             return sys_libc_darwin_tcgetattr(fd, termios)
         )),
-        pp_default_({
+        pp_default_(()({
             let_ignore = fd;
             let_ignore = termios;
             claim_unreachable_msg(nameOf(sys_posix_tcgetattr) "is not supported on this platform");
-        })
+        }))
     ));
 };
 fn_((sys_posix_tcsetattr(sys_posix_fd_t fd, const sys_posix_termios* termios))(i32)) {
@@ -422,11 +428,11 @@ fn_((sys_posix_tcsetattr(sys_posix_fd_t fd, const sys_posix_termios* termios))(i
         pp_case_((plat_type_darwin)(
             return sys_libc_darwin_tcsetattr(fd, termios)
         )),
-        pp_default_({
+        pp_default_(()({
             let_ignore = fd;
             let_ignore = termios;
             claim_unreachable_msg(nameOf(sys_posix_tcsetattr) "is not supported on this platform");
-        })
+        }))
     ));
 };
 fn_((sys_posix_ioctl(sys_posix_fd_t fd, sys_posix_ioctl_req_t request, O$P$raw arg))(i32)) {
@@ -444,12 +450,12 @@ fn_((sys_posix_ioctl(sys_posix_fd_t fd, sys_posix_ioctl_req_t request, O$P$raw a
             let_ignore = arg;
             claim_unreachable_msg(nameOf(sys_posix_ioctl) "does not expose raw Darwin ioctl requests")
         )),
-        pp_default_({
+        pp_default_(()({
             let_ignore = fd;
             let_ignore = request;
             let_ignore = arg;
             claim_unreachable_msg(nameOf(sys_posix_ioctl) "is not supported on this platform");
-        })
+        }))
     ));
 };
 fn_((sys_posix_tiocgwinsz(sys_posix_fd_t fd, sys_posix_winsize* size))(i32)) {
@@ -464,11 +470,11 @@ fn_((sys_posix_tiocgwinsz(sys_posix_fd_t fd, sys_posix_winsize* size))(i32)) {
         pp_case_((plat_type_darwin)(
             return sys_libc_darwin_tiocgwinsz(fd, size)
         )),
-        pp_default_({
+        pp_default_(()({
             let_ignore = fd;
             let_ignore = size;
             claim_unreachable_msg(nameOf(sys_posix_tiocgwinsz) "is not supported on this platform");
-        })
+        }))
     ));
 };
 fn_((sys_posix_fionread(sys_posix_fd_t fd, int* count))(i32)) {
@@ -483,11 +489,11 @@ fn_((sys_posix_fionread(sys_posix_fd_t fd, int* count))(i32)) {
         pp_case_((plat_type_darwin)(
             return sys_libc_darwin_fionread(fd, count)
         )),
-        pp_default_({
+        pp_default_(()({
             let_ignore = fd;
             let_ignore = count;
             claim_unreachable_msg(nameOf(sys_posix_fionread) "is not supported on this platform");
-        })
+        }))
     ));
 };
 #endif /* in_analysis_active_only || in_comptime */

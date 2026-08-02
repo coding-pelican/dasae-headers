@@ -181,7 +181,7 @@ extern "C" {
         pp_case_((comp_type_clang)(comp_name_clang)), \
         pp_case_((comp_type_gcc)(comp_name_gcc)), \
         pp_case_((comp_type_msvc)(comp_name_msvc)), \
-        pp_default_(comp_name_unknown) \
+        pp_default_(()(comp_name_unknown)) \
     ) pp_end \
 )
 #define __comp_str__comp_name_unknown "Unknown"

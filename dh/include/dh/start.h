@@ -42,7 +42,7 @@ $static fn_((start_exit(start_ExitCode status))(void)) {
         pp_case_((plat_type_linux)({
             sys_call_linux_exit_group(status);
         })),
-        pp_default_({})
+        pp_default_(()({}))
     ));
     claim_unreachable;
 };
@@ -149,7 +149,7 @@ pp_if_(pp_not(env_start_files_linked))((
                 start__linux_callPreInitArray();
                 start__linux_callInitArray();
             })),
-            pp_default_({})
+            pp_default_(()({}))
         ));
     };
     $attr($maybe_unused $inline)
@@ -163,7 +163,7 @@ pp_if_(pp_not(env_start_files_linked))((
             pp_case_((plat_type_linux)({
                 start__linux_callFiniArray();
             })),
-            pp_default_({})
+            pp_default_(()({}))
         ));
     };
 ));
@@ -174,9 +174,9 @@ pp_if_(pp_not(env_start_files_linked))((
     pp_switch_((plat_type)( \
         pp_case_((plat_type_windows)(start__win32_emitEntry)), \
         pp_case_((plat_type_linux)(start__linux_emitEntry)), \
-        pp_default_(claim_assert_static_trap_msg( \
+        pp_default_(()(claim_assert_static_trap_msg( \
             "target does not have dh start entry support" \
-        )) \
+        ))) \
     ))(_$Entry)
 
 #define start__win32_emitEntry(_$Entry...) \
@@ -286,9 +286,9 @@ pp_if_(pp_not(env_start_files_linked))((
                 "tail " #_$Entry "\n" \
                 ".option pop\n" : : : "memory" \
             );)), \
-            pp_default_(claim_assert_static_trap_msg( \
+            pp_default_(()(claim_assert_static_trap_msg( \
                 "linux target architecture does not have dh start entry support" \
-            )) \
+            ))) \
         )) \
     } /* clang-format on */
 

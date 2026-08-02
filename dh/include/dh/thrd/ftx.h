@@ -31,7 +31,7 @@ extern "C" {
 #define thrd_ftx__use_pthread_default __comp_bool__thrd_ftx__use_pthread_default
 #define __comp_bool__thrd_ftx__use_pthread_default pp_expand( \
     pp_switch_ pp_begin(plat_type)( \
-        pp_default_(pp_false) \
+        pp_default_(()(pp_false)) \
     ) pp_end \
 )
 

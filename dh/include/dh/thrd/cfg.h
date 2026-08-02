@@ -39,7 +39,7 @@ extern "C" {
         pp_case_((plat_type_linux)(pp_false)), \
         pp_case_((plat_type_darwin)(pp_true)), \
         pp_case_((plat_type_wasi)(pp_false)), \
-        pp_default_(pp_false) \
+        pp_default_(()(pp_false)) \
     ) pp_end \
 )
 
@@ -61,7 +61,7 @@ typedef pp_if_(thrd_use_pthread)(
         pp_case_((plat_type_linux)(i32)),
         pp_case_((plat_type_darwin)(i32)),
         pp_case_((plat_type_wasi)(i32)),
-        pp_default_(Void)
+        pp_default_(()(Void))
     )))) thrd_Handle__Impl;
 #define thrd_max_name_len __comp_const__thrd_max_name_len
 #define __comp_const__thrd_max_name_len (15)

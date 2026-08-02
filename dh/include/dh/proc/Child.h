@@ -15,7 +15,7 @@ extern "C" {
 T_alias$((proc_Child_Handle)(proc_Handle));
 T_use_O$(proc_Child_Handle);
 T_alias$((proc_Child_Id)(u64));
-T_alias$((proc_Child_Sig)(u8));
+T_alias$((proc_Child_Sig)(sys_posix_signal_t));
 T_alias$((proc_Child)(struct proc_Child));
 
 T_alias$((proc_Child_IO)(struct proc_Child_IO {

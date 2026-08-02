@@ -347,7 +347,7 @@ extern "C" {
         pp_case_((arch_type_powerpc64)(arch_name_powerpc64)), \
         pp_case_((arch_type_powerpc32)(arch_name_powerpc32)), \
         pp_case_((arch_type_s390x)(arch_name_s390x)), \
-        pp_default_(arch_name_unknown) \
+        pp_default_(()(arch_name_unknown)) \
     ) pp_end \
 )
 #define __comp_str__arch_name_unknown "unknown"
@@ -385,7 +385,7 @@ extern "C" {
         pp_case_((arch_type_powerpc64)(arch_family_type_powerpc)), \
         pp_case_((arch_type_powerpc32)(arch_family_type_powerpc)), \
         pp_case_((arch_type_s390x)(arch_family_type_s390x)), \
-        pp_default_(arch_family_type_unknown) \
+        pp_default_(()(arch_family_type_unknown)) \
     ) pp_end \
 )
 #define __comp_enum__arch_family_type_unknown 0
@@ -418,7 +418,7 @@ extern "C" {
         pp_case_((arch_family_type_mips)(arch_family_name_mips)), \
         pp_case_((arch_family_type_powerpc)(arch_family_name_powerpc)), \
         pp_case_((arch_family_type_s390x)(arch_family_name_s390x)), \
-        pp_default_(arch_family_name_unknown) \
+        pp_default_(()(arch_family_name_unknown)) \
     ) pp_end \
 )
 #define __comp_str__arch_family_name_unknown "unknown"
@@ -450,7 +450,7 @@ extern "C" {
         pp_case_((arch_type_powerpc64)(arch_bits_unit_64bit)), \
         pp_case_((arch_type_powerpc32)(arch_bits_unit_32bit)), \
         pp_case_((arch_type_s390x)(arch_bits_unit_64bit)), \
-        pp_default_(arch_bits_unit_unknown) \
+        pp_default_(()(arch_bits_unit_unknown)) \
     ) pp_end \
 )
 #define __comp_enum__arch_bits_unit_unknown 0
@@ -472,7 +472,7 @@ extern "C" {
         pp_case_((arch_bits_unit_32bit)(arch_bits_wide_32bit)), \
         pp_case_((arch_bits_unit_16bit)(arch_bits_wide_16bit)), \
         pp_case_((arch_bits_unit_8bit)(arch_bits_wide_8bit)), \
-        pp_default_(arch_bits_wide_unknown) \
+        pp_default_(()(arch_bits_wide_unknown)) \
     ) pp_end \
 )
 #define __comp_int__arch_bits_wide_unknown 0

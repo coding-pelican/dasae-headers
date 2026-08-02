@@ -1,5 +1,45 @@
 #include "dh/prl.h"
 
+#define pp_case_(/*(_$pp_enum)(_$pp_expr)*/...) __step__pp_case_(__step__pp_case___parse __VA_ARGS__)
+#define __step__pp_case___parse(_$pp_enum...) _$pp_enum,
+#define __step__pp_case_(...) __pp_case_(__VA_ARGS__)
+#define __pp_case_(_$pp_enum, _$pp_expr...) $_pp_case, _$pp_enum, _$pp_expr
+#define pp_default_(_$pp_expr...) __pp_default_(_$pp_expr)
+#define __pp_default_(_$pp_expr...) $_pp_default, _$pp_expr
+
+#define pp_cases_(/*(_$pp_enums)(_$pp_expr)*/...) __iter__pp_cases_(__step__pp_cases___parse __VA_ARGS__)
+#define __step__pp_cases___parse(_$pp_enums...) (_$pp_enums),
+#define __iter__pp_cases_(...) __step__pp_cases___eval(__VA_ARGS__)
+#define __step__pp_cases___eval(_$pp_enums, _$pp_expr...) \
+    __step__pp_cases___emit((_$pp_expr), __step__pp_cases___expandEnums _$pp_enums)
+#define __step__pp_cases___expandEnums(...) __VA_ARGS__
+#define __step__pp_cases___emit(...) __pp_cases_(__VA_ARGS__)
+#define __pp_cases_(_$pp_expr, _$pp_enums...) \
+    pp_foreach(__pp_cases___each, _$pp_expr, _$pp_enums) pp_delim()
+#define __pp_cases___each(_$pp_expr, _$pp_enum...) \
+    $_pp_case, _$pp_enum, __pp_cases___expandExpr _$pp_expr,
+#define __pp_cases___expandExpr(...) __VA_ARGS__
+
+// #undef pp_switch_
+// #define pp_switch_(...) __VA_ARGS__
+
+#define pp_cases_(/*(_$Enums...) _$stmts...*/...) __stmt__pp_cases_(__VA_ARGS__)
+
+#define cases_(/*(_$Enums...) _$stmts...*/...) __stmt__cases_(__VA_ARGS__)
+#define __stmt__cases_(...) __step__cases_(__inline__cases___parseEnums __VA_ARGS__)
+#define __inline__cases___parseEnums(_$Enums...) (_$Enums),
+#define __step__cases_(...) __inline__cases_(__VA_ARGS__)
+#define __inline__cases_(_$Enums, ...) \
+    pp_foreach(__cases___stmt__each, (__VA_ARGS__), __cases___expand _$Enums)
+#define __cases___stmt__each(_$stmts, /*_$Enum*/...) __VA_OPT__( \
+    __cases___step__each(__VA_ARGS__, __cases___expand _$stmts) \
+)
+#define __cases___step__each(...) __cases___inline__each(__VA_ARGS__)
+#define __cases___inline__each(_$Enum, _$stmts...) \
+    case_((_$Enum)) _$stmts $end(case);
+#define __cases___expand(...) __VA_ARGS__
+#define $end_cases
+
 #define __call__pp_switch_() __pp_switch_
 #define pp_switch_(/*(_pp_cond)(_pp_cases...)*/...) __step__pp_switch_(__step__pp_switch___parseCond __VA_ARGS__)
 #define __step__pp_switch___parseCond(_pp_cond...) _pp_cond, __step__pp_switch___parseCases

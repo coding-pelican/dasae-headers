@@ -11,6 +11,8 @@ extern "C" {
 #include "File/Atom.h"
 #include "File/MemMap.h"
 
+#include "File/std.h"
+
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */

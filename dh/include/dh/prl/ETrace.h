@@ -40,7 +40,7 @@ $extern fn_((ETrace_print(void))(void));
                 pp_case_((arch_family_type_x86)(64)), \
                 pp_case_((arch_family_type_arm)(48)), \
                 pp_case_((arch_family_type_riscv)(48)), \
-                pp_default_(32) \
+                pp_default_(()(32)) \
             ) pp_end \
         ))), \
         pp_case_((arch_bits_unit_32bit)(pp_expand( \
@@ -48,10 +48,10 @@ $extern fn_((ETrace_print(void))(void));
                 pp_case_((arch_family_type_x86)(32)), \
                 pp_case_((arch_family_type_arm)(24)), \
                 pp_case_((arch_family_type_riscv)(24)), \
-                pp_default_(16) \
+                pp_default_(()(16)) \
             ) pp_end \
         ))), \
-        pp_default_(16) \
+        pp_default_(()(16)) \
     ) pp_end \
 )
 

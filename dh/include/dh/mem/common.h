@@ -850,7 +850,7 @@ $extern fn_((mem_SplitBwdIter_rest(mem_SplitBwdIter$raw* self, TypeInfo type))(u
         pp_case_((arch_type_wasm64)(usize_(64) * 1024)), \
         pp_case_((arch_type_wasm32)(usize_(64) * 1024)), \
         pp_case_((arch_type_aarch64)(usize_(16) * 1024)), \
-        pp_default_((usize_(4) * 1024)) \
+        pp_default_(()(usize_(4) * 1024)) \
     ) pp_end \
 ))
 

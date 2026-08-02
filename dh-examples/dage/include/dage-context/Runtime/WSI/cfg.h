@@ -31,7 +31,7 @@ extern "C" {
         pp_case_((plat_type_windows)(pp_false)), \
         pp_case_((plat_type_linux)(pp_true)), \
         pp_case_((plat_type_darwin)(pp_false)), \
-        pp_default_(pp_false) \
+        pp_default_(()(pp_false)) \
     ) pp_end \
 )
 
@@ -56,7 +56,7 @@ typedef pp_switch_((plat_type)(
     pp_case_((plat_type_windows)(HWND)),
     pp_case_((plat_type_linux)(u64)), /* X11 Window (XID) */
     pp_case_((plat_type_darwin)(P$raw)), /* NSWindow* */
-    pp_default_(P$raw)
+    pp_default_(()(P$raw))
 )) dage_Runtime_WSI_Handle;
 T_use_O$(dage_Runtime_WSI_Handle);
 
@@ -65,7 +65,7 @@ typedef pp_switch_((plat_type)(
     pp_case_((plat_type_windows)(HDC)),
     pp_case_((plat_type_linux)(u64)), /* GC (XID) */
     pp_case_((plat_type_darwin)(P$raw)),
-    pp_default_(P$raw)
+    pp_default_(()(P$raw))
 )) dage_Runtime_WSI_Device;
 
 /// @brief Platform-specific image/bitmap structure for pixel blitting
@@ -78,9 +78,9 @@ struct dage_Runtime_WSI_Image pp_switch_((plat_type)(
         var_(ximage, P$raw); /* XImage* */
         var_(pixels, S$u32); /* Pixel buffer (owned, allocated via gpa) */
     })),
-    pp_default_({
+    pp_default_(()({
         var_(_unused, Void);
-    })
+    }))
 ));
 
 /// @brief Platform-specific display/connection type
@@ -88,7 +88,7 @@ typedef pp_switch_((plat_type)(
     pp_case_((plat_type_windows)(HINSTANCE)),
     pp_case_((plat_type_linux)(P$raw)), /* Display* */
     pp_case_((plat_type_darwin)(P$raw)),
-    pp_default_(P$raw)
+    pp_default_(()(P$raw))
 )) dage_Runtime_WSI_Display;
 T_use_O$(dage_Runtime_WSI_Display);
 
@@ -102,7 +102,7 @@ struct dage_Runtime_WSI_Impl pp_switch_((plat_type)(
         var_(screen, i32);
         var_(wm_delete_window, u64); /* Atom */
     })),
-    pp_default_({ var_(_unused, Void); })
+    pp_default_(()({ var_(_unused, Void); }))
 ));
 
 #if defined(__cplusplus)

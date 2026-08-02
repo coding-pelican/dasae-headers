@@ -111,7 +111,7 @@ _$T_Return _$ident_w_Params { \
 
 typedef pp_switch_((arch_bits_unit)(
     pp_case_((arch_bits_unit_64bit)(u32)),
-    pp_default_(u16)
+    pp_default_(()(u16))
 )) fn__FlowCursorPacked;
 bitfield_((fn__FlowCursor)(fn__FlowCursorPacked)(
     (is_returning, fn__FlowCursorPacked, 1),

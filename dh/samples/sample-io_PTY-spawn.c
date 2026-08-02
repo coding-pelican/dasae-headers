@@ -35,11 +35,11 @@ fn_((main(proc_Entry entry))(E$void) $guard) {
                 exit_cmd,
                 u8_l("example-pty-spawn")
             )),
-            pp_default_(local_({
+            pp_default_(()(local_({
                 io_stream_eprintln(u8_l("unsupported platform: {:s}"), u8_l(plat_name));
                 proc_exit(1);
                 local_return_(u8_l(""));
-            }))
+            })))
         )),
     });
     let_(cmd, proc_Cmd) = {

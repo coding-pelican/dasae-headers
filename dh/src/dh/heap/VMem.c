@@ -25,7 +25,7 @@ $static fn_((heap_VMem_system__release(const heap_VMem_Ctx* ctx, P$raw addr, usi
 fn_((heap_VMem_system(void))(heap_VMem_E$heap_VMem) $scope) {
 #if plat_is_windows || plat_is_linux || plat_is_darwin
     $static var_(inner, Void) $undefined_static;
-    $static var_(ctx, heap_VMem_Ctx) $undefined_static;
+    $static var_(ctx, O$$(heap_VMem_Ctx)) = none();
     $static let_(vtbl, heap_VMem_VTbl) = {
         .reserveFn = heap_VMem_system__reserve,
         .commitFn = heap_VMem_system__commit,
@@ -33,10 +33,16 @@ fn_((heap_VMem_system(void))(heap_VMem_E$heap_VMem) $scope) {
         .protectFn = heap_VMem_system__protect,
         .releaseFn = heap_VMem_system__release,
     };
-    let geom = catch_((heap_Geom_system())($ignore, return_err(E_cause$heap_VMem_Unsupported())));
-    asg_l((&ctx)({ .inner = &inner, .geom = geom }));
+    let ctx_initialized = orelse_((O_ref(&ctx))(local_({
+        let geom = catch_((heap_Geom_system())(err, switch (E_tag$heap_Geom_E(err)) {
+            case_((E_Tag$heap_Geom_Unsupported)) return_err(E_cause$heap_VMem_Unsupported()) $end(case);
+            case_((E_Tag$Any)) claim_unreachable $end(case);
+        }));
+        asg_l((&ctx)(some({ .inner = &inner, .geom = geom })));
+        local_return_(unwrap_(O_ref(&ctx)));
+    })));
     return_ok(heap_VMem_ensureValid((heap_VMem){
-        .ctx = &ctx,
+        .ctx = ctx_initialized,
         .vtbl = &vtbl,
     }));
 #else

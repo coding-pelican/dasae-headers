@@ -93,10 +93,10 @@ TEST_fn_("proc: spawn and wait report child exit code" $guard) {
                 u8_l("/bin/sh"),
                 u8_l("-c")
             )),
-            pp_default_(local_({
+            pp_default_(()(local_({
                 try_(TEST_skipMsg(u8_l("native process spawning is not supported")));
                 local_return_(u8_l(""));
-            }))
+            })))
         )),
         u8_l("exit 7"),
     });
@@ -131,10 +131,10 @@ TEST_fn_("proc: pipe output contains child bytes" $guard) {
                 u8_l("-c"),
                 u8_l("printf proc-pipe")
             )),
-            pp_default_(local_({
+            pp_default_(()(local_({
                 try_(TEST_skipMsg(u8_l("native process spawning is not supported")));
                 local_return_(u8_l(""));
-            }))
+            })))
         )),
     });
     let_(std_out, proc_Stream) = union_of((proc_Stream_pipe){});

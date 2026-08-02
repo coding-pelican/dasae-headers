@@ -17,7 +17,7 @@ extern "C" {
 #define __comp_int__co_Fiber_stackArgAlign __step__co_Fiber_stackArgAlign__expand( \
     pp_switch_ pp_begin(arch_type)( \
         pp_case_((arch_type_x86_64)(16)), \
-        pp_default_(8) \
+        pp_default_(()(8)) \
     ) pp_end \
 )
 #define co_Fiber_stackArgAlign __comp_int__co_Fiber_stackArgAlign
@@ -49,7 +49,7 @@ $static fn_((co_Fiber_Context_stackPtr(const co_Fiber_Context* self))(usize));
         pp_case_((arch_type_x86_64)(pp_true)), \
         pp_case_((arch_type_aarch64)(pp_true)), \
         pp_case_((arch_type_riscv64)(pp_true)), \
-        pp_default_(pp_false) \
+        pp_default_(()(pp_false)) \
     ) pp_end \
 )
 
@@ -70,7 +70,7 @@ struct co_Fiber_Context {
             var_(fp, u64);
             var_(pc, u64);
         })),
-        pp_default_(struct { var_(_bytes, u8) $zero_sized; })
+        pp_default_(()(struct { var_(_bytes, u8) $zero_sized; }))
     )));
 };
 
@@ -93,7 +93,7 @@ fn_((co_Fiber_Context_from(co_Fiber_Context* self, P$raw stack_arg, co_Fiber_Ent
             .fp = 0,
             .pc = as$(u64)(ptrToInt(entry)),
         })),
-        pp_default_(cleared())
+        pp_default_(()(cleared()))
     ))));
 };
 
@@ -181,7 +181,7 @@ fn_((co_Fiber_Context_stackPtr(const co_Fiber_Context* self))(usize)) {
         pp_case_((arch_type_x86_64)(as$(usize)(self->rsp))),
         pp_case_((arch_type_aarch64)(as$(usize)(self->sp))),
         pp_case_((arch_type_riscv64)(as$(usize)(self->sp))),
-        pp_default_(claim_unreachable)
+        pp_default_(()(claim_unreachable))
     ));
 };
 #endif /* in_analysis_active_only || in_comptime */

@@ -94,7 +94,7 @@ typedef usize TypeInfoPacked;
         pp_case_((abi_bits_unit_16bit)(TypeInfo_size_bits_on_16bit)), \
         pp_case_((abi_bits_unit_32bit)(TypeInfo_size_bits_on_32bit)), \
         pp_case_((abi_bits_unit_64bit)(TypeInfo_size_bits_on_64bit)), \
-        pp_default_(0) \
+        pp_default_(()(0)) \
     ) pp_end \
 )
 #define TypeInfo_align_bits pp_expand( \
@@ -102,7 +102,7 @@ typedef usize TypeInfoPacked;
         pp_case_((abi_bits_unit_16bit)(TypeInfo_align_bits_on_16bit)), \
         pp_case_((abi_bits_unit_32bit)(TypeInfo_align_bits_on_32bit)), \
         pp_case_((abi_bits_unit_64bit)(TypeInfo_align_bits_on_64bit)), \
-        pp_default_(0) \
+        pp_default_(()(0)) \
     ) pp_end \
 )
 claim_assert_static_msg(

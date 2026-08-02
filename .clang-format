@@ -127,6 +127,7 @@ Macros:
 
   - "pp_switch_(Expr)=pp_exec_ignore Expr"
   - "pp_case_(Expr)=pp_exec_ignore Expr"
+  - "pp_cases_(Expr)=pp_exec_ignore Expr"
   - "pp_default_(Expr)=pp_exec_ignore Expr"
 
   - "T_switch$(Expr)=pp_exec_ignore Expr"

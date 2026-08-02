@@ -409,7 +409,7 @@ fn_((thrd__pthread_currId(void))(thrd_Id)) {
             pthread_threadid_np(null, &tid);
             local_return_(tid);
         }))),
-        pp_default_(as$(thrd_Id)(pthread_self()))
+        pp_default_(()(as$(thrd_Id)(pthread_self())))
     ));
 };
 

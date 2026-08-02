@@ -33,7 +33,6 @@ extern "C" {
 
 #include "pri/cfg.h"
 #include "pri/enum.h"
-#include "pri/switch.h"
 #include "pri/bitfield.h"
 
 /*========== Type Utilities =================================================*/

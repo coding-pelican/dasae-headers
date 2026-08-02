@@ -98,7 +98,7 @@ extern "C" {
     pp_switch_ pp_begin(lang_mode)( \
         pp_case_((lang_mode_c)(lang_name_c)), \
         pp_case_((lang_mode_cpp)(lang_name_cpp)), \
-        pp_default_(lang_name_unknown) \
+        pp_default_(()(lang_name_unknown)) \
     ) pp_end \
 )
 #define __comp_str__lang_name_unknown "unknown"
@@ -109,7 +109,7 @@ extern "C" {
     pp_switch_ pp_begin(lang_mode)( \
         pp_case_((lang_mode_c)(lang_ver_c)), \
         pp_case_((lang_mode_cpp)(lang_ver_cpp)), \
-        pp_default_(lang_ver_unknown) \
+        pp_default_(()(lang_ver_unknown)) \
     ) pp_end \
 )
 #define __comp_int__lang_ver_unknown 0

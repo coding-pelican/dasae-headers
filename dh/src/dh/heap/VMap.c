@@ -19,16 +19,22 @@ $static fn_((heap_VMap__system_remap(const heap_VMap_Ctx* ctx, P$raw addr, usize
 fn_((heap_VMap_system(void))(heap_VMap_E$heap_VMap) $scope) {
 #if plat_is_windows || plat_is_linux || plat_is_darwin
     $static var_(inner, Void) $undefined_static;
-    $static var_(ctx, heap_VMap_Ctx) $undefined_static;
+    $static var_(ctx, O$$(heap_VMap_Ctx)) = none();
     $static let_(vtbl, heap_VMap_VTbl) = {
         .mapFn = heap_VMap__system_map,
         .releaseFn = heap_VMap__system_release,
         .remapFn = heap_VMap__system_remap,
     };
-    let geom = catch_((heap_Geom_system())($ignore, return_err(E_cause$heap_VMap_Unsupported())));
-    asg_l((&ctx)((heap_VMap_Ctx){ .inner = &inner, .geom = geom }));
+    let ctx_initialized = orelse_((O_ref(&ctx))(local_({
+        let geom = catch_((heap_Geom_system())(err, switch (E_tag$heap_Geom_E(err)) {
+            case_((E_Tag$heap_Geom_Unsupported)) return_err(E_cause$heap_VMap_Unsupported()) $end(case);
+            case_((E_Tag$Any)) claim_unreachable $end(case);
+        }));
+        asg_l((&ctx)(some({ .inner = &inner, .geom = geom })));
+        local_return_(unwrap_(O_ref(&ctx)));
+    })));
     return_ok(heap_VMap_ensureValid((heap_VMap){
-        .ctx = &ctx,
+        .ctx = ctx_initialized,
         .vtbl = &vtbl,
     }));
 #else

@@ -188,7 +188,7 @@ extern "C" {
         pp_case_((plat_type_serenity)(plat_name_serenity)), \
         pp_case_((plat_type_wasi)(plat_name_wasi)), \
         pp_case_((plat_type_emscripten)(plat_name_emscripten)), \
-        pp_default_(plat_name_unknown) \
+        pp_default_(()(plat_name_unknown)) \
     ) pp_end \
 )
 #define __comp_str__plat_name_unknown "Unknown"
@@ -209,14 +209,15 @@ extern "C" {
 
 /*--- Platform Relations ---*/
 
-#define __comp_bool__plat_based_linux pp_or(plat_is_linux, plat_is_android)
+#define __comp_bool__plat_based_linux \
+    pp_or(plat_is_linux, plat_is_android)
 #define __comp_bool__plat_based_bsd pp_or( \
     pp_or(plat_is_freebsd, plat_is_netbsd), \
     pp_or(plat_is_openbsd, plat_is_dragonfly) \
 )
 #define __comp_bool__plat_based_unix pp_or( \
-    pp_or(plat_based_linux, plat_is_darwin), \
-    pp_or(plat_based_bsd, pp_or(plat_is_solaris, pp_or(plat_is_illumos, pp_or(plat_is_haiku, plat_is_serenity)))) \
+    pp_or3(plat_based_linux, plat_is_darwin, plat_based_bsd), \
+    pp_or4(plat_is_solaris, plat_is_illumos, plat_is_haiku, plat_is_serenity) \
 )
 #define __comp_bool__plat_is_posix plat_based_unix
 

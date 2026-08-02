@@ -443,7 +443,7 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_arm)(3)),
         pp_case_((arch_type_riscv64)(63)),
         pp_case_((arch_type_riscv32)(63)),
-        pp_default_(0)
+        pp_default_(()(0))
     )),
     sys_call_linux_SYS_write = pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(1)),
@@ -452,7 +452,7 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_arm)(4)),
         pp_case_((arch_type_riscv64)(64)),
         pp_case_((arch_type_riscv32)(64)),
-        pp_default_(0)
+        pp_default_(()(0))
     )),
     sys_call_linux_SYS_close = pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(3)),
@@ -461,7 +461,7 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_arm)(6)),
         pp_case_((arch_type_riscv64)(57)),
         pp_case_((arch_type_riscv32)(57)),
-        pp_default_(0)
+        pp_default_(()(0))
     )),
     sys_call_linux_SYS_getcwd = pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(79)),
@@ -470,7 +470,7 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_arm)(183)),
         pp_case_((arch_type_riscv64)(17)),
         pp_case_((arch_type_riscv32)(17)),
-        pp_default_(0)
+        pp_default_(()(0))
     )),
     sys_call_linux_SYS_chdir = pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(80)),
@@ -479,7 +479,7 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_arm)(12)),
         pp_case_((arch_type_riscv64)(49)),
         pp_case_((arch_type_riscv32)(49)),
-        pp_default_(0)
+        pp_default_(()(0))
     )),
     sys_call_linux_SYS_statx = pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(332)),
@@ -488,7 +488,7 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_arm)(397)),
         pp_case_((arch_type_riscv64)(291)),
         pp_case_((arch_type_riscv32)(291)),
-        pp_default_(0)
+        pp_default_(()(0))
     )),
     sys_call_linux_SYS_lseek = pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(8)),
@@ -497,7 +497,7 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_arm)(19)),
         pp_case_((arch_type_riscv64)(62)),
         pp_case_((arch_type_riscv32)(62)),
-        pp_default_(0)
+        pp_default_(()(0))
     )),
     sys_call_linux_SYS_mmap = pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(9)),
@@ -506,7 +506,7 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_arm)(192)),
         pp_case_((arch_type_riscv64)(222)),
         pp_case_((arch_type_riscv32)(222)),
-        pp_default_(0)
+        pp_default_(()(0))
     )),
     sys_call_linux_SYS_mprotect = pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(10)),
@@ -515,7 +515,7 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_arm)(125)),
         pp_case_((arch_type_riscv64)(226)),
         pp_case_((arch_type_riscv32)(226)),
-        pp_default_(0)
+        pp_default_(()(0))
     )),
     sys_call_linux_SYS_munmap = pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(11)),
@@ -524,7 +524,7 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_arm)(91)),
         pp_case_((arch_type_riscv64)(215)),
         pp_case_((arch_type_riscv32)(215)),
-        pp_default_(0)
+        pp_default_(()(0))
     )),
     sys_call_linux_SYS_msync = pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(26)),
@@ -533,7 +533,7 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_arm)(144)),
         pp_case_((arch_type_riscv64)(227)),
         pp_case_((arch_type_riscv32)(227)),
-        pp_default_(0)
+        pp_default_(()(0))
     )),
     sys_call_linux_SYS_mlock = pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(149)),
@@ -542,7 +542,7 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_arm)(150)),
         pp_case_((arch_type_riscv64)(228)),
         pp_case_((arch_type_riscv32)(228)),
-        pp_default_(0)
+        pp_default_(()(0))
     )),
     sys_call_linux_SYS_mlock2 = pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(325)),
@@ -551,7 +551,7 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_arm)(390)),
         pp_case_((arch_type_riscv64)(284)),
         pp_case_((arch_type_riscv32)(284)),
-        pp_default_(0)
+        pp_default_(()(0))
     )),
     sys_call_linux_SYS_munlock = pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(150)),
@@ -560,7 +560,7 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_arm)(151)),
         pp_case_((arch_type_riscv64)(229)),
         pp_case_((arch_type_riscv32)(229)),
-        pp_default_(0)
+        pp_default_(()(0))
     )),
     sys_call_linux_SYS_mlockall = pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(151)),
@@ -569,7 +569,7 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_arm)(152)),
         pp_case_((arch_type_riscv64)(230)),
         pp_case_((arch_type_riscv32)(230)),
-        pp_default_(0)
+        pp_default_(()(0))
     )),
     sys_call_linux_SYS_munlockall = pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(152)),
@@ -578,7 +578,7 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_arm)(153)),
         pp_case_((arch_type_riscv64)(231)),
         pp_case_((arch_type_riscv32)(231)),
-        pp_default_(0)
+        pp_default_(()(0))
     )),
     sys_call_linux_SYS_ioctl = pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(16)),
@@ -587,7 +587,7 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_arm)(54)),
         pp_case_((arch_type_riscv64)(29)),
         pp_case_((arch_type_riscv32)(29)),
-        pp_default_(0)
+        pp_default_(()(0))
     )),
     sys_call_linux_SYS_fcntl = pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(72)),
@@ -596,7 +596,7 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_arm)(55)),
         pp_case_((arch_type_riscv64)(25)),
         pp_case_((arch_type_riscv32)(25)),
-        pp_default_(0)
+        pp_default_(()(0))
     )),
     sys_call_linux_SYS_pread64 = pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(17)),
@@ -605,7 +605,7 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_arm)(180)),
         pp_case_((arch_type_riscv64)(67)),
         pp_case_((arch_type_riscv32)(67)),
-        pp_default_(0)
+        pp_default_(()(0))
     )),
     sys_call_linux_SYS_pwrite64 = pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(18)),
@@ -614,7 +614,7 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_arm)(181)),
         pp_case_((arch_type_riscv64)(68)),
         pp_case_((arch_type_riscv32)(68)),
-        pp_default_(0)
+        pp_default_(()(0))
     )),
     sys_call_linux_SYS_openat = pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(257)),
@@ -623,7 +623,7 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_arm)(322)),
         pp_case_((arch_type_riscv64)(56)),
         pp_case_((arch_type_riscv32)(56)),
-        pp_default_(0)
+        pp_default_(()(0))
     )),
     sys_call_linux_SYS_readlinkat = pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(267)),
@@ -632,7 +632,7 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_arm)(332)),
         pp_case_((arch_type_riscv64)(78)),
         pp_case_((arch_type_riscv32)(78)),
-        pp_default_(0)
+        pp_default_(()(0))
     )),
     sys_call_linux_SYS_pipe2 = pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(293)),
@@ -641,7 +641,7 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_arm)(359)),
         pp_case_((arch_type_riscv64)(59)),
         pp_case_((arch_type_riscv32)(59)),
-        pp_default_(0)
+        pp_default_(()(0))
     )),
     sys_call_linux_SYS_socket = pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(41)),
@@ -650,7 +650,7 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_arm)(281)),
         pp_case_((arch_type_riscv64)(198)),
         pp_case_((arch_type_riscv32)(198)),
-        pp_default_(0)
+        pp_default_(()(0))
     )),
     sys_call_linux_SYS_bind = pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(49)),
@@ -659,7 +659,7 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_arm)(282)),
         pp_case_((arch_type_riscv64)(200)),
         pp_case_((arch_type_riscv32)(200)),
-        pp_default_(0)
+        pp_default_(()(0))
     )),
     sys_call_linux_SYS_listen = pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(50)),
@@ -668,7 +668,7 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_arm)(284)),
         pp_case_((arch_type_riscv64)(201)),
         pp_case_((arch_type_riscv32)(201)),
-        pp_default_(0)
+        pp_default_(()(0))
     )),
     sys_call_linux_SYS_accept4 = pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(288)),
@@ -677,7 +677,7 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_arm)(366)),
         pp_case_((arch_type_riscv64)(242)),
         pp_case_((arch_type_riscv32)(242)),
-        pp_default_(0)
+        pp_default_(()(0))
     )),
     sys_call_linux_SYS_connect = pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(42)),
@@ -686,7 +686,7 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_arm)(283)),
         pp_case_((arch_type_riscv64)(203)),
         pp_case_((arch_type_riscv32)(203)),
-        pp_default_(0)
+        pp_default_(()(0))
     )),
     sys_call_linux_SYS_getsockname = pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(51)),
@@ -695,7 +695,7 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_arm)(286)),
         pp_case_((arch_type_riscv64)(204)),
         pp_case_((arch_type_riscv32)(204)),
-        pp_default_(0)
+        pp_default_(()(0))
     )),
     sys_call_linux_SYS_setsockopt = pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(54)),
@@ -704,7 +704,7 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_arm)(294)),
         pp_case_((arch_type_riscv64)(208)),
         pp_case_((arch_type_riscv32)(208)),
-        pp_default_(0)
+        pp_default_(()(0))
     )),
     sys_call_linux_SYS_getsockopt = pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(55)),
@@ -713,7 +713,7 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_arm)(295)),
         pp_case_((arch_type_riscv64)(209)),
         pp_case_((arch_type_riscv32)(209)),
-        pp_default_(0)
+        pp_default_(()(0))
     )),
     sys_call_linux_SYS_shutdown = pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(48)),
@@ -722,7 +722,7 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_arm)(293)),
         pp_case_((arch_type_riscv64)(210)),
         pp_case_((arch_type_riscv32)(210)),
-        pp_default_(0)
+        pp_default_(()(0))
     )),
     sys_call_linux_SYS_sendto = pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(44)),
@@ -731,7 +731,7 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_arm)(290)),
         pp_case_((arch_type_riscv64)(206)),
         pp_case_((arch_type_riscv32)(206)),
-        pp_default_(0)
+        pp_default_(()(0))
     )),
     sys_call_linux_SYS_recvfrom = pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(45)),
@@ -740,7 +740,7 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_arm)(292)),
         pp_case_((arch_type_riscv64)(207)),
         pp_case_((arch_type_riscv32)(207)),
-        pp_default_(0)
+        pp_default_(()(0))
     )),
     sys_call_linux_SYS_fsync = pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(74)),
@@ -749,7 +749,7 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_arm)(118)),
         pp_case_((arch_type_riscv64)(82)),
         pp_case_((arch_type_riscv32)(82)),
-        pp_default_(0)
+        pp_default_(()(0))
     )),
     sys_call_linux_SYS_ftruncate = pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(77)),
@@ -758,7 +758,7 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_arm)(93)),
         pp_case_((arch_type_riscv64)(46)),
         pp_case_((arch_type_riscv32)(46)),
-        pp_default_(0)
+        pp_default_(()(0))
     )),
     sys_call_linux_SYS_fchmod = pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(91)),
@@ -767,7 +767,7 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_arm)(94)),
         pp_case_((arch_type_riscv64)(52)),
         pp_case_((arch_type_riscv32)(52)),
-        pp_default_(0)
+        pp_default_(()(0))
     )),
     sys_call_linux_SYS_mkdirat = pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(258)),
@@ -776,7 +776,7 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_arm)(323)),
         pp_case_((arch_type_riscv64)(34)),
         pp_case_((arch_type_riscv32)(34)),
-        pp_default_(0)
+        pp_default_(()(0))
     )),
     sys_call_linux_SYS_unlinkat = pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(263)),
@@ -785,7 +785,7 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_arm)(328)),
         pp_case_((arch_type_riscv64)(35)),
         pp_case_((arch_type_riscv32)(35)),
-        pp_default_(0)
+        pp_default_(()(0))
     )),
     sys_call_linux_SYS_clock_gettime = pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(228)),
@@ -794,7 +794,7 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_arm)(263)),
         pp_case_((arch_type_riscv64)(113)),
         pp_case_((arch_type_riscv32)(403)),
-        pp_default_(0)
+        pp_default_(()(0))
     )),
     sys_call_linux_SYS_clock_getres = pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(229)),
@@ -803,7 +803,7 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_arm)(264)),
         pp_case_((arch_type_riscv64)(114)),
         pp_case_((arch_type_riscv32)(406)),
-        pp_default_(0)
+        pp_default_(()(0))
     )),
     sys_call_linux_SYS_clock_nanosleep_time64 = pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(230)),
@@ -812,7 +812,7 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_arm)(407)),
         pp_case_((arch_type_riscv64)(115)),
         pp_case_((arch_type_riscv32)(407)),
-        pp_default_(0)
+        pp_default_(()(0))
     )),
     sys_call_linux_SYS_clone = pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(56)),
@@ -821,7 +821,7 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_arm)(120)),
         pp_case_((arch_type_riscv64)(220)),
         pp_case_((arch_type_riscv32)(220)),
-        pp_default_(0)
+        pp_default_(()(0))
     )),
     sys_call_linux_SYS_setsid = pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(112)),
@@ -830,7 +830,7 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_arm)(66)),
         pp_case_((arch_type_riscv64)(157)),
         pp_case_((arch_type_riscv32)(157)),
-        pp_default_(0)
+        pp_default_(()(0))
     )),
     sys_call_linux_SYS_dup3 = pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(292)),
@@ -839,7 +839,7 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_arm)(358)),
         pp_case_((arch_type_riscv64)(24)),
         pp_case_((arch_type_riscv32)(24)),
-        pp_default_(0)
+        pp_default_(()(0))
     )),
     sys_call_linux_SYS_execve = pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(59)),
@@ -848,7 +848,7 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_arm)(11)),
         pp_case_((arch_type_riscv64)(221)),
         pp_case_((arch_type_riscv32)(221)),
-        pp_default_(0)
+        pp_default_(()(0))
     )),
     sys_call_linux_SYS_fchdir = pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(81)),
@@ -857,7 +857,7 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_arm)(133)),
         pp_case_((arch_type_riscv64)(50)),
         pp_case_((arch_type_riscv32)(50)),
-        pp_default_(0)
+        pp_default_(()(0))
     )),
     sys_call_linux_SYS_wait4 = pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(61)),
@@ -866,7 +866,7 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_arm)(114)),
         pp_case_((arch_type_riscv64)(260)),
         pp_case_((arch_type_riscv32)(260)),
-        pp_default_(0)
+        pp_default_(()(0))
     )),
     sys_call_linux_SYS_kill = pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(62)),
@@ -875,7 +875,7 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_arm)(37)),
         pp_case_((arch_type_riscv64)(129)),
         pp_case_((arch_type_riscv32)(129)),
-        pp_default_(0)
+        pp_default_(()(0))
     )),
     sys_call_linux_SYS_rt_sigaction = pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(13)),
@@ -884,7 +884,7 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_arm)(174)),
         pp_case_((arch_type_riscv64)(134)),
         pp_case_((arch_type_riscv32)(134)),
-        pp_default_(0)
+        pp_default_(()(0))
     )),
     sys_call_linux_SYS_rt_sigreturn = pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(15)),
@@ -893,7 +893,7 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_arm)(173)),
         pp_case_((arch_type_riscv64)(139)),
         pp_case_((arch_type_riscv32)(139)),
-        pp_default_(0)
+        pp_default_(()(0))
     )),
     sys_call_linux_SYS_gettimeofday = pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(96)),
@@ -902,7 +902,7 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_arm)(78)),
         pp_case_((arch_type_riscv64)(169)),
         pp_case_((arch_type_riscv32)(169)),
-        pp_default_(0)
+        pp_default_(()(0))
     )),
     sys_call_linux_SYS_exit = pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(60)),
@@ -911,7 +911,7 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_arm)(1)),
         pp_case_((arch_type_riscv64)(93)),
         pp_case_((arch_type_riscv32)(93)),
-        pp_default_(0)
+        pp_default_(()(0))
     )),
     sys_call_linux_SYS_exit_group = pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(231)),
@@ -920,7 +920,7 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_arm)(248)),
         pp_case_((arch_type_riscv64)(94)),
         pp_case_((arch_type_riscv32)(94)),
-        pp_default_(0)
+        pp_default_(()(0))
     )),
     sys_call_linux_SYS_nanosleep = pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(35)),
@@ -929,7 +929,7 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_arm)(162)),
         pp_case_((arch_type_riscv64)(101)),
         pp_case_((arch_type_riscv32)(0)),
-        pp_default_(0)
+        pp_default_(()(0))
     )),
     sys_call_linux_SYS_sched_yield = pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(24)),
@@ -938,7 +938,7 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_arm)(158)),
         pp_case_((arch_type_riscv64)(124)),
         pp_case_((arch_type_riscv32)(124)),
-        pp_default_(0)
+        pp_default_(()(0))
     )),
     sys_call_linux_SYS_gettid = pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(186)),
@@ -947,7 +947,7 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_arm)(224)),
         pp_case_((arch_type_riscv64)(178)),
         pp_case_((arch_type_riscv32)(178)),
-        pp_default_(0)
+        pp_default_(()(0))
     )),
     sys_call_linux_SYS_getpid = pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(39)),
@@ -956,7 +956,7 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_arm)(20)),
         pp_case_((arch_type_riscv64)(172)),
         pp_case_((arch_type_riscv32)(172)),
-        pp_default_(0)
+        pp_default_(()(0))
     )),
     sys_call_linux_SYS_sched_getaffinity = pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(204)),
@@ -965,7 +965,7 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_arm)(242)),
         pp_case_((arch_type_riscv64)(123)),
         pp_case_((arch_type_riscv32)(123)),
-        pp_default_(0)
+        pp_default_(()(0))
     )),
     sys_call_linux_SYS_futex = pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(202)),
@@ -974,7 +974,7 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_arm)(240)),
         pp_case_((arch_type_riscv64)(98)),
         pp_case_((arch_type_riscv32)(422)),
-        pp_default_(0)
+        pp_default_(()(0))
     )),
     sys_call_linux_SYS_mremap = pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(25)),
@@ -983,14 +983,14 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_arm)(163)),
         pp_case_((arch_type_riscv64)(216)),
         pp_case_((arch_type_riscv32)(216)),
-        pp_default_(0)
+        pp_default_(()(0))
     )),
     sys_call_linux_SYS_renameat = pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(264)),
         pp_case_((arch_type_x86)(302)),
         pp_case_((arch_type_aarch64)(38)),
         pp_case_((arch_type_arm)(329)),
-        pp_default_(0)
+        pp_default_(()(0))
     )),
     sys_call_linux_SYS_renameat2 = pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(316)),
@@ -999,7 +999,7 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_arm)(382)),
         pp_case_((arch_type_riscv64)(276)),
         pp_case_((arch_type_riscv32)(276)),
-        pp_default_(0)
+        pp_default_(()(0))
     )),
 } sys_call_linux_SYS;
 
@@ -1213,7 +1213,7 @@ $static fn_((sys_call_linux_renameat(sys_call_linux_word old_dirfd, const char* 
         pp_case_((arch_type_x86)(pp_true)), \
         pp_case_((arch_type_arm)(pp_true)), \
         pp_case_((arch_type_riscv32)(pp_true)), \
-        pp_default_(pp_false) \
+        pp_default_(()(pp_false)) \
     ) pp_end \
 )
 #define __comp_uint__sys_call_linux_MMAP2_UNIT u64_(4096)
@@ -1224,7 +1224,7 @@ $static fn_((sys_call_linux_renameat(sys_call_linux_word old_dirfd, const char* 
         pp_case_((arch_type_x86)(pp_true)), \
         pp_case_((arch_type_aarch64)(pp_true)), \
         pp_case_((arch_type_arm)(pp_true)), \
-        pp_default_(pp_false) \
+        pp_default_(()(pp_false)) \
     ) pp_end \
 )
 #endif /* in_analysis || plat_is_linux */
