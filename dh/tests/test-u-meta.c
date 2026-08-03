@@ -42,6 +42,22 @@ T_alias$((Record$15$1P$raw$2usize)(struct Record$15$1P$raw$2usize {
 
 T_use$((u32)(u_V, u_P, u_S));
 
+TEST_fn_("meta: u_anyP preserves raw pointer mutability" $scope) {
+    var value = as$(u32)(1234);
+    let_(mutable_ptr, P$raw) = &value;
+    let_(const_ptr, P_const$raw) = &value;
+
+    let mutable_meta = u_anyP(mutable_ptr);
+    let const_meta = u_anyP(const_ptr);
+
+    try_(TEST_expect(eqlType$(TypeOf(mutable_meta), u_P$raw)));
+    try_(TEST_expect(eqlType$(TypeOf(const_meta), u_P_const$raw)));
+    try_(TEST_expect(mutable_meta.raw == mutable_ptr));
+    try_(TEST_expect(const_meta.raw == const_ptr));
+    try_(TEST_expect(TypeInfo_eql(mutable_meta.type, typeInfo$(void))));
+    try_(TEST_expect(TypeInfo_eql(const_meta.type, typeInfo$(const void))));
+} $unscoped(TEST_fn);
+
 TEST_fn_("meta: target-aware wrappers preserve requested shape" $scope) {
     var value = as$(u32)(1234);
 

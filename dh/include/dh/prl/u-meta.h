@@ -686,27 +686,27 @@ $static fn_((u_geApxRelBy(u_V$raw lhs, u_V$raw rhs, u_V$raw threshold, u_OrdApxF
 
 // #define u_anyP_const(_$p...) ((u_P_const$raw){ .type = typeInfo$(TypeOf(*_$p)), .raw = _$p })
 // #define u_anyP(_$p...) ((u_P$raw){ .type = typeInfo$(TypeOf(*_$p)), .raw = _$p })
-#define u_anyP(_$p...) T_switch$((TypeOf(*_$p))( \
-    T_qual$((const TypeOfUnqual(*_$p))(l$((u_P_const$raw){ \
+#define u_anyP(_$p...) T_switch$((TypeOf(*_$p)*)( \
+    T_qual$((const TypeOf(*_$p)*)(l$((u_P_const$raw){ \
         .raw = ptrQualCast$((P_const$raw)(_$p)), \
         .type = typeInfo$(TypeOf(*_$p)), \
     }))), \
-    T_qual$((TypeOfUnqual(*_$p))(l$((u_P$raw){ \
+    T_default_(l$((u_P$raw){ \
         .raw = ptrQualCast$((P$raw)(_$p)), \
         .type = typeInfo$(TypeOf(*_$p)), \
-    }))) \
+    })) \
 ))
 // #define u_anyS_const(_$s...) ((u_S_const$raw){ .type = typeInfo$(TypeOf(*_$s.ptr)), .raw = _$s.as_raw })
 // #define u_anyS(_$s...)       ((u_S$raw){ .type = typeInfo$(TypeOf(*_$s.ptr)), .raw = _$s.as_raw })
-#define u_anyS(_$s...) T_switch$((TypeOf(*(_$s).ptr))( \
-    T_qual$((const TypeOfUnqual(*(_$s).ptr))(l$((u_S_const$raw){ \
+#define u_anyS(_$s...) T_switch$((TypeOf(*(_$s).ptr)*)( \
+    T_qual$((const TypeOf(*(_$s).ptr)*)(l$((u_S_const$raw){ \
         .raw = *ptrQualCast$((S_const$raw*)((_$s).ref_raw)), \
         .type = typeInfo$(TypeOf(*(_$s).ptr)), \
     }))), \
-    T_qual$((TypeOfUnqual(*(_$s).ptr))(l$((u_S$raw){ \
+    T_default_(l$((u_S$raw){ \
         .raw = *ptrQualCast$((S$raw*)((_$s).ref_raw)), \
         .type = typeInfo$(TypeOf(*(_$s).ptr)), \
-    }))) \
+    })) \
 ))
 
 /* TODO: Check compound literal / initializer "compile-time constant" issue on Clang 17 */

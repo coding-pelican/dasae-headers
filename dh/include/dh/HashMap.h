@@ -278,7 +278,7 @@ typedef struct HashMap {
 } HashMap;
 T_use$((HashMap)(O, E));
 T_use_E$($set(mem_E)(HashMap));
-#define HashMap_default_min_cap (n$(u32)(8))
+#define HashMap_default_min_cap (n$((u32)(8)))
 
 /*--- Construction/Destruction ---*/
 

@@ -9,7 +9,7 @@ T_use$((u8)(
     mem_eql
 ));
 
-TEST_fn_("mem: basic - copies only source length and preserves tail" $scope) {
+TEST_fn_("mem/common: basic - copies only source length and preserves tail" $scope) {
     var dst = u8_a("............");
     let copied = mem_copyBytes(A_ref$((S$u8)(dst)), u8_l("hello"));
 
@@ -18,7 +18,7 @@ TEST_fn_("mem: basic - copies only source length and preserves tail" $scope) {
     try_(TEST_expect(mem_eqlBytes(S_suffix((copied.as_const)(5)), u8_l("......."))));
 } $unscoped(TEST_fn)
 
-TEST_fn_("mem: basic - typed copy returns destination view" $scope) {
+TEST_fn_("mem/common: basic - typed copy returns destination view" $scope) {
     var dst = u8_a("........");
     let copied = mem_copy$u8(A_ref$((S$u8)(dst)), u8_l("abc"));
 
@@ -27,7 +27,7 @@ TEST_fn_("mem: basic - typed copy returns destination view" $scope) {
     try_(TEST_expect(mem_eqlBytes(S_prefix((copied.as_const)(3)), u8_l("abc"))));
 } $unscoped(TEST_fn)
 
-TEST_fn_("mem: basic - move handles overlapping ranges" $scope) {
+TEST_fn_("mem/common: basic - move handles overlapping ranges" $scope) {
     var data = u8_a("abcdef");
     let buf = A_ref$((S$u8)(data));
 
@@ -38,7 +38,7 @@ TEST_fn_("mem: basic - move handles overlapping ranges" $scope) {
     try_(TEST_expect(mem_eqlBytes(buf.as_const, u8_l("abcdcd"))));
 } $unscoped(TEST_fn)
 
-TEST_fn_("mem: basic - set and zero fill exact views" $scope) {
+TEST_fn_("mem/common: basic - set and zero fill exact views" $scope) {
     var data = u8_a("abcdef");
     let buf = A_ref$((S$u8)(data));
 
@@ -55,7 +55,7 @@ TEST_fn_("mem: basic - set and zero fill exact views" $scope) {
     try_(TEST_expect(*S_at((buf)[3]) == u8_c('x')));
 } $unscoped(TEST_fn)
 
-TEST_fn_("mem: basic - equality compares complete views" $scope) {
+TEST_fn_("mem/common: basic - equality compares complete views" $scope) {
     try_(TEST_expect(mem_eqlBytes(u8_l("abc"), u8_l("abc"))));
     try_(TEST_expect(!mem_eqlBytes(u8_l("abc"), u8_l("ab"))));
     try_(TEST_expect(!mem_eqlBytes(u8_l("abc"), u8_l("abd"))));
@@ -64,7 +64,7 @@ TEST_fn_("mem: basic - equality compares complete views" $scope) {
     try_(TEST_expect(!mem_eql$u8(u8_l("same"), u8_l("save"))));
 } $unscoped(TEST_fn)
 
-TEST_fn_("mem: basic - log2 alignment helpers match runtime alignment math" $scope) {
+TEST_fn_("mem/common: basic - log2 alignment helpers match runtime alignment math" $scope) {
     for_(($r(0, $incl(6)))(step)) {
         let log2_align = intCast$((u8)(step));
         let align = log2ToAlign(log2_align);
@@ -80,7 +80,7 @@ TEST_fn_("mem: basic - log2 alignment helpers match runtime alignment math" $sco
     } $end(for);
 } $unscoped(TEST_fn)
 
-TEST_fn_("mem: basic - endian read and write use fixed byte arrays" $scope) {
+TEST_fn_("mem/common: basic - endian read and write use fixed byte arrays" $scope) {
     let le16 = S_deref$((const mem_ReadLE16Buf)(u8_l("\064\022")));
     let le32 = S_deref$((const mem_ReadLE32Buf)(u8_l("\170\126\064\022")));
     let le64 = S_deref$((const mem_ReadLE64Buf)(u8_l("\360\336\274\232\170\126\064\022")));

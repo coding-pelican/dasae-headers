@@ -33,7 +33,7 @@ T_use$((u32)(
     thrd_SPMC_Rx_recvOp
 ));
 
-TEST_fn_("thrd: SPMC - starts open and empty" $guard) {
+TEST_fn_("thrd/SPMC: starts open and empty" $guard) {
     var spmc_buf = A_zero$((A$$(2, u32)));
     var spmc = thrd_SPMC_initFixed$u32(A_ref$((S$u32)(spmc_buf)));
     defer_(thrd_SPMC_finiFixed$u32(&spmc));
@@ -44,7 +44,7 @@ TEST_fn_("thrd: SPMC - starts open and empty" $guard) {
     return_ok({});
 } $unguarded(TEST_fn)
 
-TEST_fn_("thrd: SPMC - typed try send and receive" $guard) {
+TEST_fn_("thrd/SPMC: typed try send and receive" $guard) {
     var spmc_buf = A_zero$((A$$(2, u32)));
     var spmc = thrd_SPMC_initFixed$u32(A_ref$((S$u32)(spmc_buf)));
     defer_(thrd_SPMC_finiFixed$u32(&spmc));
@@ -56,7 +56,7 @@ TEST_fn_("thrd: SPMC - typed try send and receive" $guard) {
     return_ok({});
 } $unguarded(TEST_fn)
 
-TEST_fn_("thrd: SPMC - typed blocking send and receive" $guard) {
+TEST_fn_("thrd/SPMC: typed blocking send and receive" $guard) {
     var chan_cancel = thrd_CancelTok_Src_init();
     defer_(thrd_CancelTok_Src_fini(&chan_cancel));
     let chan_cancel_src = thrd_CancelTok_wakeable(thrd_CancelTok_Src_tok(&chan_cancel));
@@ -71,7 +71,7 @@ TEST_fn_("thrd: SPMC - typed blocking send and receive" $guard) {
     return_ok({});
 } $unguarded(TEST_fn)
 
-TEST_fn_("thrd: SPMC - typed timed send and receive" $guard) {
+TEST_fn_("thrd/SPMC: typed timed send and receive" $guard) {
     var chan_cancel = thrd_CancelTok_Src_init();
     defer_(thrd_CancelTok_Src_fini(&chan_cancel));
     let chan_cancel_src = thrd_CancelTok_wakeable(thrd_CancelTok_Src_tok(&chan_cancel));
@@ -86,7 +86,7 @@ TEST_fn_("thrd: SPMC - typed timed send and receive" $guard) {
     return_ok({});
 } $unguarded(TEST_fn)
 
-TEST_fn_("thrd: SPMC - select receives typed value" $guard) {
+TEST_fn_("thrd/SPMC: select receives typed value" $guard) {
     var spmc_buf = A_zero$((A$$(2, u32)));
     var spmc = thrd_SPMC_initFixed$u32(A_ref$((S$u32)(spmc_buf)));
     defer_(thrd_SPMC_finiFixed$u32(&spmc));
@@ -109,7 +109,7 @@ TEST_fn_("thrd: SPMC - select receives typed value" $guard) {
     return_ok({});
 } $unguarded(TEST_fn)
 
-TEST_fn_("thrd: SPMC - select sends typed value" $guard) {
+TEST_fn_("thrd/SPMC: select sends typed value" $guard) {
     var spmc_buf = A_zero$((A$$(2, u32)));
     var spmc = thrd_SPMC_initFixed$u32(A_ref$((S$u32)(spmc_buf)));
     defer_(thrd_SPMC_finiFixed$u32(&spmc));

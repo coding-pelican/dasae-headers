@@ -1,0 +1,26 @@
+#include "dh-main.h"
+#include "dh/time/self/Awake.h"
+
+TEST_fn_("time/self/Awake: monotonic clock advances across sleep" $scope) {
+    let clock = catch_((time_Awake_direct())(err, {
+        try_(TEST_expect(E_tag(err.as_any) == E_Tag$time_direct_Unsupported));
+        return_ok_void();
+    }));
+    let begin = time_Awake_now(clock);
+    try_(time_Awake_sleepMillis(clock, 1));
+    let end = time_Awake_now(clock);
+    let elapsed = unwrap_(time_Awake_Inst_durSinceChkd(end, begin));
+
+    try_(TEST_expect(cmp_ge$(time_Awake_Inst)(end, begin)));
+    try_(TEST_expect(!time_Dur_isZero(elapsed)));
+    try_(TEST_expect(isNone(time_Awake_Inst_durSinceChkd(begin, end))));
+} $unscoped(TEST_fn);
+
+TEST_fn_("time/self/Awake: direct resolution is non-zero when supported" $scope) {
+    let clock = catch_((time_Awake_direct())(err, {
+        try_(TEST_expect(E_tag(err.as_any) == E_Tag$time_direct_Unsupported));
+        return_ok_void();
+    }));
+    let resolution = try_(time_Awake_resolution(clock));
+    try_(TEST_expect(!time_Dur_isZero(resolution)));
+} $unscoped(TEST_fn);

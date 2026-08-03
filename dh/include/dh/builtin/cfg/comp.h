@@ -74,7 +74,15 @@ extern "C" {
 
 /*--- Compiler Feature Queries ---*/
 
+#define comp_is_identifier(_$name) __comp_bool__comp_is_identifier(_$name)
+#define comp_has_keyword(_$name) (!comp_is_identifier(_$name))
+
+#define comp_has_feature(_$name) __comp_bool__comp_has_feature(_$name)
+#define comp_has_extension(_$name) __comp_bool__comp_has_extension(_$name)
+
+#define comp_has_builtin(_$name) __comp_bool__comp_has_builtin(_$name)
 #define comp_has_attribute(_$name) __comp_bool__comp_has_attribute(_$name)
+#define comp_has_warning(_$name) __comp_bool__comp_has_warning(_$name)
 
 /*--- Compiler Attributes ---*/
 
@@ -248,11 +256,41 @@ extern "C" {
     comp_gnu_ver_major, comp_gnu_ver_minor, comp_gnu_ver_patch, ver_core_sep_default \
 )
 
+#define __comp_bool__comp_is_identifier(_$name) 1
+#if defined(__is_identifier)
+#undef __comp_bool__comp_is_identifier
+#define __comp_bool__comp_is_identifier(_$name) __is_identifier(_$name)
+#endif /* defined(__is_identifier) */
+
+#define __comp_bool__comp_has_feature(_$name) 0
+#if defined(__has_feature)
+#undef __comp_bool__comp_has_feature
+#define __comp_bool__comp_has_feature(_$name) __has_feature(_$name)
+#endif /* defined(__has_feature) */
+
+#define __comp_bool__comp_has_extension(_$name) comp_has_feature(_$name)
+#if defined(__has_extension)
+#undef __comp_bool__comp_has_extension
+#define __comp_bool__comp_has_extension(_$name) __has_extension(_$name)
+#endif /* defined(__has_extension) */
+
+#define __comp_bool__comp_has_builtin(_$name) 0
+#if defined(__has_builtin)
+#undef __comp_bool__comp_has_builtin
+#define __comp_bool__comp_has_builtin(_$name) __has_builtin(_$name)
+#endif /* defined(__has_builtin) */
+
 #define __comp_bool__comp_has_attribute(_$name) 0
 #if defined(__has_attribute)
 #undef __comp_bool__comp_has_attribute
 #define __comp_bool__comp_has_attribute(_$name) __has_attribute(_$name)
 #endif /* defined(__has_attribute) */
+
+#define __comp_bool__comp_has_warning(_$name) 0
+#if defined(__has_warning)
+#undef __comp_bool__comp_has_warning
+#define __comp_bool__comp_has_warning(_$name) __has_warning(_$name)
+#endif /* defined(__has_warning) */
 
 #define __comp_num__comp_ver_major 0
 #define __comp_num__comp_ver_minor 0

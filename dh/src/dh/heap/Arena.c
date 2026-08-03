@@ -67,7 +67,7 @@ fn_((heap_Arena_fini(heap_Arena* self))(void)) {
 
 fn_((heap_Arena_queryCap(const heap_Arena* self))(usize)) {
     claim_assert_nonnull(self);
-    var size = n$(usize)(0);
+    var size = n$((usize)(0));
     var it = self->state.buf_list.first;
     while_some(it, link) {
         // Add buffer size excluding the node header

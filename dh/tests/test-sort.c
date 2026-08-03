@@ -609,14 +609,20 @@ TEST_fn_("sort: inOrddIdx detects inversion only inside requested range" $scope)
         .range = $r(1, 4),
     };
 
-    try_(TEST_expect(sort_inOrddIdx($r(2, 4), (sort_IdxCmpr){
-        .inner = u_deref(u_anyP(&sorted_tail_ctx)),
-        .ordFn = test_sort_IdxCmpXchgr_ord,
-    })));
-    try_(TEST_expect(!sort_inOrddIdx($r(1, 4), (sort_IdxCmpr){
-        .inner = u_deref(u_anyP(&unsorted_mid_ctx)),
-        .ordFn = test_sort_IdxCmpXchgr_ord,
-    })));
+    try_(TEST_expect(sort_inOrddIdx(
+        $r(2, 4),
+        (sort_IdxCmpr){
+            .inner = u_deref(u_anyP(&sorted_tail_ctx)),
+            .ordFn = test_sort_IdxCmpXchgr_ord,
+        }
+    )));
+    try_(TEST_expect(!sort_inOrddIdx(
+        $r(1, 4),
+        (sort_IdxCmpr){
+            .inner = u_deref(u_anyP(&unsorted_mid_ctx)),
+            .ordFn = test_sort_IdxCmpXchgr_ord,
+        }
+    )));
 } $unscoped(TEST_fn);
 
 TEST_fn_("sort: idx algorithms respect non-zero range boundaries" $scope) {
@@ -653,27 +659,36 @@ TEST_fn_("sort: idx algorithms respect non-zero range boundaries" $scope) {
         .range = $r(sort_begin, sort_end),
     };
 
-    sort_insertIdx($r(sort_begin, sort_end), (sort_IdxCmpXchgr){
-                                                 .base = {
-                                                     .inner = u_deref(u_anyP(&insert_ctx)),
-                                                     .ordFn = test_sort_IdxCmpXchgr_ord,
-                                                 },
-                                                 .swapFn = test_sort_IdxCmpXchgr_swap,
-                                             });
-    sort_heapIdx($r(sort_begin, sort_end), (sort_IdxCmpXchgr){
-                                               .base = {
-                                                   .inner = u_deref(u_anyP(&heap_ctx)),
-                                                   .ordFn = test_sort_IdxCmpXchgr_ord,
-                                               },
-                                               .swapFn = test_sort_IdxCmpXchgr_swap,
-                                           });
-    sort_pdqIdx($r(sort_begin, sort_end), (sort_IdxCmpXchgr){
-                                              .base = {
-                                                  .inner = u_deref(u_anyP(&pdq_ctx)),
-                                                  .ordFn = test_sort_IdxCmpXchgr_ord,
-                                              },
-                                              .swapFn = test_sort_IdxCmpXchgr_swap,
-                                          });
+    sort_insertIdx(
+        $r(sort_begin, sort_end),
+        (sort_IdxCmpXchgr){
+            .base = {
+                .inner = u_deref(u_anyP(&insert_ctx)),
+                .ordFn = test_sort_IdxCmpXchgr_ord,
+            },
+            .swapFn = test_sort_IdxCmpXchgr_swap,
+        }
+    );
+    sort_heapIdx(
+        $r(sort_begin, sort_end),
+        (sort_IdxCmpXchgr){
+            .base = {
+                .inner = u_deref(u_anyP(&heap_ctx)),
+                .ordFn = test_sort_IdxCmpXchgr_ord,
+            },
+            .swapFn = test_sort_IdxCmpXchgr_swap,
+        }
+    );
+    sort_pdqIdx(
+        $r(sort_begin, sort_end),
+        (sort_IdxCmpXchgr){
+            .base = {
+                .inner = u_deref(u_anyP(&pdq_ctx)),
+                .ordFn = test_sort_IdxCmpXchgr_ord,
+            },
+            .swapFn = test_sort_IdxCmpXchgr_swap,
+        }
+    );
 
     try_(TEST_expect(*A_at((insert_data)[sort_begin - 1]) == insert_before_begin));
     try_(TEST_expect(*A_at((insert_data)[sort_end]) == insert_after_end));
@@ -681,10 +696,13 @@ TEST_fn_("sort: idx algorithms respect non-zero range boundaries" $scope) {
         u_anyS(A_slice((insert_data)$r(sort_begin, sort_end))).as_const,
         cmp_u_ord$(i32)
     )));
-    try_(TEST_expect(sort_inOrddIdx($r(sort_begin, sort_end), (sort_IdxCmpr){
-        .inner = u_deref(u_anyP(&insert_ctx)),
-        .ordFn = test_sort_IdxCmpXchgr_ord,
-    })));
+    try_(TEST_expect(sort_inOrddIdx(
+        $r(sort_begin, sort_end),
+        (sort_IdxCmpr){
+            .inner = u_deref(u_anyP(&insert_ctx)),
+            .ordFn = test_sort_IdxCmpXchgr_ord,
+        }
+    )));
     try_(TEST_expect(*A_at((heap_data)[sort_begin - 1]) == heap_before_begin));
     try_(TEST_expect(*A_at((heap_data)[sort_end]) == heap_after_end));
     try_(TEST_expect(sort_inOrdd(

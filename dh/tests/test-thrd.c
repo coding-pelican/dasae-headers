@@ -1,6 +1,6 @@
 #include "test-thrd/main.h"
 
-TEST_fn_("thrd: spawn and join function closure" $guard) {
+TEST_fn_("thrd/Self: spawn and join function closure" $guard) {
     var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
 
@@ -20,7 +20,7 @@ TEST_fn_("thrd: spawn and join function closure" $guard) {
     return_ok({});
 } $unguarded(TEST_fn);
 
-TEST_fn_("thrd: spawn and join coroutine closure" $guard) {
+TEST_fn_("thrd/Self: spawn and join coroutine closure" $guard) {
     var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
 

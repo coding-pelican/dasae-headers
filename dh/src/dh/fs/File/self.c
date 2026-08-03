@@ -52,39 +52,89 @@ $static fn_((fs__linuxKind(sys_call_linux_mode_t mode))(fs_Kind)) {
 }
 #endif
 
-fn_((fs_File_open(S_const$u8 path, fs_File_OpenFlags flags))(E$fs_File) $scope) {
-    if (flags.nonblocking && plat_is_windows) return_err(E_cause$fs_Unsupported());
+/*========== Internal Definitions ===========================================*/
+
+#if plat_is_linux
+fn_((fs__linuxFileOpenAt(
+    fs_Handle dir_handle,
+    S_const$u8 path,
+    fs_File_OpenFlags flags
+))(E$fs_File) $scope) {
     var_(path_z, A$$(fs__path_max, u8)) = A_zero();
     if (!fs__pathZ(path, A_ptr(path_z), A_len(path_z))) return_err(E_cause$fs_FileTooBig());
-#if plat_is_windows
-    let handle = CreateFileA(
-        as$(LPCSTR)(A_ptr(path_z)), fs__windowsOpenAccess(flags), FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, null, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, null);
-    if (handle == INVALID_HANDLE_VALUE) return_err(E_cause$fs_OpenFailed());
-    return_ok(fs_File_Handle_promote(handle, (fs_File_Flags){ .nonblocking = flags.nonblocking }));
-#elif plat_is_linux
+
     var_(open_flags, sys_call_linux_word) = 0;
     if (flags.mode == fs_OpenMode_read_only) open_flags |= sys_call_linux_O_RDONLY;
     if (flags.mode == fs_OpenMode_write_only) open_flags |= sys_call_linux_O_WRONLY;
     if (flags.mode == fs_OpenMode_read_write) open_flags |= sys_call_linux_O_RDWR;
     if (flags.nonblocking) open_flags |= sys_call_linux_O_NONBLOCK;
-    let handle = sys_call_linux_openat(sys_call_linux_AT_FDCWD, as$(const char*)(A_ptr(path_z)), open_flags, 0);
-    if (sys_call_linux_syscall_isErr(handle)) {
-        return_err(E_cause$fs_OpenFailed());
-    } else {
-        return_ok(fs_File_Handle_promote(as$(fs_File_Handle)(handle), (fs_File_Flags){ .nonblocking = flags.nonblocking }));
-    }
+
+    let handle = sys_call_linux_openat(
+        dir_handle,
+        as$(const char*)(A_ptr(path_z)),
+        open_flags,
+        0
+    );
+    if (sys_call_linux_syscall_isErr(handle)) return_err(E_cause$fs_OpenFailed());
+    return_ok(fs_File_Handle_promote(
+        as$(fs_File_Handle)(handle),
+        (fs_File_Flags){ .nonblocking = flags.nonblocking }
+    ));
+} $unscoped(fn);
+
+fn_((fs__linuxFileCreateAt(
+    fs_Handle dir_handle,
+    S_const$u8 path,
+    fs_File_CreateFlags flags
+))(E$fs_File) $scope) {
+    var_(path_z, A$$(fs__path_max, u8)) = A_zero();
+    if (!fs__pathZ(path, A_ptr(path_z), A_len(path_z))) return_err(E_cause$fs_FileTooBig());
+
+    var_(open_flags, sys_call_linux_word) = sys_call_linux_O_CREAT | sys_call_linux_O_WRONLY;
+    if (flags.read) open_flags = sys_call_linux_O_CREAT | sys_call_linux_O_RDWR;
+    if (flags.truncate) open_flags |= sys_call_linux_O_TRUNC;
+    if (flags.exclusive) open_flags |= sys_call_linux_O_EXCL;
+    if (flags.nonblocking) open_flags |= sys_call_linux_O_NONBLOCK;
+
+    let handle = sys_call_linux_openat(
+        dir_handle,
+        as$(const char*)(A_ptr(path_z)),
+        open_flags,
+        flags.mode
+    );
+    if (sys_call_linux_syscall_isErr(handle)) return_err(E_cause$fs_OpenFailed());
+    return_ok(fs_File_Handle_promote(
+        as$(fs_File_Handle)(handle),
+        (fs_File_Flags){ .nonblocking = flags.nonblocking }
+    ));
+} $unscoped(fn);
+#endif /* plat_is_linux */
+
+/*========== Public Definitions =============================================*/
+
+fn_((fs_File_open(S_const$u8 path, fs_File_OpenFlags flags))(E$fs_File) $scope) {
+    if (flags.nonblocking && plat_is_windows) return_err(E_cause$fs_Unsupported());
+#if plat_is_windows
+    var_(path_z, A$$(fs__path_max, u8)) = A_zero();
+    if (!fs__pathZ(path, A_ptr(path_z), A_len(path_z))) return_err(E_cause$fs_FileTooBig());
+    let handle = CreateFileA(
+        as$(LPCSTR)(A_ptr(path_z)), fs__windowsOpenAccess(flags), FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, null, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, null);
+    if (handle == INVALID_HANDLE_VALUE) return_err(E_cause$fs_OpenFailed());
+    return_ok(fs_File_Handle_promote(handle, (fs_File_Flags){ .nonblocking = flags.nonblocking }));
+#elif plat_is_linux
+    return fs__linuxFileOpenAt(sys_posix_AT_FDCWD, path, flags);
 #else
-    let_ignore = path_z;
+    let_ignore = path;
+    let_ignore = flags;
     return_err(E_cause$fs_Unsupported());
 #endif
-    claim_unreachable;
 } $unscoped(fn);
 
 fn_((fs_File_create(S_const$u8 path, fs_File_CreateFlags flags))(E$fs_File) $scope) {
     if (flags.nonblocking && plat_is_windows) return_err(E_cause$fs_Unsupported());
+#if plat_is_windows
     var_(path_z, A$$(fs__path_max, u8)) = A_zero();
     if (!fs__pathZ(path, A_ptr(path_z), A_len(path_z))) return_err(E_cause$fs_FileTooBig());
-#if plat_is_windows
     let disposition = flags.exclusive
                         ? CREATE_NEW
                         : (flags.truncate ? CREATE_ALWAYS : OPEN_ALWAYS);
@@ -94,22 +144,12 @@ fn_((fs_File_create(S_const$u8 path, fs_File_CreateFlags flags))(E$fs_File) $sco
     if (handle == INVALID_HANDLE_VALUE) return_err(E_cause$fs_OpenFailed());
     return_ok(fs_File_Handle_promote(handle, (fs_File_Flags){ .nonblocking = flags.nonblocking }));
 #elif plat_is_linux
-    var_(open_flags, sys_call_linux_word) = sys_call_linux_O_CREAT | sys_call_linux_O_WRONLY;
-    if (flags.read) open_flags = sys_call_linux_O_CREAT | sys_call_linux_O_RDWR;
-    if (flags.truncate) open_flags |= sys_call_linux_O_TRUNC;
-    if (flags.exclusive) open_flags |= sys_call_linux_O_EXCL;
-    if (flags.nonblocking) open_flags |= sys_call_linux_O_NONBLOCK;
-    let handle = sys_call_linux_openat(sys_call_linux_AT_FDCWD, as$(const char*)(A_ptr(path_z)), open_flags, flags.mode);
-    if (sys_call_linux_syscall_isErr(handle)) {
-        return_err(E_cause$fs_OpenFailed());
-    } else {
-        return_ok(fs_File_Handle_promote(as$(fs_File_Handle)(handle), (fs_File_Flags){ .nonblocking = flags.nonblocking }));
-    }
+    return fs__linuxFileCreateAt(sys_posix_AT_FDCWD, path, flags);
 #else
-    let_ignore = path_z;
+    let_ignore = path;
+    let_ignore = flags;
     return_err(E_cause$fs_Unsupported());
 #endif
-    claim_unreachable;
 } $unscoped(fn);
 
 fn_((fs_File_delete(S_const$u8 path))(E$void) $scope) {

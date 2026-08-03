@@ -123,7 +123,6 @@ fn_((fs_Dir_makePath(fs_Dir self, S_const$u8 sub_path))(E$void) $scope) {
 #if plat_is_windows
     let resolved = try_(fs_Dir__resolvePath(self, sub_path, A_ref$((S$u8)(path))));
 #elif plat_is_linux
-    let_ignore = self;
     if (!fs__pathZ(sub_path, A_ptr(path), A_len(path))) return_err(E_cause$fs_FileTooBig());
     let resolved = S_slice((A_ref$((S$u8)(path)))$r(0, sub_path.len));
 #else
@@ -153,7 +152,7 @@ fn_((fs_Dir_makePath(fs_Dir self, S_const$u8 sub_path))(E$void) $scope) {
                 if (err != ERROR_ALREADY_EXISTS) return_err(E_cause$fs_WriteFailed());
             }
 #elif plat_is_linux
-            let_ignore = sys_call_linux_mkdirat(sys_call_linux_AT_FDCWD, as$(const char*)(resolved.ptr), fs_Dir_default_mode);
+            let_ignore = sys_call_linux_mkdirat(self.handle, as$(const char*)(resolved.ptr), fs_Dir_default_mode);
 #endif
         }
         if (needs_restore) *S_at((resolved)[seg_end]) = saved;
@@ -252,8 +251,7 @@ fn_((fs_Dir_createFile(fs_Dir self, S_const$u8 sub_path, fs_File_CreateFlags fla
     let resolved = try_(fs_Dir__resolvePath(self, sub_path, A_ref$((S$u8)(path))));
     return fs_File_create(resolved.as_const, flags);
 #elif plat_is_linux
-    let_ignore = self;
-    return fs_File_create(sub_path, flags);
+    return fs__linuxFileCreateAt(self.handle, sub_path, flags);
 #else
     let_ignore = self;
     let_ignore = sub_path;
@@ -268,8 +266,7 @@ fn_((fs_Dir_openFile(fs_Dir self, S_const$u8 sub_path, fs_File_OpenFlags flags))
     let resolved = try_(fs_Dir__resolvePath(self, sub_path, A_ref$((S$u8)(path))));
     return fs_File_open(resolved.as_const, flags);
 #elif plat_is_linux
-    let_ignore = self;
-    return fs_File_open(sub_path, flags);
+    return fs__linuxFileOpenAt(self.handle, sub_path, flags);
 #else
     let_ignore = self;
     let_ignore = sub_path;

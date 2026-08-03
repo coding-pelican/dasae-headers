@@ -1,10 +1,10 @@
 #include "dh-main.h"
-#include "dh/proc.h"
+#include "dh/proc/Self.h"
 #include "dh/heap/Sys.h"
 #include "dh/io/Reader.h"
 #include "dh/mem/common.h"
 
-TEST_fn_("proc: direct capability exposes process paths" $guard) {
+TEST_fn_("proc/Self: direct capability exposes process paths" $guard) {
     let self = try_(proc_direct());
     try_(TEST_expect(proc_isValid(self)));
 
@@ -21,54 +21,59 @@ TEST_fn_("proc: direct capability exposes process paths" $guard) {
     try_(TEST_expect(cwd.len != 0));
 } $unguarded(TEST_fn);
 
-$static fn_((test_proc__fakeWait(P$raw ctx, proc_Child* self))(proc_Child_Wait_E$proc_Child_Trm) $scope) {
-    let calls = ptrCast$((usize*)(ensureNonnull(ctx)));
-    claim_assert_nonnull(self);
-    ++*calls;
-    asg_l((&self->handle)(none()));
-    self->id = 0;
-    return_ok(union_of$((proc_Child_Trm)(proc_Child_Trm_exited)(u8_(42))));
-} $unscoped(fn);
-$static fn_((test_proc__fakeKill(P$raw ctx, proc_Child* self))(void)) {
-    let calls = ptrCast$((usize*)(ensureNonnull(ctx)));
-    claim_assert_nonnull(self);
-    ++*calls;
-    asg_l((&self->handle)(none()));
-    self->id = 0;
-};
-TEST_fn_("proc: child operations dispatch through proc self" $guard) {
-    let direct = try_(proc_direct());
-    let vtbl = with_((*direct.vtbl)(
-        (.child)({
-            .waitFn = test_proc__fakeWait,
-            .killFn = test_proc__fakeKill,
-        })
+TEST_fn_("proc/Self: spawn and replace options expose operation defaults" $scope) {
+    var argv = A_from$((S_const$u8){ u8_l("program") });
+    let spawn = proc_Spawn_Opts_default(A_ref$((S$S_const$u8)(argv)));
+    let replace = proc_Replace_Opts_default(A_ref$((S$S_const$u8)(argv)));
+
+    try_(TEST_expect(spawn.argv.len == 1));
+    try_(TEST_expect(isNone(spawn.env)));
+    try_(TEST_expect(matches(spawn.cwd, proc_cmd_CWD_inherit)));
+    try_(TEST_expect(matches(spawn.std_in, proc_cmd_StdIO_inherit)));
+    try_(TEST_expect(matches(spawn.std_out, proc_cmd_StdIO_inherit)));
+    try_(TEST_expect(matches(spawn.std_err, proc_cmd_StdIO_inherit)));
+    try_(TEST_expect(spawn.expand_arg0 == proc_cmd_ArgExpsn_no_expand));
+    try_(TEST_expect(!spawn.start_suspended));
+    try_(TEST_expect(!spawn.create_no_window));
+
+    try_(TEST_expect(replace.argv.len == 1));
+    try_(TEST_expect(isNone(replace.env)));
+    try_(TEST_expect(replace.expand_arg0 == proc_cmd_ArgExpsn_no_expand));
+} $unscoped(TEST_fn);
+
+TEST_fn_("proc/Self: direct user lookup resolves root on POSIX systems" $scope) {
+    pp_if_(plat_is_linux)(
+        pp_then_(
+            let self = try_(proc_direct());
+            let info = try_(proc_userInfo(self, u8_l("root")));
+            try_(TEST_expect(info.uid == 0));
+            try_(TEST_expect(info.gid == 0));
+        ),
+        pp_else_(
+            try_(TEST_skipMsg(u8_l("direct user lookup is not supported on this target")));
+        ));
+    return_ok({});
+} $unscoped(TEST_fn);
+
+TEST_fn_("proc/Self: direct base address identifies the current image" $scope) {
+    let self = try_(proc_direct());
+    let address = catch_((proc_baseAddr(self))(
+        $ignore, return_ok(try_(TEST_skipMsg(u8_l("base address is unavailable"))))
     ));
-    var_(calls, usize) = 0;
-    let proc = proc_ensureValid((proc_Self){
-        .ctx = &calls,
-        .vtbl = &vtbl,
-    });
-    var_(child, proc_Child) = {
-        .handle = some(9),
-        .id = 9,
-        .io = {
-            .in = none(),
-            .out = none(),
-            .err = none(),
-        },
-    };
-    let trm = try_(proc_Child_wait(&child, proc));
-    try_(TEST_expect(matches(trm, proc_Child_Trm_exited)));
-    try_(TEST_expect(union_to((trm)(proc_Child_Trm_exited)) == 42));
-    asg_l((&child.handle)(some(10)));
-    child.id = 10;
-    proc_Child_kill(&child, proc);
-    try_(TEST_expect(calls == 2));
-    try_(TEST_expect(child.id == 0));
-    proc_Child_kill(&child, proc);
-    try_(TEST_expect(calls == 2));
-} $unguarded(TEST_fn);
+    try_(TEST_expect(address != 0));
+} $unscoped(TEST_fn);
+
+TEST_fn_("proc/Self: clean exit returns in debug builds" $scope) {
+    pp_if_(debug_enabled)(
+        pp_then_(
+            let self = try_(proc_direct());
+            proc_cleanExit(self);
+        ),
+        pp_else_(
+            try_(TEST_skipMsg(u8_l("cleanExit terminates in non-debug builds")));
+        ));
+    return_ok({});
+} $unscoped(TEST_fn);
 
 $static fn_((test_proc__cmd(S$S_const$u8 argv, proc_cmd_StdIO std_out))(proc_Spawn_Opts)) {
     return (proc_Spawn_Opts){
@@ -189,49 +194,6 @@ TEST_fn_("proc: empty command is rejected before spawn" $guard) {
     try_(TEST_expect(rejected));
 } $unguarded(TEST_fn);
 
-TEST_fn_("proc: spawn and replace options expose operation-local defaults" $scope) {
-    var argv = A_from$((S_const$u8){ u8_l("program") });
-    let spawn = proc_Spawn_Opts_default(A_ref$((S$S_const$u8)(argv)));
-    let replace = proc_Replace_Opts_default(A_ref$((S$S_const$u8)(argv)));
-
-    try_(TEST_expect(spawn.argv.len == 1));
-    try_(TEST_expect(isNone(spawn.env)));
-    try_(TEST_expect(matches(spawn.cwd, proc_cmd_CWD_inherit)));
-    try_(TEST_expect(matches(spawn.std_in, proc_cmd_StdIO_inherit)));
-    try_(TEST_expect(matches(spawn.std_out, proc_cmd_StdIO_inherit)));
-    try_(TEST_expect(matches(spawn.std_err, proc_cmd_StdIO_inherit)));
-    try_(TEST_expect(spawn.expand_arg0 == proc_cmd_ArgExpsn_no_expand));
-    try_(TEST_expect(!spawn.start_suspended));
-    try_(TEST_expect(!spawn.create_no_window));
-
-    try_(TEST_expect(replace.argv.len == 1));
-    try_(TEST_expect(isNone(replace.env)));
-    try_(TEST_expect(replace.expand_arg0 == proc_cmd_ArgExpsn_no_expand));
-
-} $unscoped(TEST_fn);
-
-TEST_fn_("proc: direct user lookup resolves root on POSIX systems" $scope) {
-    pp_if_(plat_is_linux)(
-        pp_then_(
-            let self = try_(proc_direct());
-            let info = try_(proc_userInfo(self, u8_l("root")));
-            try_(TEST_expect(info.uid == 0));
-            try_(TEST_expect(info.gid == 0));
-        ),
-        pp_else_(
-            try_(TEST_skipMsg(u8_l("direct user lookup is not supported on this target")));
-        ));
-    return_ok({});
-} $unscoped(TEST_fn);
-
-TEST_fn_("proc: direct base address identifies the current image" $scope) {
-    let self = try_(proc_direct());
-    let address = catch_((proc_baseAddr(self))(
-        $ignore, return_ok(try_(TEST_skipMsg(u8_l("base address is unavailable"))))
-    ));
-    try_(TEST_expect(address != 0));
-} $unscoped(TEST_fn);
-
 TEST_fn_("proc: run collects stdout and stderr concurrently" $guard) {
     var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
@@ -268,15 +230,3 @@ TEST_fn_("proc: run collects stdout and stderr concurrently" $guard) {
     try_(TEST_expect(mem_eqlBytes(result.out.as_const, u8_l("proc-out"))));
     try_(TEST_expect(mem_eqlBytes(result.err.as_const, u8_l("proc-err"))));
 } $unguarded(TEST_fn);
-
-TEST_fn_("proc: clean exit returns in debug builds" $scope) {
-    pp_if_(debug_enabled)(
-        pp_then_(
-            let self = try_(proc_direct());
-            proc_cleanExit(self);
-        ),
-        pp_else_(
-            try_(TEST_skipMsg(u8_l("cleanExit terminates in non-debug builds")));
-        ));
-    return_ok({});
-} $unscoped(TEST_fn);

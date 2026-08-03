@@ -512,12 +512,19 @@ extern "C" {
 
 /*--- Cache Line ---*/
 
-/* This is a compiler-provided interference boundary, not an ISA constant. */
-#define __comp_int__arch_cache_line_bytes 0
-#if defined(__GCC_DESTRUCTIVE_SIZE)
-#undef __comp_int__arch_cache_line_bytes
-#define __comp_int__arch_cache_line_bytes __GCC_DESTRUCTIVE_SIZE
-#endif /* defined(__GCC_DESTRUCTIVE_SIZE) */
+/* Estimated cache-line boundary for atomically updated memory. */
+#define __comp_int__arch_cache_line_bytes pp_expand( \
+    pp_switch_ pp_begin(arch_type)( \
+        pp_case_((arch_type_x86_64)(128)), \
+        pp_case_((arch_type_aarch64)(128)), \
+        pp_case_((arch_type_powerpc64)(128)), \
+        pp_case_((arch_type_arm)(32)), \
+        pp_case_((arch_type_mips64)(32)), \
+        pp_case_((arch_type_mips32)(32)), \
+        pp_case_((arch_type_s390x)(256)), \
+        pp_default_(()(64)) \
+    ) pp_end \
+)
 
 /*--- Spin-loop Features ---*/
 

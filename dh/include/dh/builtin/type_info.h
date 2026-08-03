@@ -76,15 +76,12 @@ extern "C" {
 #define __expr__isRuntimeExpr(_$expr...) pri_not(isComptimeExpr(_$expr))
 
 #define __type__TypeOf(_$Expr...) __typeof__(_$Expr)
-#define GCC_VERSION (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
-#if defined(__clang__) && __clang_major__ >= 16
-/* Clang >= 16.0 supports `__typeof_unqual__` */
+#if comp_has_keyword(__typeof_unqual__) \
+    || (comp_is_gcc && comp_gcc_ver_major >= 14)
 #define __type__TypeOfUnqual(_$Expr...) __typeof_unqual__(_$Expr)
-#elif !defined(__clang__) && GCC_VERSION >= 130100
-/* GCC >= 13.1 supports `__typeof_unqual__` */
-#define __type__TypeOfUnqual(_$Expr...) __typeof_unqual__(_$Expr)
+#elif lang_ver_in_c23
+#define __type__TypeOfUnqual(_$Expr...) typeof_unqual(_$Expr)
 #else
-/* Fallback for no support of `__typeof_unqual__` */
 #define __type__TypeOfUnqual(_$Expr...) TypeOf((TypeOf(_$Expr))(l0$((TypeOf(_$Expr)))))
 #endif
 

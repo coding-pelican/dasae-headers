@@ -7,6 +7,19 @@
 
 #define fs__path_max (usize_(1024))
 
+#if plat_is_linux
+$extern fn_((fs__linuxFileOpenAt(
+    fs_Handle dir_handle,
+    S_const$u8 path,
+    fs_File_OpenFlags flags
+))(E$fs_File));
+$extern fn_((fs__linuxFileCreateAt(
+    fs_Handle dir_handle,
+    S_const$u8 path,
+    fs_File_CreateFlags flags
+))(E$fs_File));
+#endif /* plat_is_linux */
+
 $attr($inline_always)
 $static fn_((fs__pathZ(S_const$u8 path, u8* out, usize out_len))(bool)) {
     if (path.len + 1 > out_len) return false;

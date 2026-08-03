@@ -9,7 +9,7 @@ $static fn_((test_fmt_format_toFixed(S$u8 buf, S_const$u8 fmt, S_const$u8 arg))(
     return_ok(io_Fixed_written(fixed_writer.stream).as_const);
 } $unscoped(fn);
 
-TEST_fn_("fmt: format writes literal without collecting varargs" $scope) {
+TEST_fn_("fmt/common: format writes literal without collecting varargs" $scope) {
     var buf = u8_a("................................");
     var fixed_writer = io_Fixed_Writer_from(io_Fixed_writing(A_ref$((S$u8)(buf))));
 
@@ -18,7 +18,7 @@ TEST_fn_("fmt: format writes literal without collecting varargs" $scope) {
     try_(TEST_expect(mem_eqlBytes(io_Fixed_written(fixed_writer.stream).as_const, u8_l("literal only"))));
 } $unscoped(TEST_fn);
 
-TEST_fn_("fmt: format applies string alignment specs" $scope) {
+TEST_fn_("fmt/common: format applies string alignment specs" $scope) {
     var right_buf = u8_a("................................");
     let right = try_(test_fmt_format_toFixed(A_ref$((S$u8)(right_buf)), u8_l("[{:>5s}]"), u8_l("hi")));
     try_(TEST_expect(mem_eqlBytes(right, u8_l("[   hi]"))));

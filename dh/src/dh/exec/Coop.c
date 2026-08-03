@@ -74,11 +74,14 @@ fn_((exec_Coop_awaitUntilDone(exec_Coop* self, exec_Task* task))(void)) {
 
 fn_((exec_Coop__pumpUntil(exec_Coop* self, O$time_Awake_Inst deadline))(bool)) {
     claim_assert_nonnull(self);
-    var timeout = time_Dur_fromSecs(4294968);
-    if_some((exec_LaneTimed_nextTimerDeadline(&self->timed))(next_deadline)) {
-        timeout = exec_LaneTimed_remaining(&self->timed, next_deadline);
-        if (time_Dur_isZero(timeout)) return false;
-    }
+    let next_deadline = orelse_((exec_LaneTimed_nextTimerDeadline(&self->timed))(
+        if_none((deadline)) return false;
+        else_some(run_deadline) return exec_Coop__pumpCompletion(
+            self, exec_LaneTimed_remaining(&self->timed, run_deadline)
+        );
+    ));
+    var timeout = exec_LaneTimed_remaining(&self->timed, next_deadline);
+    if (time_Dur_isZero(timeout)) return false;
     if_some((deadline)(run_deadline)) {
         let remaining = exec_LaneTimed_remaining(&self->timed, run_deadline);
         if (time_Dur_isZero(remaining)) return false;

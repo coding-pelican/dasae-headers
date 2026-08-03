@@ -113,11 +113,11 @@ extern "C"
 // clang-format off
 #define comp_syn__local_labeled(_$Label_and_RetType, _$Body...) local_({ \
     local_label pp_Tuple_get1st _$Label_and_RetType; \
-    var pp_cat(__reserved_val_, pp_Tuple_get1st _$Label_and_RetType) = _Generic( \
-        TypeOf(pp_Tuple_get2nd _$Label_and_RetType), \
-        void: (Void){}, \
-        default: (pp_Tuple_get2nd _$Label_and_RetType){} \
-    ); \
+    var pp_cat(__reserved_val_, pp_Tuple_get1st _$Label_and_RetType) = \
+        T_switch$((pp_Tuple_get2nd _$Label_and_RetType)( \
+            T_case$((void)((Void){})), \
+            T_default_((pp_Tuple_get2nd _$Label_and_RetType){}) \
+        )); \
     _$Body; \
     pp_Tuple_get1st _$Label_and_RetType: \
     local_return_(pp_cat(__reserved_val_, pp_Tuple_get1st _$Label_and_RetType)); \

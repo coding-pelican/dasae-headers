@@ -36,6 +36,9 @@ struct fs_Dir {
     fs_Dir_Handle handle;
 };
 T_impl_prl$(fs_Dir);
+$static let_(fs_Dir_cwd, fs_Dir) = {
+    .handle = sys_posix_AT_FDCWD,
+};
 static const fs_File_Mode fs_Dir_default_mode = pp_if_(plat_is_posix)(
     pp_then_(0755),
     pp_else_({}));

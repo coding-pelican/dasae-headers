@@ -36,6 +36,7 @@ typedef pp_if_(plat_is_windows)(
 #define sys_posix_STDIN_FILENO comp_const__sys_posix_STDIN_FILENO
 #define sys_posix_STDOUT_FILENO comp_const__sys_posix_STDOUT_FILENO
 #define sys_posix_STDERR_FILENO comp_const__sys_posix_STDERR_FILENO
+#define sys_posix_AT_FDCWD comp_const__sys_posix_AT_FDCWD
 
 typedef pp_if_(plat_is_linux)(
     pp_then_(sys_call_linux_timespec),
@@ -198,6 +199,13 @@ $static fn_((sys_posix_fionread(sys_posix_fd_t fd, int* count))(i32));
 #define comp_const__sys_posix_STDERR_FILENO (as$(sys_posix_fd_t)( \
     pp_if_(pp_not(pp_or(plat_is_windows, plat_is_posix)))(pp_then_(Void_))(2) \
 ))
+#define comp_const__sys_posix_AT_FDCWD pp_if_(plat_is_windows)( \
+    pp_then_(INVALID_HANDLE_VALUE), \
+    pp_else_(pp_if_(plat_is_linux)( \
+        pp_then_(sys_call_linux_AT_FDCWD), \
+        pp_else_(Void_()) \
+    )) \
+)
 
 #define comp_const__sys_posix_CLOCK_REALTIME pp_if_(plat_is_linux)( \
     pp_then_(sys_call_linux_CLOCK_REALTIME), \

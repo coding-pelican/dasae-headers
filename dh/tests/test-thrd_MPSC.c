@@ -33,7 +33,7 @@ T_use$((u16)(
     thrd_MPSC_Rx_recvOp
 ));
 
-TEST_fn_("thrd: MPSC - starts open and empty" $guard) {
+TEST_fn_("thrd/MPSC: starts open and empty" $guard) {
     var mpsc_buf = A_zero$((A$$(2, u16)));
     var mpsc = thrd_MPSC_initFixed$u16(A_ref$((S$u16)(mpsc_buf)));
     defer_(thrd_MPSC_finiFixed$u16(&mpsc));
@@ -44,7 +44,7 @@ TEST_fn_("thrd: MPSC - starts open and empty" $guard) {
     return_ok({});
 } $unguarded(TEST_fn)
 
-TEST_fn_("thrd: MPSC - typed try send and receive" $guard) {
+TEST_fn_("thrd/MPSC: typed try send and receive" $guard) {
     var mpsc_buf = A_zero$((A$$(2, u16)));
     var mpsc = thrd_MPSC_initFixed$u16(A_ref$((S$u16)(mpsc_buf)));
     defer_(thrd_MPSC_finiFixed$u16(&mpsc));
@@ -56,7 +56,7 @@ TEST_fn_("thrd: MPSC - typed try send and receive" $guard) {
     return_ok({});
 } $unguarded(TEST_fn)
 
-TEST_fn_("thrd: MPSC - typed blocking send and receive" $guard) {
+TEST_fn_("thrd/MPSC: typed blocking send and receive" $guard) {
     var chan_cancel = thrd_CancelTok_Src_init();
     defer_(thrd_CancelTok_Src_fini(&chan_cancel));
     let chan_cancel_src = thrd_CancelTok_wakeable(thrd_CancelTok_Src_tok(&chan_cancel));
@@ -71,7 +71,7 @@ TEST_fn_("thrd: MPSC - typed blocking send and receive" $guard) {
     return_ok({});
 } $unguarded(TEST_fn)
 
-TEST_fn_("thrd: MPSC - typed timed send and receive" $guard) {
+TEST_fn_("thrd/MPSC: typed timed send and receive" $guard) {
     var chan_cancel = thrd_CancelTok_Src_init();
     defer_(thrd_CancelTok_Src_fini(&chan_cancel));
     let chan_cancel_src = thrd_CancelTok_wakeable(thrd_CancelTok_Src_tok(&chan_cancel));
@@ -86,7 +86,7 @@ TEST_fn_("thrd: MPSC - typed timed send and receive" $guard) {
     return_ok({});
 } $unguarded(TEST_fn)
 
-TEST_fn_("thrd: MPSC - select receives typed value" $guard) {
+TEST_fn_("thrd/MPSC: select receives typed value" $guard) {
     var mpsc_buf = A_zero$((A$$(2, u16)));
     var mpsc = thrd_MPSC_initFixed$u16(A_ref$((S$u16)(mpsc_buf)));
     defer_(thrd_MPSC_finiFixed$u16(&mpsc));
@@ -109,7 +109,7 @@ TEST_fn_("thrd: MPSC - select receives typed value" $guard) {
     return_ok({});
 } $unguarded(TEST_fn)
 
-TEST_fn_("thrd: MPSC - select sends typed value" $guard) {
+TEST_fn_("thrd/MPSC: select sends typed value" $guard) {
     var mpsc_buf = A_zero$((A$$(2, u16)));
     var mpsc = thrd_MPSC_initFixed$u16(A_ref$((S$u16)(mpsc_buf)));
     defer_(thrd_MPSC_finiFixed$u16(&mpsc));

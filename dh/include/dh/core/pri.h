@@ -2083,41 +2083,6 @@ $static u8 pri__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
     local_return_(as$(IntType)((__x & ~__mask) | ((int_shl(__bits, __off)) & __mask))); \
 })
 
-/*========== Bit Manipulation Implementation ================================*/
-
-#if UNUSED_CODE
-#define __op__int_rotateLeft(__x, __n, _$x, _$n...) local_({ \
-    typedef TypeOfUnqual(_$x) IntType; \
-    claim_assert_static(isInt$(IntType)); \
-    let_(__x, IntType) = _$x; \
-    let_(__n, u32) = _$n; \
-    const u32 __mask = sizeof(IntType) * 8 - 1; \
-    __n &= __mask; \
-    as$(IntType)((__x << __n) | (__x >> ((-__n) & __mask))); \
-})
-#define __op__int_rotateRight(__x, __n, _$x, _$n...) local_({ \
-    typedef TypeOfUnqual(_$x) IntType; \
-    claim_assert_static(isInt$(IntType)); \
-    let_(__x, IntType) = _$x; \
-    let_(__n, u32) = _$n; \
-    const u32 __mask = sizeof(IntType) * 8 - 1; \
-    __n &= __mask; \
-    as$(IntType)((__x >> __n) | (__x << ((-__n) & __mask))); \
-})
-#define __op__int_swapBytes(__x, _$x...) local_({ \
-    typedef TypeOfUnqual(_$x) IntType; \
-    claim_assert_static(isInt$(IntType)); \
-    let_(__x, IntType) = _$x; \
-    as$(IntType)(_Generic(sizeof(IntType), 1: __x, 2: __builtin_bswap16((u16)__x), 4: __builtin_bswap32((u32)__x), 8: __builtin_bswap64((u64)__x))); \
-})
-#define __op__int_reverseBits(__x, _$x...) local_({ \
-    typedef TypeOfUnqual(_$x) IntType; \
-    claim_assert_static(isInt$(IntType)); \
-    let_(__x, IntType) = _$x; \
-    as$(IntType)(_Generic(sizeof(IntType), 1: __builtin_bitreverse8((u8)__x), 2: __builtin_bitreverse16((u16)__x), 4: __builtin_bitreverse32((u32)__x), 8: __builtin_bitreverse64((u64)__x))); \
-})
-#endif /* UNUSED_CODE */
-
 /*========== Integer Exponential and Logarithm Implementation ===================*/
 
 #define __step__uint_exp10_static$(...) __step__uint_exp10_static$__emit(__step__uint_exp10_static$__parse __VA_ARGS__)

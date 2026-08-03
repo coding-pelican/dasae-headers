@@ -7,7 +7,7 @@ $static fn_((test__pathInThisDir(S_const$u8 name, S$u8 out))(E$S$u8)) {
     return fs_path_join2(fs_path_dirname(mem_spanZ0Bytes(src_loc_fileName())), name, out);
 };
 
-TEST_fn_("fs/File: create, positioned IO, stat, rename, delete" $guard) {
+TEST_fn_("fs/File/self: create, positioned IO, stat, rename, delete" $guard) {
     var_(path_mem, A$$(1024, u8)) $undefined;
     var_(renamed_path_mem, A$$(1024, u8)) $undefined;
     let path = try_(test__pathInThisDir(u8_l("test-fs_File-direct.tmp"), A_ref$((S$u8)(path_mem))));

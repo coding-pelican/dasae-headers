@@ -170,7 +170,7 @@ extern "C" {
 
 // n_(11,644,473,600u) => 11644473600u
 #define n_(_$Comma_Sep_Lits...) __val__n_(_$Comma_Sep_Lits)
-#define n$(_$T) (_$T) __val__n$__parseLits
+#define n$(/*(_$T)(_$Comma_Sep_Lits)*/... /*(_$T)*/) __val__n$(__VA_ARGS__)
 
 #define __val__n_(_$Comma_Sep_Lits...) pp_join(_, __val__n_, pp_countArg(_$Comma_Sep_Lits))(_$Comma_Sep_Lits)
 #define __val__n__1(_$Num1) _$Num1
@@ -183,7 +183,10 @@ extern "C" {
     pp_cat(pp_cat(pp_cat(pp_cat3(_$Num1, _$Num2, _$Num3), pp_cat(_$Num4, _$Num5)), _$Num6), _$Num7)
 #define __val__n__8(_$Num1, _$Num2, _$Num3, _$Num4, _$Num5, _$Num6, _$Num7, _$Num8) \
     pp_cat(pp_cat(pp_cat(pp_cat3(_$Num1, _$Num2, _$Num3), pp_cat(_$Num4, _$Num5)), pp_cat(_$Num6, _$Num7)), _$Num8)
-#define __val__n$__parseLits(...) (n_(__VA_ARGS__))
+#define __val__n$(...) __step__n$__emit(__step__n$__parse __VA_ARGS__)
+#define __step__n$__parse(_$T...) _$T,
+#define __step__n$__emit(...) ____n$(__VA_ARGS__)
+#define ____n$(_$T, _$Comma_Sep_Lits...) (as$(_$T)(n_(_$Comma_Sep_Lits)))
 
 #define from$(/*(_$T){_$initial...}*/... /*(_$T)*/) __val__from$(__VA_ARGS__)
 #define __val__from$(...) __step__from$__emit(__step__from$__parse __VA_ARGS__)
@@ -487,7 +490,7 @@ extern "C" {
     __VA_ARGS__ \
 )
 
-#if comp_type == comp_type_clang && comp_ver_major >= 18
+#if comp_has_warning("-Wunterminated-string-initialization")
 #define $suppress_unterminated_string_initialization(...) /* clang-format off */ \
     _Pragma("clang diagnostic push") \
     _Pragma("clang diagnostic ignored \"-Wunterminated-string-initialization\"") \
@@ -556,7 +559,7 @@ extern "C" {
     _Pragma("clang diagnostic ignored \"-Wcast-align\"")
 #define __$suppress_cast_qual() \
     _Pragma("clang diagnostic ignored \"-Wcast-qual\"")
-#if defined(__clang__) && (__clang_major__ >= 18)
+#if comp_has_warning("-Wunterminated-string-initialization")
 #define __$suppress_unterminated_string_initialization() \
     _Pragma("clang diagnostic ignored \"-Wunterminated-string-initialization\"")
 #else

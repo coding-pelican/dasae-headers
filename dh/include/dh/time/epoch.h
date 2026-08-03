@@ -12,31 +12,47 @@ extern "C" {
 /*========== Macros and Declarations ========================================*/
 
 /*--- Epoch Offsets ---*/
-#define time_epoch_posix __comp_const__time_epoch_posix
-#define time_epoch_dos __comp_const__time_epoch_dos
-#define time_epoch_ios __comp_const__time_epoch_ios
+#define time_epoch_clr __comp_const__time_epoch_clr
+#define time_epoch_windows __comp_const__time_epoch_windows
 #define time_epoch_openvms __comp_const__time_epoch_openvms
 #define time_epoch_zos __comp_const__time_epoch_zos
-#define time_epoch_windows __comp_const__time_epoch_windows
-#define time_epoch_amiga __comp_const__time_epoch_amiga
 #define time_epoch_pickos __comp_const__time_epoch_pickos
+#define time_epoch_posix __comp_const__time_epoch_posix
+#define time_epoch_amiga __comp_const__time_epoch_amiga
+#define time_epoch_dos __comp_const__time_epoch_dos
 #define time_epoch_gps __comp_const__time_epoch_gps
-#define time_epoch_clr __comp_const__time_epoch_clr
+#define time_epoch_ios __comp_const__time_epoch_ios
 
 /*--- Epoch Aliases ---*/
-#define time_epoch_unix time_epoch_posix
-#define time_epoch_android time_epoch_posix
-#define time_epoch_os2 time_epoch_dos
-#define time_epoch_bios time_epoch_dos
-#define time_epoch_vfat time_epoch_dos
+#define time_epoch_go time_epoch_clr
 #define time_epoch_ntfs time_epoch_windows
 #define time_epoch_ntp time_epoch_zos
 #define time_epoch_jbase time_epoch_pickos
+#define time_epoch_unix time_epoch_posix
+#define time_epoch_android time_epoch_posix
 #define time_epoch_aros time_epoch_amiga
 #define time_epoch_morphos time_epoch_amiga
+#define time_epoch_os2 time_epoch_dos
+#define time_epoch_bios time_epoch_dos
+#define time_epoch_vfat time_epoch_dos
 #define time_epoch_brew time_epoch_gps
 #define time_epoch_atsc time_epoch_gps
-#define time_epoch_go time_epoch_clr
+
+/*--- Language Milestones ---*/
+/// Year of C's most significant early development.
+#define time_epoch_c_year __comp_const__time_epoch_c_year
+/// Year work on C++ began.
+#define time_epoch_cpp_year __comp_const__time_epoch_cpp_year
+/// Year the first widely distributed C# implementation appeared.
+#define time_epoch_csharp_year __comp_const__time_epoch_csharp_year
+/// Year Rust 1.0 was released.
+#define time_epoch_rust_year __comp_const__time_epoch_rust_year
+/// Year Zig published its first beta release.
+#define time_epoch_zig_year __comp_const__time_epoch_zig_year
+
+/*--- Project Epochs ---*/
+/// Minute in which the commit that marked dh's eureka moment was authored.
+#define time_epoch_dh_eureka __comp_const__time_epoch_dh_eureka
 
 /*--- Calendar Constants ---*/
 #define time_epoch_year __comp_const__time_epoch_year
@@ -148,18 +164,26 @@ $static fn_((time_epoch_Secs_daySecs(time_epoch_Secs self))(time_epoch_DaySecs))
 
 /*========== Macros and Definitions =========================================*/
 
-#define __comp_const__time_epoch_posix (i64_(0ll))
-#define __comp_const__time_epoch_dos (i64_(315, 532, 800ll))
-#define __comp_const__time_epoch_ios (i64_(978, 307, 200ll))
+#define __comp_const__time_epoch_clr (i64_(-62, 135, 769, 600ll))
+#define __comp_const__time_epoch_windows (i64_(-11, 644, 473, 600ll))
 #define __comp_const__time_epoch_openvms (i64_(-3, 506, 716, 800ll))
 #define __comp_const__time_epoch_zos (i64_(-2, 208, 988, 800ll))
-#define __comp_const__time_epoch_windows (i64_(-11, 644, 473, 600ll))
-#define __comp_const__time_epoch_amiga (i64_(252, 460, 800ll))
 #define __comp_const__time_epoch_pickos (i64_(-63, 244, 800ll))
+#define __comp_const__time_epoch_posix (i64_(0ll))
+#define __comp_const__time_epoch_amiga (i64_(252, 460, 800ll))
+#define __comp_const__time_epoch_dos (i64_(315, 532, 800ll))
 #define __comp_const__time_epoch_gps (i64_(315, 964, 800ll))
-#define __comp_const__time_epoch_clr (i64_(-62, 135, 769, 600ll))
+#define __comp_const__time_epoch_ios (i64_(978, 307, 200ll))
 
-#define __comp_const__time_epoch_year (time_epoch_Year)(1970u)
+#define __comp_const__time_epoch_dh_eureka (i64_(1, 729, 048, 500ll))
+
+#define __comp_const__time_epoch_c_year (n$((time_epoch_Year)(1972u)))
+#define __comp_const__time_epoch_cpp_year (n$((time_epoch_Year)(1979u)))
+#define __comp_const__time_epoch_csharp_year (n$((time_epoch_Year)(2000u)))
+#define __comp_const__time_epoch_rust_year (n$((time_epoch_Year)(2015u)))
+#define __comp_const__time_epoch_zig_year (n$((time_epoch_Year)(2017u)))
+
+#define __comp_const__time_epoch_year (n$((time_epoch_Year)(1970u)))
 
 #if in_analysis_active_only || in_comptime
 fn_((time_epoch_isLeapYear(time_epoch_Year year))(bool)) {

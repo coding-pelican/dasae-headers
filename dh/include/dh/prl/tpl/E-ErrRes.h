@@ -148,7 +148,11 @@ typedef union E$Void E$Void, E$void;
     (*((const TypeOf(_$TargetErrExpr)*)(_$p_err)))
 #define __expr__E__castForReturn(_$TargetErrExpr, _$val...) ({ \
     let __err = (_$val); \
-    _Generic((_$TargetErrExpr), EAny: __expr__E__asAny(&__err), General_E: __expr__E__asGeneral(&__err), default: __expr__E__reinterpretAs(_$TargetErrExpr, &__err)); \
+    T_switch$((TypeOf(_$TargetErrExpr))( \
+        T_case$((EAny)(__expr__E__asAny(&__err))), \
+        T_case$((General_E)(__expr__E__asGeneral(&__err))), \
+        T_default_(__expr__E__reinterpretAs(_$TargetErrExpr, &__err)) \
+    )); \
 })
 #define return_err(_$val...) ( \
     $debug_point ETrace_captureFrame(), \
@@ -232,14 +236,13 @@ typedef union E$Void E$Void, E$void;
             /* claim_assert(__result.payload.err.ctx != 0); */ \
             /* claim_assert_nonnull(__result.payload.err.vt); */ \
             let _$Payload_Capture = __result.payload.err; \
-            __result.payload.ok = _Generic( \
-                TypeOfUnqual(_$DefaultExpr_OR_Body), \
-                void: ({ \
+            __result.payload.ok = T_switch$((TypeOf(_$DefaultExpr_OR_Body))( \
+                T_case$((void)({ \
                     _$DefaultExpr_OR_Body; \
                     l0$((TypeOf(__result.payload.ok))); \
-                }), \
-                default: _$DefaultExpr_OR_Body \
-            ); \
+                })), \
+                T_default_(_$DefaultExpr_OR_Body) \
+            )); \
             ETrace_reset(); \
         } \
         __result.payload.ok; \

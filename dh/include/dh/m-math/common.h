@@ -203,34 +203,32 @@ errset_((math_E)(
 #define VAL_math_nan math_f64_nan
 #define VAL_math_inf math_f64_inf
 
-#define VAL_math_limit_min$(TScalar) _Generic( \
-    (TScalar)0, \
-    u8: u8_limit_min, \
-    u16: u16_limit_min, \
-    u32: u32_limit_min, \
-    u64: u64_limit_min, \
-    i8: i8_limit_min, \
-    i16: i16_limit_min, \
-    i32: i32_limit_min, \
-    i64: i64_limit_min, \
-    f32: f32_limit_min, \
-    f64: f64_limit_min, \
-    default: 0 \
-)
-#define VAL_math_limit_max$(TScalar) _Generic( \
-    (TScalar)0, \
-    u8: u8_limit_max, \
-    u16: u16_limit_max, \
-    u32: u32_limit_max, \
-    u64: u64_limit_max, \
-    i8: i8_limit_max, \
-    i16: i16_limit_max, \
-    i32: i32_limit_max, \
-    i64: i64_limit_max, \
-    f32: f32_limit_max, \
-    f64: f64_limit_max, \
-    default: 0 \
-)
+#define VAL_math_limit_min$(TScalar) T_switch$((TScalar)( \
+    T_case$((u8)(u8_limit_min)), \
+    T_case$((u16)(u16_limit_min)), \
+    T_case$((u32)(u32_limit_min)), \
+    T_case$((u64)(u64_limit_min)), \
+    T_case$((i8)(i8_limit_min)), \
+    T_case$((i16)(i16_limit_min)), \
+    T_case$((i32)(i32_limit_min)), \
+    T_case$((i64)(i64_limit_min)), \
+    T_case$((f32)(f32_limit_min)), \
+    T_case$((f64)(f64_limit_min)), \
+    T_default_(0) \
+))
+#define VAL_math_limit_max$(TScalar) T_switch$((TScalar)( \
+    T_case$((u8)(u8_limit_max)), \
+    T_case$((u16)(u16_limit_max)), \
+    T_case$((u32)(u32_limit_max)), \
+    T_case$((u64)(u64_limit_max)), \
+    T_case$((i8)(i8_limit_max)), \
+    T_case$((i16)(i16_limit_max)), \
+    T_case$((i32)(i32_limit_max)), \
+    T_case$((i64)(i64_limit_max)), \
+    T_case$((f32)(f32_limit_max)), \
+    T_case$((f64)(f64_limit_max)), \
+    T_default_(0) \
+))
 
 #define VAL_math_f32_pi as$(f32)(math_pi)
 #define VAL_math_f32_tau as$(f32)(math_tau)
