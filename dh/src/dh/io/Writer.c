@@ -16,7 +16,7 @@ let_(io_Writer_noop, io_Writer) = {
 fn_((io_Writer_noWrite(P$raw ctx, S_const$u8 bytes))(io_WriteE$usize) $scope) {
     let_ignore = ensureNonnull(ctx);
     let_ignore = ensureNonnullS(bytes);
-    return_ok(0);
+    return_ok(bytes.len);
 } $unscoped(fn);
 
 $static var_(io_Writer__ctx_failing, Void) $undefined_static;

@@ -30,6 +30,12 @@ $static fn_((test_io_ChunkWriter_writer(test_io_ChunkWriter* self))(io_Writer)) 
     };
 };
 
+TEST_fn_("io/Writer: noop consumes every discarded byte" $scope) {
+    let written = try_(io_Writer_write(io_Writer_noop, u8_l("discarded")));
+    try_(TEST_expect(written == u8_l("discarded").len));
+    try_(io_Writer_writeBytes(io_Writer_noop, u8_l("discarded")));
+} $unscoped(TEST_fn);
+
 TEST_fn_("io/Writer: writeBytes loops across short writes" $scope) {
     var_(out, A$$(6, u8)) $undefined;
     var writer_impl = (test_io_ChunkWriter){
