@@ -67,6 +67,7 @@ let_(io_std_failing, io_std_Self) = {
     .vtbl = &io_std_VTbl_failing,
 };
 
+/* TODO: Using `thrd_LazyLock` */
 fn_((io_std_direct(void))(io_std_direct_E$io_std_Self) $scope) {
     pp_if_(pp_or(plat_is_windows, plat_is_posix))(
         pp_then_({

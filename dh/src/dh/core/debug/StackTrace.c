@@ -72,6 +72,7 @@ $static let debug_StackTrace__print = pp_if_(plat_is_windows)(
 
 /*========== External Definitions ===========================================*/
 
+/* TODO: Using `thrd_LazyLock` */
 fn_((debug_StackTrace_setupCrashHandler(void))(void)) { debug_only(
     $static var_(s_setted_up, bool) = false;
     if (!s_setted_up) {

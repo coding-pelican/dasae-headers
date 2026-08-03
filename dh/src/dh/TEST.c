@@ -11,6 +11,7 @@
 
 T_use$((TEST_Unit)(O, E));
 T_use$((TEST_Unit)(ArrList_init, ArrList_fini, ArrList_append));
+/* TODO: Using `thrd_LazyLock` */
 fn_((TEST_Framework_instance(void))(TEST_Framework*)) {
     /* Singleton instance */
     $static var_(heap, heap_Sys) $undefined_static;

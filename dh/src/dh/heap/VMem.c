@@ -22,6 +22,7 @@ $static fn_((heap_VMem_system__release(const heap_VMem_Ctx* ctx, P$raw addr, usi
 
 /*========== External Definitions ===========================================*/
 
+/* TODO: Using `thrd_LazyLock` */
 fn_((heap_VMem_system(void))(heap_VMem_E$heap_VMem) $scope) {
 #if plat_is_windows || plat_is_linux || plat_is_darwin
     $static var_(inner, Void) $undefined_static;

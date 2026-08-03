@@ -16,6 +16,7 @@ $static fn_((heap_VMap__system_remap(const heap_VMap_Ctx* ctx, P$raw addr, usize
 
 /*========== External Definitions ===========================================*/
 
+/* TODO: Using `thrd_LazyLock` */
 fn_((heap_VMap_system(void))(heap_VMap_E$heap_VMap) $scope) {
 #if plat_is_windows || plat_is_linux || plat_is_darwin
     $static var_(inner, Void) $undefined_static;
