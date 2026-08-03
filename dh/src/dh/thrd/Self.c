@@ -397,7 +397,7 @@ fn_((thrd__pthread_handle(thrd_Self self))(thrd_Handle)) {
 };
 
 fn_((thrd__pthread_yield(void))(thrd_E$void) $scope) {
-    if (sched_yield() != 0) return_err(E_cause$thrd_SystemResources());
+    if (sched_yield() != 0) return_err(E_cause$thrd_SysResrcs());
     return_ok({});
 } $unscoped(fn);
 
@@ -420,10 +420,10 @@ fn_((thrd__pthread_cpuCount(void))(thrd_E$usize) $scope) {
     var_(count, i32) = 0;
     var_(len, usize) = sizeOf$(i32);
     if (sysctlbyname("hw.logicalcpu", &count, &len, null, 0) == 0) return_ok(as$(usize)(count));
-    return_err(E_cause$thrd_SystemResources());
+    return_err(E_cause$thrd_SysResrcs());
 #else
     let count = sysconf(_SC_NPROCESSORS_ONLN);
-    if (count < 1) return_err(E_cause$thrd_SystemResources());
+    if (count < 1) return_err(E_cause$thrd_SysResrcs());
     return_ok(as$(usize)(count));
 #endif
 } $unscoped(fn);
@@ -467,7 +467,7 @@ fn_((thrd__pthread_spawn(
     var_(handle, pthread_t) = 0;
     if (pthread_create(&handle, &attr, thrd__pthread_entry, start) != 0) {
         thrd__startFree(start);
-        return_err(E_cause$thrd_SystemResources());
+        return_err(E_cause$thrd_SysResrcs());
     }
     return_ok({
         .handle = handle,
@@ -556,7 +556,7 @@ fn_((thrd__windows_spawn(
     );
     if (!handle) {
         thrd__startFree(start);
-        return_err(E_cause$thrd_SystemResources());
+        return_err(E_cause$thrd_SysResrcs());
     }
     ResumeThread(handle);
     return_ok({
@@ -646,7 +646,7 @@ fn_((thrd__linux_handle(thrd_Self self))(thrd_Handle)) {
 
 $attr($maybe_unused)
 fn_((thrd__linux_yield(void))(thrd_E$void) $scope) {
-    if (sys_call_linux_sched_yield() != 0) return_err(E_cause$thrd_SystemResources());
+    if (sys_call_linux_sched_yield() != 0) return_err(E_cause$thrd_SysResrcs());
     return_ok({});
 } $unscoped(fn);
 
@@ -657,7 +657,7 @@ fn_((thrd__linux_currId(void))(thrd_Id)) {
 fn_((thrd__linux_cpuCount(void))(thrd_E$usize) $scope) {
     var_(cpu_set, thrd__linux_CpuSet) = cleared();
     thrd__linux_cpuSetZero(&cpu_set);
-    if (sys_call_linux_sched_getaffinity(0, sizeOf$(TypeOf(cpu_set)), &cpu_set) != 0) return_err(E_cause$thrd_SystemResources());
+    if (sys_call_linux_sched_getaffinity(0, sizeOf$(TypeOf(cpu_set)), &cpu_set) != 0) return_err(E_cause$thrd_SysResrcs());
     return_ok(thrd__linux_cpuSetCount(&cpu_set));
 } $unscoped(fn);
 
@@ -699,10 +699,10 @@ fn_((thrd__linux_spawn(
     let map_size = page_size + stack_size + meta_size;
     let vmem = catch_((heap_VMem_system())($ignore, return_err(E_cause$thrd_Unsupported())));
     let map_base = orelse_((heap_VMem_reserve(vmem, none$((O$P$raw)), map_size))(null));
-    if (map_base == null) return_err(E_cause$thrd_SystemResources());
+    if (map_base == null) return_err(E_cause$thrd_SysResrcs());
     errdefer_($ignore, let_ignore = heap_VMem_release(vmem, map_base, map_size));
     let stack_start = as$(u8*)(map_base) + page_size;
-    if (!heap_VMem_commit(vmem, stack_start, stack_size + meta_size)) return_err(E_cause$thrd_SystemResources());
+    if (!heap_VMem_commit(vmem, stack_start, stack_size + meta_size)) return_err(E_cause$thrd_SysResrcs());
     let meta = intToPtr$((thrd__linux_Meta*)(ptrToInt(map_base) + page_size + stack_size));
     *meta = (thrd__linux_Meta){
         .clsr = clsr,
@@ -723,7 +723,7 @@ fn_((thrd__linux_spawn(
         null,
         ptrQualCast$((i32*)(&meta->child_tid.raw))
     );
-    if (tid == -1) return_err(E_cause$thrd_SystemResources());
+    if (tid == -1) return_err(E_cause$thrd_SysResrcs());
     return_ok({
         .handle = as$(thrd_Handle)(meta->parent_tid),
         .clsr = clsr,

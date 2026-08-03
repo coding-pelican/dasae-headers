@@ -16,8 +16,9 @@ extern "C" {
 
 #include "proc/Child.h"
 #include "proc/Self.h"
-
 #include "proc/Mem.h"
+
+#include "proc/NativeStrList.h"
 
 #if defined(__cplusplus)
 } /* extern "C" */

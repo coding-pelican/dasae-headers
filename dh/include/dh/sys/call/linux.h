@@ -46,7 +46,7 @@ typedef struct sys_call_linux_sysinfo {
     var_(totalhigh, usize);
     var_(freehigh, usize);
     var_(mem_unit, u32);
-    var_(_f, A$$(pp_if_(arch_bits_is_64bit)(pp_then_(0), pp_else_(8)), u8));
+    var_(_f, A$$(pp_if_(arch_bits_is_64bit)( pp_then_(0), pp_else_(8) ), u8));
 } sys_call_linux_sysinfo;
 
 typedef struct sys_call_linux_rlimit64 {
@@ -1722,7 +1722,7 @@ fn_((sys_call_linux_syscall6(sys_call_linux_word n, sys_call_linux_word a1, sys_
 };
 
 fn_((sys_call_linux_syscall_isErr(sys_call_linux_word rc))(bool)) {
-    return rc < 0 && -4095 <= rc;
+    return -4095 <= rc && rc < 0;
 };
 
 fn_((sys_call_linux_syscall_err(sys_call_linux_word rc))(sys_call_linux_word)) {

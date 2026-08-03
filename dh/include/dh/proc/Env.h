@@ -24,14 +24,16 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-errset_((proc_Env_E)() $union_errset_(proc_ResourceLimitReached_E));
+errset_((proc_Env_E)() $union_errset_(proc_ResrcLimitReachedE));
 T_use_E$($set(proc_Env_E)(O$S_const$u8));
 
 T_alias$((proc_Env_VTbl)(struct proc_Env_VTbl));
-T_alias$((proc_Env)(struct proc_Env {
+$extern let_(proc_Env_VTbl_empty, proc_Env_VTbl);
+
+struct proc_Env {
     var_(ctx, P$raw);
     var_(vtbl, P_const$$(proc_Env_VTbl));
-}));
+};
 T_use_prl$(proc_Env);
 $attr($inline_always)
 $static fn_((proc_Env_isValid(proc_Env self))(bool));
@@ -56,12 +58,14 @@ $extern fn_((proc_Env_Iter_next(proc_Env_Iter* self, S$u8 scratch))(proc_Env_E$O
 
 /**
  * Iterator providers must leave `idx` and `offset` unchanged when returning
- * `proc_ResourceLimitReached`, so callers can retry with a larger scratch slice.
+ * `proc_ResrcLimitReached`, so callers can retry with a larger scratch slice.
  */
 struct proc_Env_VTbl {
     $attr($must_check)
     fn_(((*nextFn)(P$raw ctx, usize* idx, usize* offset, S$u8 scratch))(proc_Env_E$O$S_const$u8));
 };
+$attr($must_check)
+$extern fn_((proc_Env_VTbl_emptyNext(P$raw ctx, usize* idx, usize* offset, S$u8 scratch))(proc_Env_E$O$S_const$u8));
 
 /*========== Macros and Definitions =========================================*/
 

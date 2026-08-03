@@ -27,7 +27,7 @@ errset_((net_E)(
     net_NotConnected,
     net_ProtocolUnsupported,
     net_SocketModeUnsupported,
-    net_SystemResources,
+    net_SysResrcs,
     net_TimedOut,
     net_Unsupported,
     net_WouldBlock

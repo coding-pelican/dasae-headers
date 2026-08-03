@@ -85,11 +85,11 @@ TEST_fn_("io/PTY: spawn session waits for child termination" $guard) {
         (proc_Spawn_Opts){
             .argv = A_ref$((S$S_const$u8)(argv)),
             .env = none(),
-            .cwd = union_of((proc_Spawn_CWD_inherit){}),
-            .std_in = union_of((proc_Spawn_StdIO_ignore){}),
-            .std_out = union_of((proc_Spawn_StdIO_ignore){}),
-            .std_err = union_of((proc_Spawn_StdIO_ignore){}),
-            .expand_arg0 = proc_ArgExpsn_no_expand,
+            .cwd = union_of((proc_cmd_CWD_inherit){}),
+            .std_in = union_of((proc_cmd_StdIO_ignore){}),
+            .std_out = union_of((proc_cmd_StdIO_ignore){}),
+            .std_err = union_of((proc_cmd_StdIO_ignore){}),
+            .expand_arg0 = proc_cmd_ArgExpsn_no_expand,
             .start_suspended = false,
             .create_no_window = true,
         }

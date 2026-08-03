@@ -108,6 +108,11 @@ extern "C" {
      * @brief Does nothing \
      */ \
     __stmt__$do_nothing
+#define $noop \
+    /** \
+     * @brief Does nothing \
+     */ \
+    __stmt__$noop
 
 #define $used(_$Expr... /*void*/) \
     /** \
@@ -598,6 +603,8 @@ extern "C" {
     let_ignore
 #define __stmt__let_ignore $maybe_unused let pp_uniqTok(ignored)
 #define __stmt__$do_nothing \
+    {}
+#define __stmt__$noop \
     {}
 
 #define __attr__$used(_$Expr...) _$Expr

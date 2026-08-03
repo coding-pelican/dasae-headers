@@ -120,9 +120,9 @@ fn_((main(proc_Entry entry))(E$void) $guard) {
         .main_domain = u8_l("Game Engine Development"),
 
         .core_skills = l$((SkillSet){
-            .languages = NT_s$(8, Skill, { own, c, cpp, csharp, zig, rust, go, python }).as_const,
-            .engines = NT_s$(3, Skill, { own, unity, godot }).as_const,
-            .tools = NT_s$(3, Skill, { own, git, vscode }).as_const,
+            .languages = NT_s$((8, Skill){ own, c, cpp, csharp, zig, rust, go, python }).as_const,
+            .engines = NT_s$((3, Skill){ own, unity, godot }).as_const,
+            .tools = NT_s$((3, Skill){ own, git, vscode }).as_const,
         }),
 
         .special_skills = u8_l(

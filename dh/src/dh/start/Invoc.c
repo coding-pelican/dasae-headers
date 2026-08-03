@@ -1,13 +1,12 @@
 #include "dh/start/Invoc.h"
 #include "dh/mem/common.h"
 
-#if plat_is_windows
-#include "dh/sys/api/windows/proc.h"
-#endif /* plat_is_windows */
+/*========== Internal Declarations ==========================================*/
 
-$static fn_((start_Invoc__preopens(void))(proc_Preopens)) {
-    return catch_((proc_Preopens_direct())($ignore, proc_Preopens_empty));
-};
+$attr($inline_always)
+$static fn_((start_Invoc__preopens(void))(proc_Preopens));
+
+/*========== External Definitions ===========================================*/
 
 fn_((start_Invoc_initArgs(
     start_Invoc* self,
@@ -52,19 +51,25 @@ fn_((start_Invoc_initArgsEnvZ(
     );
 };
 #if plat_is_windows
+#include "dh/sys/api/windows/proc.h"
 fn_((start_Invoc_initWin32(start_Invoc* self))(void)) {
     claim_assert_nonnull(self);
     let cmd_line_ptr = ensureNonnull(as$(P_const$u16)(GetCommandLineW()));
-    var_(command_line_len, usize) = 0;
-    while (*P_at((cmd_line_ptr)[command_line_len]) != 0) ++command_line_len;
+    let command_line_len = mem_lenZ0(u_anyP(cmd_line_ptr));
 
     let env_ptr = as$(P_const$u16)(GetEnvironmentStringsW());
     var_(env, start_Invoc_Env) = start_Invoc_Env_initEmpty();
     var_(owned_env_block, O$S_const$u16) = none();
     if (env_ptr != null) {
         var_(len, usize) = 0;
-        while (!(*P_at((env_ptr)[len]) == 0 && *P_at((env_ptr)[len + 1]) == 0)) ++len;
-        len += 2;
+        while (true) {
+            let item_len = mem_lenZ0(u_anyP(P_at((env_ptr)[len])));
+            len += item_len + 1;
+            if (item_len == 0) {
+                if (len == 1) ++len;
+                break;
+            }
+        }
         let block = P_prefix$((S_const$u16)(env_ptr)(len));
         env = start_Invoc_Env_initWTF16(block);
         asg_l((&owned_env_block)(some(block)));
@@ -104,14 +109,17 @@ fn_((start_Invoc_fini(start_Invoc* self))(void)) {
 };
 
 fn_((start_Invoc_args(start_Invoc* self))(proc_Args)) {
-    claim_assert_nonnull(self);
-    return start_Invoc_Args_self(&self->args);
+    return start_Invoc_Args_self(&ensureNonnull(self)->args);
 };
 fn_((start_Invoc_env(start_Invoc* self))(proc_Env)) {
-    claim_assert_nonnull(self);
-    return start_Invoc_Env_self(&self->env);
+    return start_Invoc_Env_self(&ensureNonnull(self)->env);
 };
 fn_((start_Invoc_preopens(start_Invoc* self))(proc_Preopens)) {
-    claim_assert_nonnull(self);
-    return proc_Preopens_ensureValid(self->preopens);
+    return proc_Preopens_ensureValid(ensureNonnull(self)->preopens);
+};
+
+/*========== Internal Definitions ===========================================*/
+
+fn_((start_Invoc__preopens(void))(proc_Preopens)) {
+    return catch_((proc_Preopens_direct())($ignore, proc_Preopens_empty));
 };

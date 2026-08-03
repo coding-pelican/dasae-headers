@@ -2,9 +2,12 @@
 #include "dh/io/common.h"
 #include "dh/io/Writer.h"
 
-$static fn_((io_stream__std(void))(io_std_Self)) {
-    return catch_((io_std_direct())($ignore, io_std_noop));
-};
+/*========== Internal Declarations ==========================================*/
+
+$attr($inline_always)
+$static fn_((io_stream__std(void))(io_std_Self));
+
+/*========== External Definitions ===========================================*/
 
 fn_((io_stream_lf(void))(void) $guard) {
     let locked = io_std_lockOut(io_stream__std());
@@ -77,3 +80,9 @@ fn_((io_stream_eprintlnVaArgs(S_const$u8 fmt, va_list va_args))(void) $guard) {
     defer_(io_Locked_Writer_unlock(locked));
     let_ignore = catch_((io_Writer_printlnVaArgs(io_Locked_writer(locked), fmt, va_args))($ignore, $do_nothing));
 } $unguarded(fn);
+
+/*========== Internal Definitions ===========================================*/
+
+fn_((io_stream__std(void))(io_std_Self)) {
+    return catch_((io_std_direct())($ignore, io_std_noop));
+};

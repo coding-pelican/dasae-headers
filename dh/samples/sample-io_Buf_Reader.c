@@ -18,7 +18,7 @@ fn_((main(proc_Entry entry))(E$void) $scope) {
     io_stream_print(u8_l("Line: '{:s}'\n"), line);
 
     let num = try_(fmt_parse$i64(line.as_const, 10));
-    io_stream_print(u8_l("Number: '{:dll}'\n"), num);
+    io_stream_print(u8_l("Number: '{:dl}'\n"), num);
 
     return_ok({});
 } $unscoped(fn);

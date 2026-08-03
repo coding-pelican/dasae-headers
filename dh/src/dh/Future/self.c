@@ -1,6 +1,8 @@
 #include "dh/Future/self.h"
 #include "dh/Sched/self.h"
 
+/*========== External Definitions ===========================================*/
+
 $static fn_((Future__await(Future$raw* self, Sched sched, TypeInfo type))(u_P_const$raw));
 fn_((Future_await(Future$raw* self, Sched sched, u_V$raw ret_mem))(u_V$raw)) {
     return u_deref(u_memmove(ret_mem.ref, Future__await(self, sched, ret_mem.type)));

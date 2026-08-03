@@ -131,7 +131,7 @@ fn_((thrd_Cond__pthread_waitFor(
 #else
     if (clock_gettime(CLOCK_MONOTONIC, &abs_ts) != 0) {
 #endif
-        return_err(E_cause$thrd_SystemResources());
+        return_err(E_cause$thrd_SysResrcs());
     }
     // Add duration to get absolute deadline
     abs_ts.tv_sec += as$(time_t)(duration.secs);

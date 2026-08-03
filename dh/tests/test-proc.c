@@ -8,6 +8,11 @@ TEST_fn_("proc: direct capability exposes process paths" $guard) {
     let self = try_(proc_direct());
     try_(TEST_expect(proc_isValid(self)));
 
+    let exe_file = try_(proc_openExe(self, fs_File_OpenFlags_default));
+    defer_(fs_File_close(exe_file));
+    let exe_stat = try_(fs_File_stat(exe_file));
+    try_(TEST_expect(exe_stat.kind == fs_Kind_file));
+
     var_(path_mem, A$$(2048, u8)) $undefined;
     let exe = try_(proc_exePath(self, A_ref$((S$u8)(path_mem))));
     try_(TEST_expect(exe.len != 0));
@@ -65,15 +70,15 @@ TEST_fn_("proc: child operations dispatch through proc self" $guard) {
     try_(TEST_expect(calls == 2));
 } $unguarded(TEST_fn);
 
-$static fn_((test_proc__cmd(S$S_const$u8 argv, proc_Spawn_StdIO std_out))(proc_Spawn_Opts)) {
+$static fn_((test_proc__cmd(S$S_const$u8 argv, proc_cmd_StdIO std_out))(proc_Spawn_Opts)) {
     return (proc_Spawn_Opts){
         .argv = argv,
         .env = none(),
-        .cwd = union_of((proc_Spawn_CWD_inherit){}),
-        .std_in = union_of((proc_Spawn_StdIO_ignore){}),
+        .cwd = union_of((proc_cmd_CWD_inherit){}),
+        .std_in = union_of((proc_cmd_StdIO_ignore){}),
         .std_out = std_out,
-        .std_err = union_of((proc_Spawn_StdIO_ignore){}),
-        .expand_arg0 = proc_ArgExpsn_no_expand,
+        .std_err = union_of((proc_cmd_StdIO_ignore){}),
+        .expand_arg0 = proc_cmd_ArgExpsn_no_expand,
         .start_suspended = false,
         .create_no_window = true,
     };
@@ -100,7 +105,7 @@ TEST_fn_("proc: spawn and wait report child exit code" $guard) {
         )),
         u8_l("exit 7"),
     });
-    let_(std_out, proc_Spawn_StdIO) = union_of((proc_Spawn_StdIO_ignore){});
+    let_(std_out, proc_cmd_StdIO) = union_of((proc_cmd_StdIO_ignore){});
     var child = try_(proc_spawn(
         self, heap_Sys_alctr(&heap),
         proc_Env_empty, test_proc__cmd(A_ref$((S$S_const$u8)(argv)), std_out)
@@ -137,7 +142,7 @@ TEST_fn_("proc: pipe output contains child bytes" $guard) {
             })))
         )),
     });
-    let_(std_out, proc_Spawn_StdIO) = union_of((proc_Spawn_StdIO_pipe){});
+    let_(std_out, proc_cmd_StdIO) = union_of((proc_cmd_StdIO_pipe){});
     var child = try_(proc_spawn(
         self,
         heap_Sys_alctr(&heap),
@@ -171,7 +176,7 @@ TEST_fn_("proc: empty command is rejected before spawn" $guard) {
     defer_(heap_Sys_fini(&heap));
     let self = try_(proc_direct());
     var_(argv, A$$(0, S_const$u8)) = {};
-    let_(std_out, proc_Spawn_StdIO) = union_of((proc_Spawn_StdIO_ignore){});
+    let_(std_out, proc_cmd_StdIO) = union_of((proc_cmd_StdIO_ignore){});
     let rejected = eval_(bool $scope)(catch_((proc_spawn(
         self, heap_Sys_alctr(&heap),
         proc_Env_empty, test_proc__cmd(A_ref$((S$S_const$u8)(argv)), std_out)
@@ -191,27 +196,25 @@ TEST_fn_("proc: spawn and replace options expose operation-local defaults" $scop
 
     try_(TEST_expect(spawn.argv.len == 1));
     try_(TEST_expect(isNone(spawn.env)));
-    try_(TEST_expect(matches(spawn.cwd, proc_Spawn_CWD_inherit)));
-    try_(TEST_expect(matches(spawn.std_in, proc_Spawn_StdIO_inherit)));
-    try_(TEST_expect(matches(spawn.std_out, proc_Spawn_StdIO_inherit)));
-    try_(TEST_expect(matches(spawn.std_err, proc_Spawn_StdIO_inherit)));
-    try_(TEST_expect(spawn.expand_arg0 == proc_ArgExpsn_no_expand));
+    try_(TEST_expect(matches(spawn.cwd, proc_cmd_CWD_inherit)));
+    try_(TEST_expect(matches(spawn.std_in, proc_cmd_StdIO_inherit)));
+    try_(TEST_expect(matches(spawn.std_out, proc_cmd_StdIO_inherit)));
+    try_(TEST_expect(matches(spawn.std_err, proc_cmd_StdIO_inherit)));
+    try_(TEST_expect(spawn.expand_arg0 == proc_cmd_ArgExpsn_no_expand));
     try_(TEST_expect(!spawn.start_suspended));
     try_(TEST_expect(!spawn.create_no_window));
 
     try_(TEST_expect(replace.argv.len == 1));
     try_(TEST_expect(isNone(replace.env)));
-    try_(TEST_expect(replace.expand_arg0 == proc_ArgExpsn_no_expand));
+    try_(TEST_expect(replace.expand_arg0 == proc_cmd_ArgExpsn_no_expand));
 
-    try_(TEST_expect(proc_canSpawn == bool_(pp_or(plat_is_windows, plat_is_linux))));
-    try_(TEST_expect(proc_canReplace == bool_(plat_is_linux)));
 } $unscoped(TEST_fn);
 
 TEST_fn_("proc: direct user lookup resolves root on POSIX systems" $scope) {
     pp_if_(plat_is_linux)(
         pp_then_(
             let self = try_(proc_direct());
-            let info = try_(proc_getUserInfo(self, u8_l("root")));
+            let info = try_(proc_userInfo(self, u8_l("root")));
             try_(TEST_expect(info.uid == 0));
             try_(TEST_expect(info.gid == 0));
         ),
@@ -223,7 +226,7 @@ TEST_fn_("proc: direct user lookup resolves root on POSIX systems" $scope) {
 
 TEST_fn_("proc: direct base address identifies the current image" $scope) {
     let self = try_(proc_direct());
-    let address = catch_((proc_getBaseAddress(self))(
+    let address = catch_((proc_baseAddr(self))(
         $ignore, return_ok(try_(TEST_skipMsg(u8_l("base address is unavailable"))))
     ));
     try_(TEST_expect(address != 0));
@@ -240,7 +243,7 @@ TEST_fn_("proc: run collects stdout and stderr concurrently" $guard) {
                 u8_l("cmd.exe"),
                 u8_l("/D"),
                 u8_l("/C"),
-                u8_l("<nul set /p=proc-out & <nul set /p=proc-err 1>&2")
+                u8_l("<nul set /p=proc-out&1>&2<nul set /p=proc-err&exit /b 0")
             )),
             pp_case_((plat_type_linux)(
                 u8_l("/bin/sh"),
@@ -256,8 +259,9 @@ TEST_fn_("proc: run collects stdout and stderr concurrently" $guard) {
     var opts = proc_Run_Opts_default(A_ref$((S$S_const$u8)(argv)));
     opts.stdout_limit = 64;
     opts.stderr_limit = 64;
-    var result = try_(proc_run(self, gpa, proc_Env_empty, opts));
-    defer_(proc_Run_Res_fini(&result, gpa));
+    let result = try_(proc_run(self, gpa, proc_Env_empty, opts));
+    defer_(mem_Alctr_freeBytes($trace gpa, result.out));
+    defer_(mem_Alctr_freeBytes($trace gpa, result.err));
 
     try_(TEST_expect(matches(result.term, proc_Child_Trm_exited)));
     try_(TEST_expect(union_to((result.term)(proc_Child_Trm_exited)) == 0));

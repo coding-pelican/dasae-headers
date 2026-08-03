@@ -7,59 +7,29 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "dh/ArrList.h"
 #include "dh/proc/Self.h"
+#include "dh/proc/NativeStrList.h"
 
 /*========== Macros and Declarations ========================================*/
 
-T_alias$((proc__NativeStrs)(ArrList));
-T_use_E$($set(mem_E)(proc__NativeStrs));
-T_use_E$($set(proc_Spawn_E)(proc__NativeStrs));
+$attr($must_check)
+$extern fn_((proc__growScratch(S$u8* self, mem_Alctr gpa))(mem_E$void));
+
+errset_((proc__cmdLineWTF16_E)() $union_errset_(
+    mem_E,
+    proc_InvalidNameE
+));
+T_use_E$($set(proc__cmdLineWTF16_E)(S$u16));
+$attr($must_check)
+$extern fn_((proc__cmdLineWTF16(mem_Alctr gpa, S$S_const$u8 argv))(proc__cmdLineWTF16_E$S$u16));
 
 errset_((proc__envWTF16_E)() $union_errset_(
     mem_E,
-    proc_InvalidName_E
+    proc_InvalidNameE
 ));
 T_use_E$($set(proc__envWTF16_E)(S$u16));
-
 $attr($must_check)
-$extern fn_((proc__growScratch(
-    S$u8* self,
-    mem_Alctr gpa
-))(mem_E$void));
-$extern fn_((proc__NativeStrs_fini(
-    proc__NativeStrs* self,
-    mem_Alctr gpa
-))(void));
-$attr($must_check)
-$extern fn_((proc__NativeStrs_from(
-    mem_Alctr gpa,
-    S$S_const$u8 items
-))(mem_E$proc__NativeStrs));
-$attr($must_check)
-$extern fn_((proc__NativeStrs_fromEnv(
-    mem_Alctr gpa,
-    proc_Env inherited,
-    O$proc_Spawn_Env override
-))(mem_E$proc__NativeStrs));
-$extern fn_((proc__NativeStrs_raw(proc__NativeStrs self))(char**));
-$extern fn_((proc__NativeStrs_at(
-    proc__NativeStrs self,
-    usize idx
-))(S_const$u8));
-
-$attr($must_check)
-$extern fn_((proc__envWTF16(
-    mem_Alctr gpa,
-    proc_Env inherited,
-    O$proc_Spawn_Env override
-))(proc__envWTF16_E$S$u16));
-
-$extern fn_((proc__child(
-    proc_Child_Handle handle,
-    proc_Child_Id id,
-    proc_Child_IO io
-))(proc_Child));
+$extern fn_((proc__envWTF16(mem_Alctr gpa, proc_Env inherited, O$proc_cmd_Env override))(proc__envWTF16_E$S$u16));
 
 #if defined(__cplusplus)
 } /* extern "C" */

@@ -16,6 +16,8 @@
  *          - Save/load trees to/from files
  *          - Handle CSV data input
  */
+/*========== Includes =======================================================*/
+
 #include "dh-main.h"
 #include "dh/heap/Sys.h"
 #include "dh/log.h"
@@ -27,7 +29,8 @@
 #include "dh/fmt/common.h"
 #include "dh/ArrList.h"
 
-// Decision tree structures
+/*========== Declarations ===================================================*/
+
 T_alias$((TreeNode_Decision)(struct TreeNode_Decision));
 T_alias$((TreeNode_Leaf)(struct TreeNode_Leaf));
 T_alias$((TreeNode)(variant_((TreeNode) $T)));
@@ -35,8 +38,8 @@ T_use$((TreeNode)(P));
 T_use$((P$TreeNode)(O, E));
 T_alias$((TreeNode)(variant_((TreeNode $fits($packed))(
     (TreeNode_decision, struct TreeNode_Decision {
-        var_(left, O$P$TreeNode);
-        var_(right, O$P$TreeNode);
+        var_(left, P$TreeNode);
+        var_(right, P$TreeNode);
         var_(feature_index, u32);
         var_(threshold, f32);
     }),
@@ -45,22 +48,45 @@ T_alias$((TreeNode)(variant_((TreeNode $fits($packed))(
     })
 ))));
 T_use$((TreeNode)(O));
-// Forward declarations
+T_use_E$($set(mem_E)(P$TreeNode));
+T_use$((TreeNode)(mem_Alctr_create, mem_Alctr_destroy));
 $attr($must_check)
 $static fn_((TreeNode_createLeaf(mem_Alctr gpa, i32 class_label))(E$P$TreeNode));
 $attr($must_check)
-$static fn_((TreeNode_createDecision(mem_Alctr gpa, u32 feature_index, f32 threshold, TreeNode* left, TreeNode* right))(E$P$TreeNode));
+$static fn_((TreeNode_createDecision(
+    mem_Alctr gpa,
+    u32 feature_index, f32 threshold,
+    TreeNode* left, TreeNode* right
+))(E$P$TreeNode));
+$attr($must_check)
+$static fn_((TreeNode_createDemo(mem_Alctr gpa))(E$P$TreeNode));
 $static fn_((TreeNode_destroyRecur(mem_Alctr gpa, TreeNode* target))(void));
 $static fn_((TreeNode_predict(const TreeNode* target, S_const$f32 features))(i32));
 $static fn_((TreeNode_printRecur(log_Self logger, const TreeNode* target, u32 depth))(void));
 $attr($must_check)
 $static fn_((TreeNode_saveToFileRecur(const TreeNode* node, io_Writer writer))(E$void));
 $attr($must_check)
-$static fn_((TreeNode_loadFromFileRecur(mem_Alctr gpa, io_Reader reader))(E$P$TreeNode));
+$static fn_((TreeNode_countRecur(const TreeNode* node, usize depth))(E$u32));
+$attr($must_check)
+$static fn_((TreeNode_save(const TreeNode* root, io_Writer writer))(E$void));
+$attr($must_check)
+$static fn_((TreeNode_loadRecur(mem_Alctr gpa, io_Reader reader, u32* remaining, usize depth))(E$P$TreeNode));
+$attr($must_check)
+$static fn_((TreeNode_loadDecision(
+    mem_Alctr gpa, io_Reader reader,
+    u32* remaining, usize depth,
+    u32 feature_index, f32 threshold
+))(E$P$TreeNode));
+$attr($must_check)
+$static fn_((TreeNode_load(mem_Alctr gpa, io_Reader reader))(E$P$TreeNode));
+
+$attr($must_check)
+$static fn_((tree_file_writeU32(io_Writer writer, u32 value))(E$void));
+$attr($must_check)
+$static fn_((tree_file_readU32(io_Reader reader))(E$u32));
 
 T_use$((f32)(ArrList));
 T_use$((i32)(ArrList));
-// Dataset structure
 T_alias$((Dataset)(struct Dataset {
     var_(gpa, mem_Alctr);
     var_(features, ArrList$f32);
@@ -69,7 +95,6 @@ T_alias$((Dataset)(struct Dataset {
     var_(n_features, u32);
 }));
 T_use$((Dataset)(E));
-// Forward declarations
 $attr($must_check)
 $static fn_((Dataset_loadFromCSV(
     log_Self logger,
@@ -79,7 +104,27 @@ $static fn_((Dataset_loadFromCSV(
 ))(E$Dataset));
 $static fn_((Dataset_destroy(Dataset* dataset))(void));
 
-// Main function
+T_use$((u8)(
+    mem_Delim,
+    mem_TokzIter,
+    mem_TokzIter_next,
+    mem_tokzUnit,
+    ArrList,
+    ArrList_init,
+    ArrList_fini,
+    ArrList_appendS
+));
+T_use$((f32)(ArrList_init, ArrList_fini, ArrList_append));
+T_use$((i32)(ArrList_init, ArrList_fini, ArrList_append));
+
+#define TreeFile_version u8_(1)
+#define TreeFile_max_nodes u32_(1048576)
+#define TreeFile_max_depth usize_(1024)
+#define TreeFile_NodeTag_decision u8_(0)
+#define TreeFile_NodeTag_leaf u8_(1)
+
+/*========== Definitions ====================================================*/
+
 fn_((main(proc_Entry entry))(E$void) $guard) {
     var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
@@ -96,7 +141,7 @@ fn_((main(proc_Entry entry))(E$void) $guard) {
     $static var_(arg_scratch, A$$(4096, u8)) $undefined_static;
     var args = proc_Args_iter(entry.args);
     let_ignore = try_(proc_Args_Iter_skip(&args));
-    if_some((try_(proc_Args_Iter_next(&args, A_ref$((S$u8)arg_scratch))))(dataset_path)) {
+    if_some((try_(proc_Args_Iter_next(&args, A_ref$((S$u8)arg_scratch))))(dataset_path)) blk_defer {
         log_info(logger, u8_l("Loading dataset from {:s}"), dataset_path);
         var dataset = try_(Dataset_loadFromCSV(logger, gpa, dataset_path, true));
         defer_(Dataset_destroy(&dataset));
@@ -104,29 +149,12 @@ fn_((main(proc_Entry entry))(E$void) $guard) {
         // For simplicity, we'll just create a demo tree
         log_info(logger, u8_l("Loaded {:u} samples with {:u} features"), dataset.n_samples, dataset.n_features);
         // Demo tree creation would go here
-    }
+    } blk_deferral;
 
     // Create a simple decision tree (manually for demo purposes)
     // In a real implementation, this would be learned from data
     log_info(logger, u8_l("Creating demo decision tree"));
-    let leaf_setosa = try_(TreeNode_createLeaf(gpa, 0));
-    let leaf_versicolor = try_(TreeNode_createLeaf(gpa, 1));
-    let leaf_virginica = try_(TreeNode_createLeaf(gpa, 2));
-
-    let versicolor_virginica = try_(TreeNode_createDecision(
-        gpa,
-        3, // feature index (petal width)
-        1.75f, // threshold
-        leaf_versicolor,
-        leaf_virginica
-    ));
-    let root = try_(TreeNode_createDecision(
-        gpa,
-        2, // feature index (petal length)
-        2.45f, // threshold
-        leaf_setosa,
-        versicolor_virginica
-    ));
+    let root = try_(TreeNode_createDemo(gpa));
     defer_(TreeNode_destroyRecur(gpa, root));
 
     // Print the tree
@@ -134,23 +162,29 @@ fn_((main(proc_Entry entry))(E$void) $guard) {
     TreeNode_printRecur(logger, root, 0);
 
     // Save the tree to a file
-    {
+    let save_path = u8_l("decision_tree.bin");
+    let staging_path = u8_l("decision_tree.bin.new");
+    let_ignore = catch_((fs_File_delete(staging_path))($ignore, $do_nothing));
+    defer_(let_ignore = catch_((fs_File_delete(staging_path))($ignore, $do_nothing)));
+    using_() blk_defer {
         var create_flags = fs_File_CreateFlags_default;
-        let save_file = try_(fs_File_create(u8_l("decision_tree.bin"), create_flags));
+        let save_file = try_(fs_File_create(staging_path, create_flags));
         defer_(fs_File_close(save_file));
         let writer = fs_File_writer(save_file);
-        try_(TreeNode_saveToFileRecur(root, writer));
-        log_info(logger, u8_l("Saved decision tree to decision_tree.bin"));
-    }
+        try_(TreeNode_save(root, writer));
+        try_(fs_File_sync(save_file));
+    } blk_deferral;
+    try_(fs_File_rename(staging_path, save_path));
+    log_info(logger, u8_l("Saved decision tree to decision_tree.bin"));
 
     // Load the tree from the file
     var loaded_tree = expr_(P$TreeNode $guard)({
         var open_flags = fs_File_OpenFlags_default;
         open_flags.mode = fs_OpenMode_read_only;
-        let load_file = try_(fs_File_open(u8_l("decision_tree.bin"), open_flags));
+        let load_file = try_(fs_File_open(save_path, open_flags));
         defer_(fs_File_close(load_file));
         let reader = fs_File_reader(load_file);
-        $break_(try_(TreeNode_loadFromFileRecur(gpa, reader)));
+        $break_(try_(TreeNode_load(gpa, reader)));
     }) $unguarded(expr);
     log_info(logger, u8_l("Loaded decision tree from decision_tree.bin"));
     defer_(TreeNode_destroyRecur(gpa, loaded_tree));
@@ -166,41 +200,91 @@ fn_((main(proc_Entry entry))(E$void) $guard) {
         A_init({ 6.5f, 3.0f, 5.2f, 2.0f }) // Virginica
     });
     for_(($rf(0), $s(A_ref(samples)))(i, sample)) {
-        let prediction = TreeNode_predict(root, A_ref$((S_const$f32)(*sample)));
-        log_info(logger, u8_l("Sample {:uz}: Class {:d}"), i + 1, prediction);
+        let features = A_ref$((S_const$f32)(*sample));
+        let prediction = TreeNode_predict(root, features);
+        let loaded_prediction = TreeNode_predict(loaded_tree, features);
+        claim_assert(prediction == loaded_prediction);
+        log_info(
+            logger,
+            u8_l("Sample {:uz}: Class {:d} (loaded: {:d})"),
+            i + 1,
+            prediction,
+            loaded_prediction
+        );
     } $end(for);
 
     log_info(logger, u8_l("Decision tree application completed successfully"));
     return_ok({});
 } $unguarded(fn);
 
-T_use_E$($set(mem_E)(P$TreeNode));
-T_use$((TreeNode)(mem_Alctr_create, mem_Alctr_destroy));
-
-// Implementation of TreeNode functions
 fn_((TreeNode_createLeaf(mem_Alctr gpa, i32 class_label))(E$P$TreeNode) $scope) {
     let node = try_(mem_Alctr_create$TreeNode($trace gpa));
     asg_l((node)(union_of((TreeNode_leaf){ .class_label = class_label })));
     return_ok(node);
 } $unscoped(fn);
 
-fn_((TreeNode_createDecision(mem_Alctr gpa, u32 feature_index, f32 threshold, TreeNode* left, TreeNode* right))(E$P$TreeNode) $scope) {
+fn_((TreeNode_createDecision(
+    mem_Alctr gpa,
+    u32 feature_index,
+    f32 threshold,
+    TreeNode* left,
+    TreeNode* right
+))(E$P$TreeNode) $scope) {
+    claim_assert_nonnull(left);
+    claim_assert_nonnull(right);
     let node = try_(mem_Alctr_create$TreeNode($trace gpa));
     asg_l((node)(union_of((TreeNode_decision){
-        .left = some(left),
-        .right = some(right),
+        .left = left,
+        .right = right,
         .feature_index = feature_index,
         .threshold = threshold,
     })));
     return_ok(node);
 } $unscoped(fn);
 
+fn_((TreeNode_createDemo(mem_Alctr gpa))(E$P$TreeNode) $guard) {
+    var_(leaf_setosa, O$P$TreeNode) = none();
+    var_(leaf_versicolor, O$P$TreeNode) = none();
+    var_(leaf_virginica, O$P$TreeNode) = none();
+    var_(versicolor_virginica, O$P$TreeNode) = none();
+    errdefer_($ignore, {
+        if_some((leaf_setosa)(node)) TreeNode_destroyRecur(gpa, node);
+        if_some((leaf_versicolor)(node)) TreeNode_destroyRecur(gpa, node);
+        if_some((leaf_virginica)(node)) TreeNode_destroyRecur(gpa, node);
+        if_some((versicolor_virginica)(node)) TreeNode_destroyRecur(gpa, node);
+    });
+
+    asg_l((&leaf_setosa)(some(try_(TreeNode_createLeaf(gpa, 0)))));
+    asg_l((&leaf_versicolor)(some(try_(TreeNode_createLeaf(gpa, 1)))));
+    asg_l((&leaf_virginica)(some(try_(TreeNode_createLeaf(gpa, 2)))));
+    asg_l((&versicolor_virginica)(some(try_(TreeNode_createDecision(
+        gpa,
+        3, // feature index (petal width)
+        1.75f, // threshold
+        unwrap_(leaf_versicolor),
+        unwrap_(leaf_virginica)
+    )))));
+    asg_l((&leaf_versicolor)(none()));
+    asg_l((&leaf_virginica)(none()));
+
+    let root = try_(TreeNode_createDecision(
+        gpa,
+        2, // feature index (petal length)
+        2.45f, // threshold
+        unwrap_(leaf_setosa),
+        unwrap_(versicolor_virginica)
+    ));
+    asg_l((&leaf_setosa)(none()));
+    asg_l((&versicolor_virginica)(none()));
+    return_ok(root);
+} $unguarded(fn);
+
 fn_((TreeNode_destroyRecur(mem_Alctr gpa, TreeNode* target))(void)) /* NOLINT(misc-no-recursion) */ {
     match_($ref(target)) {
     case_((TreeNode_leaf)) break $end(case);
     patt_((TreeNode_decision)($ref decision)) {
-        if_some((decision->left)(left)) TreeNode_destroyRecur(gpa, left);
-        if_some((decision->right)(right)) TreeNode_destroyRecur(gpa, right);
+        TreeNode_destroyRecur(gpa, decision->left);
+        TreeNode_destroyRecur(gpa, decision->right);
     } $end(patt);
     default_() {
         claim_unreachable;
@@ -220,8 +304,8 @@ fn_((TreeNode_predict(const TreeNode* target, S_const$f32 features))(i32)) {
         }
         curr = expr_(O$TreeNode $scope)(
             *S_at((features)[decision.feature_index]) <= decision.threshold
-                ? $break_(O_deref$((O$TreeNode)(decision.left)))
-                : $break_(O_deref$((O$TreeNode)(decision.right)))
+                ? $break_(some(deref(decision.left)))
+                : $break_(some(deref(decision.right)))
         ) $unscoped(expr);
     } $end(patt);
     default_() {
@@ -252,9 +336,9 @@ fn_((TreeNode_printRecur(
     patt_((TreeNode_leaf)($ref leaf)) log_info(logger, u8_l("{:z}Class: {:d}"), indent_z, leaf->class_label) $end(patt);
     patt_((TreeNode_decision)($ref decision)) {
         log_info(logger, u8_l("{:z}Feature {:u} <= {:.2f}"), indent_z, decision->feature_index, decision->threshold);
-        if_some((decision->left)(left)) { TreeNode_printRecur(logger, left, depth + 1); }
+        TreeNode_printRecur(logger, decision->left, depth + 1);
         log_info(logger, u8_l("{:z}Feature {:u} > {:.2f}"), indent_z, decision->feature_index, decision->threshold);
-        if_some((decision->right)(right)) { TreeNode_printRecur(logger, right, depth + 1); }
+        TreeNode_printRecur(logger, decision->right, depth + 1);
     } $end(patt);
     default_() {
         log_err(logger, u8_l("{:z}Invalid node type"), indent_z);
@@ -263,19 +347,25 @@ fn_((TreeNode_printRecur(
     } $end(match);
 };
 
-fn_((TreeNode_saveToFileRecur(const TreeNode* node, io_Writer writer))(E$void) $scope) /* NOLINT(misc-no-recursion) */ {
+fn_((TreeNode_saveToFileRecur(
+    const TreeNode* node, io_Writer writer
+))(E$void) $scope) /* NOLINT(misc-no-recursion) */ {
     claim_assert_nonnull(node);
-    try_(io_Writer_writeBytes(writer, mem_asBytes(u_anyP(&node->tag))));
 
     match_($ref(node)) {
     patt_((TreeNode_leaf)($ref leaf)) {
-        try_(io_Writer_writeBytes(writer, mem_asBytes(u_anyP(&leaf->class_label))));
+        try_(io_Writer_writeByte(writer, TreeFile_NodeTag_leaf));
+        try_(tree_file_writeU32(writer, bitCast$((u32)(leaf->class_label))));
     } $end(patt);
     patt_((TreeNode_decision)($ref decision)) {
-        try_(io_Writer_writeBytes(writer, mem_asBytes(u_anyP(&decision->feature_index))));
-        try_(io_Writer_writeBytes(writer, mem_asBytes(u_anyP(&decision->threshold))));
-        if_some((decision->left)(left)) { try_(TreeNode_saveToFileRecur(left, writer)); }
-        if_some((decision->right)(right)) { try_(TreeNode_saveToFileRecur(right, writer)); }
+        try_(io_Writer_writeByte(writer, TreeFile_NodeTag_decision));
+        try_(tree_file_writeU32(writer, decision->feature_index));
+        try_(tree_file_writeU32(
+            writer,
+            bitCast$((u32)(decision->threshold))
+        ));
+        try_(TreeNode_saveToFileRecur(decision->left, writer));
+        try_(TreeNode_saveToFileRecur(decision->right, writer));
     } $end(patt);
     default_() {
         claim_unreachable;
@@ -285,44 +375,142 @@ fn_((TreeNode_saveToFileRecur(const TreeNode* node, io_Writer writer))(E$void) $
     return_ok({});
 } $unscoped(fn);
 
-fn_((TreeNode_loadFromFileRecur(mem_Alctr gpa, io_Reader reader))(E$P$TreeNode) $scope) /* NOLINT(misc-no-recursion) */ {
-    var_(tag, FieldType$(TreeNode, tag)) = 0;
-    try_(io_Reader_readExact(reader, mem_asBytesMut(u_anyP(&tag))));
-    switch (tag) {
-    case_((TreeNode_leaf)) {
-        var_(class_label, FieldType$(TreeNode_Leaf, class_label)) = 0;
-        try_(io_Reader_readExact(reader, mem_asBytesMut(u_anyP(&class_label))));
-        return_ok(try_(TreeNode_createLeaf(gpa, class_label)));
-    } $end(case);
-    case_((TreeNode_decision)) {
-        var_(feature_index, FieldType$(TreeNode_Decision, feature_index)) = 0;
-        var_(threshold, FieldType$(TreeNode_Decision, threshold)) = 0;
-        try_(io_Reader_readExact(reader, mem_asBytesMut(u_anyP(&feature_index))));
-        try_(io_Reader_readExact(reader, mem_asBytesMut(u_anyP(&threshold))));
-        let left = try_(TreeNode_loadFromFileRecur(gpa, reader));
-        let right = try_(TreeNode_loadFromFileRecur(gpa, reader));
-        return_ok(try_(TreeNode_createDecision(gpa, feature_index, threshold, left, right)));
-    } $end(case);
-    default_() {
-        return_err(E_cause$fs_File_ReadFailed());
-    } $end(default);
+fn_((TreeNode_countRecur(
+    const TreeNode* node, usize depth
+))(E$u32) $scope) /* NOLINT(misc-no-recursion) */ {
+    claim_assert_nonnull(node);
+    if (TreeFile_max_depth < depth) {
+        return_err(E_cause$fs_File_WriteFailed());
     }
+    match_($ref(node)) {
+    case_((TreeNode_leaf)) return_ok(u32_(1)) $end(case);
+    patt_((TreeNode_decision)($ref decision)) {
+        let left = try_(TreeNode_countRecur(decision->left, depth + 1));
+        let right = try_(TreeNode_countRecur(decision->right, depth + 1));
+        let descendants = orelse_((u32_addChkd(left, right))(
+            return_err(E_cause$fs_File_WriteFailed())
+        ));
+        let total = orelse_((u32_addChkd(u32_(1), descendants))(
+            return_err(E_cause$fs_File_WriteFailed())
+        ));
+        if (TreeFile_max_nodes < total) {
+            return_err(E_cause$fs_File_WriteFailed());
+        }
+        return_ok(total);
+    } $end(patt);
+    default_() return_err(E_cause$fs_File_WriteFailed()) $end(default);
+    } $end(match);
+    claim_unreachable;
 } $unscoped(fn);
 
-T_use$((u8)(
-    mem_Delim,
-    mem_TokzIter,
-    mem_TokzIter_next,
-    mem_tokzUnit,
-    ArrList,
-    ArrList_init,
-    ArrList_fini,
-    ArrList_appendS
-));
-T_use$((f32)(ArrList_init, ArrList_fini, ArrList_append));
-T_use$((i32)(ArrList_init, ArrList_fini, ArrList_append));
+fn_((tree_file_writeU32(
+    io_Writer writer, u32 value
+))(E$void) $scope) {
+    let bytes = mem_writeLE32(value);
+    try_(io_Writer_writeBytes(writer, A_ref$((S_const$u8)(bytes))));
+    return_ok({});
+} $unscoped(fn);
 
-// Implementation of Dataset functions
+fn_((tree_file_readU32(io_Reader reader))(E$u32) $scope) {
+    var_(bytes, mem_ReadLE32Buf) $undefined;
+    try_(io_Reader_readExact(reader, A_ref$((S$u8)(bytes))));
+    return_ok(mem_readLE32(bytes));
+} $unscoped(fn);
+
+fn_((TreeNode_save(
+    const TreeNode* root, io_Writer writer
+))(E$void) $scope) {
+    let node_count = try_(TreeNode_countRecur(root, usize_(0)));
+    try_(io_Writer_writeBytes(writer, u8_l("DHTR")));
+    try_(io_Writer_writeByte(writer, TreeFile_version));
+    try_(tree_file_writeU32(writer, node_count));
+    try_(TreeNode_saveToFileRecur(root, writer));
+    return_ok({});
+} $unscoped(fn);
+
+fn_((TreeNode_loadRecur(
+    mem_Alctr gpa, io_Reader reader, u32* remaining, usize depth
+))(E$P$TreeNode) $guard) /* NOLINT(misc-no-recursion) */ {
+    claim_assert_nonnull(remaining);
+    if (*remaining == 0 || TreeFile_max_depth < depth) {
+        return_err(E_cause$fs_File_ReadFailed());
+    }
+    *remaining -= 1;
+    let tag = try_(io_Reader_readByte(reader));
+    switch (tag) {
+    case_((TreeFile_NodeTag_leaf)) {
+        let class_label = bitCast$((i32)(try_(tree_file_readU32(reader))));
+        return TreeNode_createLeaf(gpa, class_label);
+    } $end(case);
+    case_((TreeFile_NodeTag_decision)) {
+        let feature_index = try_(tree_file_readU32(reader));
+        let threshold = bitCast$((f32)(try_(tree_file_readU32(reader))));
+        return TreeNode_loadDecision(
+            gpa, reader, remaining, depth, feature_index, threshold
+        );
+    } $end(case);
+    default_() return_err(E_cause$fs_File_ReadFailed()) $end(default);
+    }
+    claim_unreachable;
+} $unguarded(fn);
+
+fn_((TreeNode_loadDecision(
+    mem_Alctr gpa,
+    io_Reader reader,
+    u32* remaining,
+    usize depth,
+    u32 feature_index,
+    f32 threshold
+))(E$P$TreeNode) $guard) {
+    var_(left, O$P$TreeNode) = none();
+    var_(right, O$P$TreeNode) = none();
+    errdefer_($ignore, {
+        if_some((left)(node)) TreeNode_destroyRecur(gpa, node);
+        if_some((right)(node)) TreeNode_destroyRecur(gpa, node);
+    });
+    asg_l((&left)(some(try_(TreeNode_loadRecur(
+        gpa, reader, remaining, depth + 1
+    )))));
+    asg_l((&right)(some(try_(TreeNode_loadRecur(
+        gpa, reader, remaining, depth + 1
+    )))));
+    return TreeNode_createDecision(
+        gpa, feature_index, threshold, unwrap_(left), unwrap_(right)
+    );
+} $unguarded(fn);
+
+fn_((TreeNode_load(
+    mem_Alctr gpa, io_Reader reader
+))(E$P$TreeNode) $guard) {
+    var_(magic, A$$(4, u8)) $undefined;
+    try_(io_Reader_readExact(reader, A_ref$((S$u8)(magic))));
+    if (!mem_eqlBytes(A_ref$((S_const$u8)(magic)), u8_l("DHTR"))) {
+        return_err(E_cause$fs_File_ReadFailed());
+    }
+    if (try_(io_Reader_readByte(reader)) != TreeFile_version) {
+        return_err(E_cause$fs_File_ReadFailed());
+    }
+    var node_count = try_(tree_file_readU32(reader));
+    if (node_count == 0 || TreeFile_max_nodes < node_count) {
+        return_err(E_cause$fs_File_ReadFailed());
+    }
+    var remaining = node_count;
+    var_(root, O$P$TreeNode) = none();
+    errdefer_($ignore, {
+        if_some((root)(node)) TreeNode_destroyRecur(gpa, node);
+    });
+    asg_l((&root)(some(try_(TreeNode_loadRecur(
+        gpa, reader, &remaining, usize_(0)
+    )))));
+    if (remaining != 0) return_err(E_cause$fs_File_ReadFailed());
+
+    var_(trailing, A$$(1, u8)) $undefined;
+    if (try_(io_Reader_read(reader, A_ref$((S$u8)(trailing)))) != 0) {
+        return_err(E_cause$fs_File_ReadFailed());
+    }
+    return_ok(unwrap_(root));
+} $unguarded(fn);
+
 fn_((Dataset_loadFromCSV(
     log_Self logger,
     mem_Alctr gpa,

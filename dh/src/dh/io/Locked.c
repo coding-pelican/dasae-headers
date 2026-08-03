@@ -1,5 +1,7 @@
 #include "dh/io/Locked.h"
 
+/*========== External Definitions ===========================================*/
+
 fn_((io_Locked_unlock(io_Locked self))(void)) {
     self = io_Locked_ensureValid(self);
     self.unlockFn(self.ctx);

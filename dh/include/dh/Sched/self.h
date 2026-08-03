@@ -68,7 +68,6 @@ struct Sched_VTbl {
     /// Thread-safe.
     $attr($must_check)
     fn_(((*spawnFn)(P$raw ctx, u_P$raw result, P$$(Clsr$raw) inner))(Sched_ConcE$P$FutureAny));
-
     var_(future, struct Sched_VTbl_Future {
         /// This function is only called when `async` or `spawn` returns `some`.
         ///
@@ -101,10 +100,11 @@ struct Sched_VTbl {
 $extern fn_((Sched_VTbl_noAsync(P$raw ctx, u_P$raw result, P$$(Clsr$raw) inner))(O$P$FutureAny));
 $attr($must_check)
 $extern fn_((Sched_VTbl_failingSpawn(P$raw ctx, u_P$raw result, P$$(Clsr$raw) inner))(Sched_ConcE$P$FutureAny));
-$extern fn_((Sched_VTbl_noFutureAwait(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void));
-$extern fn_((Sched_VTbl_unreachableFutureAwait(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void));
-$extern fn_((Sched_VTbl_noFutureCancel(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void));
-$extern fn_((Sched_VTbl_unreachableFutureCancel(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void));
+$extern fn_((Sched_VTbl_Future_noAwait(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void));
+$extern fn_((Sched_VTbl_Future_unreachableAwait(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void));
+$extern fn_((Sched_VTbl_Future_noCancel(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void));
+$extern fn_((Sched_VTbl_Future_unreachableCancel(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void));
+
 $extern fn_((Sched_VTbl_noRecancel(P$raw ctx))(void));
 $extern fn_((Sched_VTbl_unreachableRecancel(P$raw ctx))(void));
 $extern fn_((Sched_VTbl_noSwapCancelProtcn(P$raw ctx, Sched_CancelProtcn new_protect))(Sched_CancelProtcn));

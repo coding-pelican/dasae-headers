@@ -28,14 +28,14 @@ $static let fs_File_std_direct__err = pp_if_(pp_or(plat_is_windows, plat_is_posi
 /*========== External Definitions ===========================================*/
 
 $static var_(fs_File_std__ctx_failing, Void) $undefined_static;
-$static let_(fs_File_std__vtbl_failing, fs_File_std_Self_VTbl) = {
+let_(fs_File_std_VTbl_failing, fs_File_std_Self_VTbl) = {
     .inFn = fs_File_std_VTbl_unreachableIn,
     .outFn = fs_File_std_VTbl_unreachableOut,
     .errFn = fs_File_std_VTbl_unreachableErr,
 };
 let_(fs_File_std_failing, fs_File_std_Self) = {
     .ctx = &fs_File_std__ctx_failing,
-    .vtbl = &fs_File_std__vtbl_failing,
+    .vtbl = &fs_File_std_VTbl_failing,
 };
 fn_((fs_File_std_direct(void))(fs_File_std_direct_E$fs_File_std_Self $scope)) {
     pp_if_(pp_or(plat_is_windows, plat_is_posix))(
@@ -71,36 +71,36 @@ fn_((fs_File_std_err(fs_File_std_Self self))(fs_File)) {
 };
 
 fn_((fs_File_std_VTbl_unreachableIn(P$raw ctx))(fs_File)) {
-    let_ignore = ctx;
+    let_ignore = ensureNonnull(ctx);
     claim_unreachable;
 };
 fn_((fs_File_std_VTbl_unreachableOut(P$raw ctx))(fs_File)) {
-    let_ignore = ctx;
+    let_ignore = ensureNonnull(ctx);
     claim_unreachable;
 };
 fn_((fs_File_std_VTbl_unreachableErr(P$raw ctx))(fs_File)) {
-    let_ignore = ctx;
+    let_ignore = ensureNonnull(ctx);
     claim_unreachable;
 };
 
 /*========== Internal Definitions ===========================================*/
 
 fn_((fs_File_std_direct__unsupported_in(P$raw ctx))(fs_File)) {
-    let_ignore = ctx;
+    let_ignore = ensureNonnull(ctx);
     claim_unreachable_msg(nameOf(fs_File_std_in) " is not supported on this platform: " plat_name);
 };
 fn_((fs_File_std_direct__unsupported_out(P$raw ctx))(fs_File)) {
-    let_ignore = ctx;
+    let_ignore = ensureNonnull(ctx);
     claim_unreachable_msg(nameOf(fs_File_std_out) " is not supported on this platform: " plat_name);
 };
 fn_((fs_File_std_direct__unsupported_err(P$raw ctx))(fs_File)) {
-    let_ignore = ctx;
+    let_ignore = ensureNonnull(ctx);
     claim_unreachable_msg(nameOf(fs_File_std_err) " is not supported on this platform: " plat_name);
 };
 
 pp_if_(pp_or(plat_is_windows, plat_is_posix))(pp_then_(
     fn_((fs_File_std_direct__supported_in(P$raw ctx))(fs_File)) {
-        let_ignore = ctx;
+        let_ignore = ensureNonnull(ctx);
         return fs_File_Handle_promote(
             pp_if_(plat_is_windows)(
                 pp_then_(GetStdHandle(STD_INPUT_HANDLE)),
@@ -110,7 +110,7 @@ pp_if_(pp_or(plat_is_windows, plat_is_posix))(pp_then_(
         );
     };
     fn_((fs_File_std_direct__supported_out(P$raw ctx))(fs_File)) {
-        let_ignore = ctx;
+        let_ignore = ensureNonnull(ctx);
         return fs_File_Handle_promote(
             pp_if_(plat_is_windows)(
                 pp_then_(GetStdHandle(STD_OUTPUT_HANDLE)),
@@ -120,7 +120,7 @@ pp_if_(pp_or(plat_is_windows, plat_is_posix))(pp_then_(
         );
     };
     fn_((fs_File_std_direct__supported_err(P$raw ctx))(fs_File)) {
-        let_ignore = ctx;
+        let_ignore = ensureNonnull(ctx);
         return fs_File_Handle_promote(
             pp_if_(plat_is_windows)(
                 pp_then_(GetStdHandle(STD_ERROR_HANDLE)),

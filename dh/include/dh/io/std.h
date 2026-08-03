@@ -27,10 +27,13 @@ extern "C" {
 errset_((io_std_direct_E)(io_std_direct_Unsupported));
 
 T_alias$((io_std_Self_VTbl)(struct io_std_Self_VTbl));
-T_alias$((io_std_Self)(struct io_std_Self {
+$extern let_(io_std_VTbl_noop, io_std_Self_VTbl);
+$extern let_(io_std_VTbl_failing, io_std_Self_VTbl);
+
+struct io_std_Self {
     var_(ctx, P$raw);
     var_(vtbl, P_const$$(io_std_Self_VTbl));
-}));
+};
 T_use_prl$(io_std_Self);
 T_use_E$($set(io_std_direct_E)(io_std_Self));
 $attr($inline_always $must_check)
@@ -82,7 +85,6 @@ struct io_std_Self_VTbl {
     fn_(((*lockErrFn)(P$raw ctx))(void));
     fn_(((*unlockErrFn)(P$raw ctx))(void));
 };
-
 $extern fn_((io_std_VTbl_noIn(P$raw ctx))(io_Reader));
 $extern fn_((io_std_VTbl_failingIn(P$raw ctx))(io_Reader));
 $extern fn_((io_std_VTbl_noTryLockIn(P$raw ctx))(bool));

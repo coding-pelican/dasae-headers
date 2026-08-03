@@ -31,7 +31,7 @@ $static fn_((net__windows_mapError(i32 err))(net_E)) {
     case WSAEWOULDBLOCK: $fallthrough;
     case WSAEINPROGRESS: $fallthrough;
     case WSAEALREADY: return E_cause$net_WouldBlock();
-    default_() return E_cause$net_SystemResources() $end(default);
+    default_() return E_cause$net_SysResrcs() $end(default);
     }
 };
 
@@ -131,7 +131,7 @@ $static fn_((net__linux_mapError(sys_call_linux_word err))(net_E)) {
     case 110: return E_cause$net_TimedOut();
     case sys_call_linux_EAGAIN: $fallthrough;
     case sys_call_linux_EINPROGRESS: return E_cause$net_WouldBlock();
-    default_() return E_cause$net_SystemResources() $end(default);
+    default_() return E_cause$net_SysResrcs() $end(default);
     }
 };
 

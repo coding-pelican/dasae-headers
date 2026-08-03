@@ -24,14 +24,16 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-errset_((proc_Args_E)() $union_errset_(proc_ResourceLimitReached_E));
+errset_((proc_Args_E)() $union_errset_(proc_ResrcLimitReachedE));
 T_useBy$(($spec(E, $set(proc_Args_E)))(O$S_const$u8, bool));
 
 T_alias$((proc_Args_VTbl)(struct proc_Args_VTbl));
-T_alias$((proc_Args)(struct proc_Args {
+$extern let_(proc_Args_VTbl_empty, proc_Args_VTbl);
+
+struct proc_Args {
     var_(ctx, P$raw);
     var_(vtbl, P_const$$(proc_Args_VTbl));
-}));
+};
 T_use_prl$(proc_Args);
 $attr($inline_always)
 $static fn_((proc_Args_isValid(proc_Args self))(bool));
@@ -57,7 +59,7 @@ $extern fn_((proc_Args_Iter_skip(proc_Args_Iter* self))(proc_Args_E$bool));
 
 /**
  * Iterator providers must leave `idx` and `offset` unchanged when returning
- * `proc_ResourceLimitReached`, so callers can retry with a larger scratch slice.
+ * `proc_ResrcLimitReached`, so callers can retry with a larger scratch slice.
  */
 struct proc_Args_VTbl {
     $attr($must_check)
@@ -65,6 +67,10 @@ struct proc_Args_VTbl {
     $attr($must_check)
     fn_(((*skipFn)(P$raw ctx, usize* idx, usize* offset))(proc_Args_E$bool));
 };
+$attr($must_check)
+$extern fn_((proc_Args_VTbl_emptyNext(P$raw ctx, usize* idx, usize* offset, S$u8 scratch))(proc_Args_E$O$S_const$u8));
+$attr($must_check)
+$extern fn_((proc_Args_VTbl_emptySkip(P$raw ctx, usize* idx, usize* offset))(proc_Args_E$bool));
 
 /*========== Macros and Definitions =========================================*/
 

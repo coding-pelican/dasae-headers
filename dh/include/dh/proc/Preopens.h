@@ -28,17 +28,13 @@ extern "C" {
 
 errset_((proc_Preopens_direct_E)(proc_Preopens_direct_Unsupported));
 
-T_alias$((proc_Preopens_Resrc)(variant_((proc_Preopens_Resrc $fits($packed))(
-    (proc_Preopens_Resrc_file, fs_File),
-    (proc_Preopens_Resrc_dir, fs_Dir)
-))));
-T_use_O$(proc_Preopens_Resrc);
-
 T_alias$((proc_Preopens_VTbl)(struct proc_Preopens_VTbl));
-T_alias$((proc_Preopens)(struct proc_Preopens {
+$extern let_(proc_Preopens_VTbl_empty, proc_Preopens_VTbl);
+
+struct proc_Preopens {
     var_(ctx, P$raw);
     var_(vtbl, P_const$$(proc_Preopens_VTbl));
-}));
+};
 T_use_prl$(proc_Preopens);
 T_use_E$($set(proc_Preopens_direct_E)(proc_Preopens));
 $attr($inline_always)
@@ -52,11 +48,17 @@ $extern let_(proc_Preopens_empty, proc_Preopens);
 $attr($must_check)
 $extern fn_((proc_Preopens_direct(void))(proc_Preopens_direct_E$proc_Preopens));
 
+T_alias$((proc_Preopens_Resrc)(variant_((proc_Preopens_Resrc $fits($packed))(
+    (proc_Preopens_Resrc_file, fs_File),
+    (proc_Preopens_Resrc_dir, fs_Dir)
+))));
+T_use_O$(proc_Preopens_Resrc);
 $extern fn_((proc_Preopens_by(proc_Preopens self, S_const$u8 name))(O$proc_Preopens_Resrc));
 
 struct proc_Preopens_VTbl {
     fn_(((*byFn)(P$raw ctx, S_const$u8 name))(O$proc_Preopens_Resrc));
 };
+$extern fn_((proc_Preopens_VTbl_emptyBy(P$raw ctx, S_const$u8 name))(O$proc_Preopens_Resrc));
 
 /*========== Macros and Definitions =========================================*/
 

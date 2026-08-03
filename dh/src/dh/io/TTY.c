@@ -7,14 +7,44 @@
 #include "dh/sys/posix.h"
 #endif /* platform backend */
 
-/*========== Internal Types and Declarations ================================*/
+/*========== Internal Declarations ==========================================*/
 
 T_use_E$($set(io_TTY_ModeE)(O$io_TTY_ModeState));
 
+$static fn_((io_TTY__fileIsTTY(fs_File file))(io_TTY_IsTTYE$bool));
+$attr($maybe_unused)
+$static fn_((io_TTY__unsupported_cfgDirect(void))(O$io_TTY_Cfg));
+$attr($maybe_unused)
+$static fn_((io_TTY__unsupported_getMode(fs_File file))(io_TTY_ModeE$O$io_TTY_ModeState));
+$attr($maybe_unused)
+$static fn_((io_TTY__unsupported_setMode(fs_File file, const io_TTY_ModeState* state))(io_TTY_ModeE$void));
+$attr($maybe_unused)
+$static fn_((io_TTY__unsupported_applyModePatch(const io_TTY* self, io_TTY_ModePatch patch))(io_TTY_ApplyModeE$void));
+$attr($maybe_unused)
+$static fn_((io_TTY__unsupported_queryScreenCells(const io_TTY* self))(io_TTY_QueryE$io_TTY_CellSize));
+$attr($maybe_unused)
+$static fn_((io_TTY__unsupported_queryCursorPosNative(const io_TTY* self))(io_TTY_QueryE$io_TTY_Pos));
+$attr($maybe_unused)
+$static fn_((io_TTY__unsupported_inputReady(const io_TTY* self))(io_TTY_QueryE$bool));
+#if plat_is_windows || plat_is_posix
+$static fn_((io_TTY__native_applyModePatch(const io_TTY* self, io_TTY_ModePatch patch))(io_TTY_ApplyModeE$void));
+#endif
+
 #if plat_is_windows
 T_alias$((io_TTY__NativeMode)(DWORD));
+$static fn_((io_TTY__windows_cfgDirect(void))(O$io_TTY_Cfg));
+$static fn_((io_TTY__windows_getMode(fs_File file))(io_TTY_ModeE$O$io_TTY_ModeState));
+$static fn_((io_TTY__windows_setMode(fs_File file, const io_TTY_ModeState* state))(io_TTY_ModeE$void));
+$static fn_((io_TTY__windows_queryScreenCells(const io_TTY* self))(io_TTY_QueryE$io_TTY_CellSize));
+$static fn_((io_TTY__windows_queryCursorPosNative(const io_TTY* self))(io_TTY_QueryE$io_TTY_Pos));
+$static fn_((io_TTY__windows_inputReady(const io_TTY* self))(io_TTY_QueryE$bool));
 #elif plat_is_posix
 T_alias$((io_TTY__NativeMode)(sys_posix_termios));
+$static fn_((io_TTY__posix_cfgDirect(void))(O$io_TTY_Cfg));
+$static fn_((io_TTY__posix_getMode(fs_File file))(io_TTY_ModeE$O$io_TTY_ModeState));
+$static fn_((io_TTY__posix_setMode(fs_File file, const io_TTY_ModeState* state))(io_TTY_ModeE$void));
+$static fn_((io_TTY__posix_queryScreenCells(const io_TTY* self))(io_TTY_QueryE$io_TTY_CellSize));
+$static fn_((io_TTY__posix_inputReady(const io_TTY* self))(io_TTY_QueryE$bool));
 #else
 T_alias$((io_TTY__NativeMode)(Void));
 #endif
@@ -22,9 +52,6 @@ claim_assert_static(sizeOf$(io_TTY_ModeState) >= sizeOf$(io_TTY__NativeMode));
 claim_assert_static(alignOf$(io_TTY_ModeState) >= alignOf$(io_TTY__NativeMode));
 $static fn_((io_TTY__stateFromNative(io_TTY__NativeMode native))(io_TTY_ModeState));
 $static fn_((io_TTY__stateAsNative(const io_TTY_ModeState* state))(const io_TTY__NativeMode*));
-$static fn_((io_TTY__fileIsTTY(fs_File file))(io_TTY_IsTTYE$bool));
-$static fn_((io_TTY__getMode(fs_File file))(io_TTY_ModeE$O$io_TTY_ModeState));
-$static fn_((io_TTY__setMode(fs_File file, const io_TTY_ModeState* state))(io_TTY_ModeE$void));
 $static fn_((io_TTY__applyInput(io_TTY__NativeMode* mode, io_TTY_ModePatch patch))(void));
 $static fn_((io_TTY__applyOutput(io_TTY__NativeMode* mode, io_TTY_ModePatch patch))(void));
 
@@ -35,6 +62,151 @@ $static fn_((io_TTY__patchWindowsFlag(DWORD mode, DWORD flag, io_TTY_ModePatch p
 #if plat_is_posix
 $static fn_((io_TTY__patchPosixFlag(sys_posix_tcflag_t* flags, sys_posix_tcflag_t flag, io_TTY_ModePatch patch, io_TTY_ModeBit bit))(void));
 #endif /* plat_is_posix */
+
+$static let io_TTY__cfgDirect = pp_if_(plat_is_windows)(
+    pp_then_(io_TTY__windows_cfgDirect),
+    pp_else_(pp_if_(plat_is_posix)(
+        pp_then_(io_TTY__posix_cfgDirect),
+        pp_else_(io_TTY__unsupported_cfgDirect)
+    )));
+$static let io_TTY__getMode = pp_if_(plat_is_windows)(
+    pp_then_(io_TTY__windows_getMode),
+    pp_else_(pp_if_(plat_is_posix)(
+        pp_then_(io_TTY__posix_getMode),
+        pp_else_(io_TTY__unsupported_getMode)
+    )));
+$static let io_TTY__setMode = pp_if_(plat_is_windows)(
+    pp_then_(io_TTY__windows_setMode),
+    pp_else_(pp_if_(plat_is_posix)(
+        pp_then_(io_TTY__posix_setMode),
+        pp_else_(io_TTY__unsupported_setMode)
+    )));
+$static let io_TTY__applyModePatch = pp_if_(plat_is_windows)(
+    pp_then_(io_TTY__native_applyModePatch),
+    pp_else_(pp_if_(plat_is_posix)(
+        pp_then_(io_TTY__native_applyModePatch),
+        pp_else_(io_TTY__unsupported_applyModePatch)
+    )));
+$static let io_TTY__queryScreenCells = pp_if_(plat_is_windows)(
+    pp_then_(io_TTY__windows_queryScreenCells),
+    pp_else_(pp_if_(plat_is_posix)(
+        pp_then_(io_TTY__posix_queryScreenCells),
+        pp_else_(io_TTY__unsupported_queryScreenCells)
+    )));
+$static let io_TTY__queryCursorPosNative = pp_if_(plat_is_windows)(
+    pp_then_(io_TTY__windows_queryCursorPosNative),
+    pp_else_(io_TTY__unsupported_queryCursorPosNative));
+$static let io_TTY__inputReady = pp_if_(plat_is_windows)(
+    pp_then_(io_TTY__windows_inputReady),
+    pp_else_(pp_if_(plat_is_posix)(
+        pp_then_(io_TTY__posix_inputReady),
+        pp_else_(io_TTY__unsupported_inputReady)
+    )));
+
+/*========== External Definitions ===========================================*/
+
+fn_((io_TTY_Cfg_direct(void))(O$io_TTY_Cfg)) {
+    return io_TTY__cfgDirect();
+};
+
+/*---------- Lifecycle ------------------------------------------------------*/
+
+fn_((io_TTY_init(io_TTY_Cfg cfg))(io_TTY)) {
+    return (io_TTY){
+        .input_file = cfg.input_file,
+        .output_file = cfg.output_file,
+        .restore = none(),
+    };
+};
+
+fn_((io_TTY_fini(io_TTY* self))(void)) {
+    claim_assert_nonnull(self);
+    io_TTY_leaveMode(self);
+    asg_l((self)(cleared()));
+};
+
+/*---------- Reader and Writer Views ----------------------------------------*/
+
+fn_((io_TTY_reader(const io_TTY* self))(io_Reader)) {
+    claim_assert_nonnull(self);
+    return fs_File_reader(self->input_file);
+};
+
+fn_((io_TTY_writer(const io_TTY* self))(io_Writer)) {
+    claim_assert_nonnull(self);
+    return fs_File_writer(self->output_file);
+};
+
+/*---------- Mode Control ---------------------------------------------------*/
+
+fn_((io_TTY_snapshot(const io_TTY* self))(io_TTY_ModeE$io_TTY_ModeSnapshot) $scope) {
+    claim_assert_nonnull(self);
+    return_ok({
+        .input = try_(io_TTY__getMode(self->input_file)),
+        .output = try_(io_TTY__getMode(self->output_file)),
+    });
+} $unscoped(fn);
+
+fn_((io_TTY_restore(const io_TTY* self, io_TTY_ModeSnapshot snapshot))(io_TTY_ModeE$void) $scope) {
+    claim_assert_nonnull(self);
+    if_some((snapshot.input)(state)) try_(io_TTY__setMode(self->input_file, &state));
+    if_some((snapshot.output)(state)) try_(io_TTY__setMode(self->output_file, &state));
+    return_ok({});
+} $unscoped(fn);
+
+fn_((io_TTY_applyModePatch(const io_TTY* self, io_TTY_ModePatch patch))(io_TTY_ApplyModeE$void) $scope) {
+    claim_assert_nonnull(self);
+    return_(io_TTY__applyModePatch(self, patch));
+} $unscoped(fn);
+
+fn_((io_TTY_enterMode(io_TTY* self, io_TTY_ModePatch patch))(io_TTY_ApplyModeE$void) $guard) {
+    claim_assert_nonnull(self);
+    claim_assert(isNone(self->restore));
+    let snapshot = try_(io_TTY_snapshot(self));
+    errdefer_($ignore, catch_((io_TTY_restore(self, snapshot))($ignore, $do_nothing)));
+    try_(io_TTY_applyModePatch(self, patch));
+    asg_l((&self->restore)(some((io_TTY_Restore){ .snapshot = snapshot })));
+    return_ok({});
+} $unguarded(fn);
+
+fn_((io_TTY_leaveMode(io_TTY* self))(void)) {
+    claim_assert_nonnull(self);
+    let restore = orelse_((self->restore)(return));
+    catch_((io_TTY_restore(self, restore.snapshot))($ignore, $do_nothing));
+    asg_l((&self->restore)(none()));
+};
+
+fn_((io_TTY_isInEnteredMode(const io_TTY* self))(bool)) {
+    claim_assert_nonnull(self);
+    return isSome(self->restore);
+};
+
+/*---------- Queries --------------------------------------------------------*/
+
+fn_((io_TTY_inputIsTTY(const io_TTY* self))(io_TTY_IsTTYE$bool) $scope) {
+    claim_assert_nonnull(self);
+    return io_TTY__fileIsTTY(self->input_file);
+} $unscoped(fn);
+
+fn_((io_TTY_outputIsTTY(const io_TTY* self))(io_TTY_IsTTYE$bool) $scope) {
+    claim_assert_nonnull(self);
+    return io_TTY__fileIsTTY(self->output_file);
+} $unscoped(fn);
+
+fn_((io_TTY_queryScreenCells(const io_TTY* self))(io_TTY_QueryE$io_TTY_CellSize) $scope) {
+    claim_assert_nonnull(self);
+    return_(io_TTY__queryScreenCells(self));
+} $unscoped(fn);
+
+fn_((io_TTY_queryCursorPosNative(const io_TTY* self))(io_TTY_QueryE$io_TTY_Pos) $scope) {
+    claim_assert_nonnull(self);
+    return_(io_TTY__queryCursorPosNative(self));
+} $unscoped(fn);
+
+fn_((io_TTY_inputReady(const io_TTY* self))(io_TTY_QueryE$bool) $scope) {
+    claim_assert_nonnull(self);
+    return_(io_TTY__inputReady(self));
+} $unscoped(fn);
 
 /*========== Internal Definitions ===========================================*/
 
@@ -93,6 +265,54 @@ fn_((io_TTY__applyOutput(io_TTY__NativeMode* mode, io_TTY_ModePatch patch))(void
     if ((patch.enable & io_TTY_ModeBit_vt_auto_return) != 0) *mode &= ~u32_(DISABLE_NEWLINE_AUTO_RETURN);
 #endif /* defined(DISABLE_NEWLINE_AUTO_RETURN) */
 };
+
+fn_((io_TTY__windows_cfgDirect(void))(O$io_TTY_Cfg)) {
+    let input = GetStdHandle(STD_INPUT_HANDLE);
+    let output = GetStdHandle(STD_OUTPUT_HANDLE);
+    if (input == null || input == INVALID_HANDLE_VALUE) return none$((O$io_TTY_Cfg));
+    if (output == null || output == INVALID_HANDLE_VALUE) return none$((O$io_TTY_Cfg));
+    return some$((O$io_TTY_Cfg)(io_TTY_Cfg){
+        .input_file = fs_File_Handle_promote(input, fs_File_Flags_default),
+        .output_file = fs_File_Handle_promote(output, fs_File_Flags_default),
+    });
+};
+
+fn_((io_TTY__windows_queryScreenCells(
+    const io_TTY* self
+))(io_TTY_QueryE$io_TTY_CellSize) $scope) {
+    claim_assert_nonnull(self);
+    var_(info, CONSOLE_SCREEN_BUFFER_INFO) = cleared();
+    if (!GetConsoleScreenBufferInfo(fs_File_handle(self->output_file), &info)) {
+        return_err(E_cause$io_TTY_QueryFailed());
+    }
+    return_ok({
+        .cols = as$(u16)(info.srWindow.Right - info.srWindow.Left + 1),
+        .rows = as$(u16)(info.srWindow.Bottom - info.srWindow.Top + 1),
+    });
+} $unscoped(fn);
+
+fn_((io_TTY__windows_queryCursorPosNative(
+    const io_TTY* self
+))(io_TTY_QueryE$io_TTY_Pos) $scope) {
+    claim_assert_nonnull(self);
+    var_(info, CONSOLE_SCREEN_BUFFER_INFO) = cleared();
+    if (!GetConsoleScreenBufferInfo(fs_File_handle(self->output_file), &info)) {
+        return_err(E_cause$io_TTY_QueryFailed());
+    }
+    return_ok({
+        .x = as$(u16)(info.dwCursorPosition.X),
+        .y = as$(u16)(info.dwCursorPosition.Y),
+    });
+} $unscoped(fn);
+
+fn_((io_TTY__windows_inputReady(const io_TTY* self))(io_TTY_QueryE$bool) $scope) {
+    claim_assert_nonnull(self);
+    var_(count, DWORD) = 0;
+    if (!GetNumberOfConsoleInputEvents(fs_File_handle(self->input_file), &count)) {
+        return_err(E_cause$io_TTY_QueryFailed());
+    }
+    return_ok(count != 0);
+} $unscoped(fn);
 #endif /* plat_is_windows */
 
 /*---------- POSIX Terminal Backend -----------------------------------------*/
@@ -130,6 +350,33 @@ fn_((io_TTY__applyOutput(io_TTY__NativeMode* mode, io_TTY_ModePatch patch))(void
     claim_assert_nonnull(mode);
     io_TTY__patchPosixFlag(&mode->c_oflag, sys_posix_OPOST, patch, io_TTY_ModeBit_output_process);
 };
+
+fn_((io_TTY__posix_cfgDirect(void))(O$io_TTY_Cfg)) {
+    return some$((O$io_TTY_Cfg)(io_TTY_Cfg){
+        .input_file = fs_File_Handle_promote(sys_posix_STDIN_FILENO, fs_File_Flags_default),
+        .output_file = fs_File_Handle_promote(sys_posix_STDOUT_FILENO, fs_File_Flags_default),
+    });
+};
+
+fn_((io_TTY__posix_queryScreenCells(
+    const io_TTY* self
+))(io_TTY_QueryE$io_TTY_CellSize) $scope) {
+    claim_assert_nonnull(self);
+    var_(size, sys_posix_winsize) = cleared();
+    if (sys_posix_tiocgwinsz(fs_File_handle(self->output_file), &size) != 0) {
+        return_err(E_cause$io_TTY_QueryFailed());
+    }
+    return_ok((io_TTY_CellSize){ .cols = size.ws_col, .rows = size.ws_row });
+} $unscoped(fn);
+
+fn_((io_TTY__posix_inputReady(const io_TTY* self))(io_TTY_QueryE$bool) $scope) {
+    claim_assert_nonnull(self);
+    var_(count, int) = 0;
+    if (sys_posix_fionread(fs_File_handle(self->input_file), &count) != 0) {
+        return_err(E_cause$io_TTY_QueryFailed());
+    }
+    return_ok(count != 0);
+} $unscoped(fn);
 #endif /* plat_is_posix */
 
 /*---------- Native Mode Operations -----------------------------------------*/
@@ -141,125 +388,96 @@ fn_((io_TTY__fileIsTTY(fs_File file))(io_TTY_IsTTYE$bool) $scope) {
     )));
 } $unscoped(fn);
 
-fn_((io_TTY__getMode(fs_File file))(io_TTY_ModeE$O$io_TTY_ModeState) $scope) {
-    if (!try_(io_TTY__fileIsTTY(file))) return_ok(none());
+fn_((io_TTY__unsupported_cfgDirect(void))(O$io_TTY_Cfg)) {
+    return none$((O$io_TTY_Cfg));
+};
+
+fn_((io_TTY__unsupported_getMode(fs_File file))(io_TTY_ModeE$O$io_TTY_ModeState) $scope) {
+    let_ignore = file;
+    return_err(E_cause$io_TTY_Unsupported());
+} $unscoped(fn);
+
+fn_((io_TTY__unsupported_setMode(
+    fs_File file, const io_TTY_ModeState* state
+))(io_TTY_ModeE$void) $scope) {
+    let_ignore = file;
+    claim_assert_nonnull(state);
+    return_err(E_cause$io_TTY_Unsupported());
+} $unscoped(fn);
+
+fn_((io_TTY__unsupported_applyModePatch(
+    const io_TTY* self, io_TTY_ModePatch patch
+))(io_TTY_ApplyModeE$void) $scope) {
+    claim_assert_nonnull(self);
+    let_ignore = patch;
+    return_err(E_cause$io_TTY_Unsupported());
+} $unscoped(fn);
+
+fn_((io_TTY__unsupported_queryScreenCells(
+    const io_TTY* self
+))(io_TTY_QueryE$io_TTY_CellSize) $scope) {
+    claim_assert_nonnull(self);
+    return_err(E_cause$io_TTY_Unsupported());
+} $unscoped(fn);
+
+fn_((io_TTY__unsupported_queryCursorPosNative(
+    const io_TTY* self
+))(io_TTY_QueryE$io_TTY_Pos) $scope) {
+    claim_assert_nonnull(self);
+    return_err(E_cause$io_TTY_Unsupported());
+} $unscoped(fn);
+
+fn_((io_TTY__unsupported_inputReady(
+    const io_TTY* self
+))(io_TTY_QueryE$bool) $scope) {
+    claim_assert_nonnull(self);
+    return_err(E_cause$io_TTY_Unsupported());
+} $unscoped(fn);
+
 #if plat_is_windows
+fn_((io_TTY__windows_getMode(fs_File file))(io_TTY_ModeE$O$io_TTY_ModeState) $scope) {
+    if (!try_(io_TTY__fileIsTTY(file))) return_ok(none());
     var_(native, io_TTY__NativeMode) = 0;
     if (!GetConsoleMode(fs_File_handle(file), &native)) return_err(io_TTY__mapWindowsError(GetLastError()));
     return_ok(some(io_TTY__stateFromNative(native)));
-#elif plat_is_posix
+} $unscoped(fn);
+
+fn_((io_TTY__windows_setMode(
+    fs_File file, const io_TTY_ModeState* state
+))(io_TTY_ModeE$void) $scope) {
+    claim_assert_nonnull(state);
+    if (!SetConsoleMode(fs_File_handle(file), *io_TTY__stateAsNative(state))) {
+        return_err(io_TTY__mapWindowsError(GetLastError()));
+    }
+    return_ok({});
+} $unscoped(fn);
+#endif /* plat_is_windows */
+
+#if plat_is_posix
+fn_((io_TTY__posix_getMode(fs_File file))(io_TTY_ModeE$O$io_TTY_ModeState) $scope) {
+    if (!try_(io_TTY__fileIsTTY(file))) return_ok(none());
     var_(native, io_TTY__NativeMode) = cleared();
     if (sys_posix_tcgetattr(fs_File_handle(file), &native) != 0) {
         return_err(E_cause$io_TTY_BadHandle());
     }
     return_ok(some(io_TTY__stateFromNative(native)));
-#else
-    let_ignore = file;
-    return_err(E_cause$io_TTY_Unsupported());
-#endif
 } $unscoped(fn);
 
-fn_((io_TTY__setMode(fs_File file, const io_TTY_ModeState* state))(io_TTY_ModeE$void) $scope) {
+fn_((io_TTY__posix_setMode(
+    fs_File file, const io_TTY_ModeState* state
+))(io_TTY_ModeE$void) $scope) {
     claim_assert_nonnull(state);
-#if plat_is_windows
-    if (!SetConsoleMode(fs_File_handle(file), *io_TTY__stateAsNative(state))) {
-        return_err(io_TTY__mapWindowsError(GetLastError()));
-    }
-#elif plat_is_posix
     if (sys_posix_tcsetattr(fs_File_handle(file), io_TTY__stateAsNative(state)) != 0) {
         return_err(E_cause$io_TTY_ModeFailed());
     }
-#else
-    let_ignore = file;
-    return_err(E_cause$io_TTY_Unsupported());
-#endif
     return_ok({});
 } $unscoped(fn);
+#endif /* plat_is_posix */
 
-/*========== External Definitions ===========================================*/
-
-fn_((io_TTY_Cfg_direct(void))(O$io_TTY_Cfg)) {
-#if plat_is_windows
-    let input = GetStdHandle(STD_INPUT_HANDLE);
-    let output = GetStdHandle(STD_OUTPUT_HANDLE);
-    if (input == null || input == INVALID_HANDLE_VALUE) {
-        return none$((O$io_TTY_Cfg));
-    }
-    if (output == null || output == INVALID_HANDLE_VALUE) {
-        return none$((O$io_TTY_Cfg));
-    }
-    return some$((O$io_TTY_Cfg)(io_TTY_Cfg){
-        .input_file = fs_File_Handle_promote(
-            input,
-            fs_File_Flags_default
-        ),
-        .output_file = fs_File_Handle_promote(
-            output,
-            fs_File_Flags_default
-        ),
-    });
-#elif plat_is_posix
-    return some$((O$io_TTY_Cfg)(io_TTY_Cfg){
-        .input_file = fs_File_Handle_promote(
-            sys_posix_STDIN_FILENO,
-            fs_File_Flags_default
-        ),
-        .output_file = fs_File_Handle_promote(
-            sys_posix_STDOUT_FILENO,
-            fs_File_Flags_default
-        ),
-    });
-#else
-    return none$((O$io_TTY_Cfg));
-#endif
-};
-
-/*---------- Lifecycle ------------------------------------------------------*/
-
-fn_((io_TTY_init(io_TTY_Cfg cfg))(io_TTY)) {
-    return (io_TTY){
-        .input_file = cfg.input_file,
-        .output_file = cfg.output_file,
-        .restore = none(),
-    };
-};
-
-fn_((io_TTY_fini(io_TTY* self))(void)) {
-    claim_assert_nonnull(self);
-    io_TTY_leaveMode(self);
-    asg_l((self)(cleared()));
-};
-
-/*---------- Reader and Writer Views ----------------------------------------*/
-
-fn_((io_TTY_reader(const io_TTY* self))(io_Reader)) {
-    claim_assert_nonnull(self);
-    return fs_File_reader(self->input_file);
-};
-
-fn_((io_TTY_writer(const io_TTY* self))(io_Writer)) {
-    claim_assert_nonnull(self);
-    return fs_File_writer(self->output_file);
-};
-
-/*---------- Mode Control ---------------------------------------------------*/
-
-fn_((io_TTY_snapshot(const io_TTY* self))(io_TTY_ModeE$io_TTY_ModeSnapshot) $scope) {
-    claim_assert_nonnull(self);
-    return_ok({
-        .input = try_(io_TTY__getMode(self->input_file)),
-        .output = try_(io_TTY__getMode(self->output_file)),
-    });
-} $unscoped(fn);
-
-fn_((io_TTY_restore(const io_TTY* self, io_TTY_ModeSnapshot snapshot))(io_TTY_ModeE$void) $scope) {
-    claim_assert_nonnull(self);
-    if_some((snapshot.input)(state)) try_(io_TTY__setMode(self->input_file, &state));
-    if_some((snapshot.output)(state)) try_(io_TTY__setMode(self->output_file, &state));
-    return_ok({});
-} $unscoped(fn);
-
-fn_((io_TTY_applyModePatch(const io_TTY* self, io_TTY_ModePatch patch))(io_TTY_ApplyModeE$void) $scope) {
+#if plat_is_windows || plat_is_posix
+fn_((io_TTY__native_applyModePatch(
+    const io_TTY* self, io_TTY_ModePatch patch
+))(io_TTY_ApplyModeE$void) $scope) {
     claim_assert_nonnull(self);
     let input_state = try_(io_TTY__getMode(self->input_file));
     let input = orelse_((input_state)(return_err(E_cause$io_TTY_NotTTY())));
@@ -277,94 +495,4 @@ fn_((io_TTY_applyModePatch(const io_TTY* self, io_TTY_ModePatch patch))(io_TTY_A
     }
     return_ok({});
 } $unscoped(fn);
-
-fn_((io_TTY_enterMode(io_TTY* self, io_TTY_ModePatch patch))(io_TTY_ApplyModeE$void) $guard) {
-    claim_assert_nonnull(self);
-    claim_assert(isNone(self->restore));
-    let snapshot = try_(io_TTY_snapshot(self));
-    errdefer_($ignore, catch_((io_TTY_restore(self, snapshot))($ignore, $do_nothing)));
-    try_(io_TTY_applyModePatch(self, patch));
-    asg_l((&self->restore)(some((io_TTY_Restore){ .snapshot = snapshot })));
-    return_ok({});
-} $unguarded(fn);
-
-fn_((io_TTY_leaveMode(io_TTY* self))(void)) {
-    claim_assert_nonnull(self);
-    let restore = orelse_((self->restore)(return));
-    catch_((io_TTY_restore(self, restore.snapshot))($ignore, $do_nothing));
-    asg_l((&self->restore)(none()));
-};
-
-fn_((io_TTY_isInEnteredMode(const io_TTY* self))(bool)) {
-    claim_assert_nonnull(self);
-    return isSome(self->restore);
-};
-
-/*---------- Queries --------------------------------------------------------*/
-
-fn_((io_TTY_inputIsTTY(const io_TTY* self))(io_TTY_IsTTYE$bool) $scope) {
-    claim_assert_nonnull(self);
-    return io_TTY__fileIsTTY(self->input_file);
-} $unscoped(fn);
-
-fn_((io_TTY_outputIsTTY(const io_TTY* self))(io_TTY_IsTTYE$bool) $scope) {
-    claim_assert_nonnull(self);
-    return io_TTY__fileIsTTY(self->output_file);
-} $unscoped(fn);
-
-fn_((io_TTY_queryScreenCells(const io_TTY* self))(io_TTY_QueryE$io_TTY_CellSize) $scope) {
-    claim_assert_nonnull(self);
-#if plat_is_windows
-    var_(info, CONSOLE_SCREEN_BUFFER_INFO) = cleared();
-    if (!GetConsoleScreenBufferInfo(fs_File_handle(self->output_file), &info)) {
-        return_err(E_cause$io_TTY_QueryFailed());
-    }
-    return_ok({
-        .cols = as$(u16)(info.srWindow.Right - info.srWindow.Left + 1),
-        .rows = as$(u16)(info.srWindow.Bottom - info.srWindow.Top + 1),
-    });
-#elif plat_is_posix
-    var_(size, sys_posix_winsize) = cleared();
-    if (sys_posix_tiocgwinsz(fs_File_handle(self->output_file), &size) != 0) {
-        return_err(E_cause$io_TTY_QueryFailed());
-    }
-    return_ok((io_TTY_CellSize){ .cols = size.ws_col, .rows = size.ws_row });
-#else
-    return_err(E_cause$io_TTY_Unsupported());
-#endif
-} $unscoped(fn);
-
-fn_((io_TTY_queryCursorPosNative(const io_TTY* self))(io_TTY_QueryE$io_TTY_Pos) $scope) {
-    claim_assert_nonnull(self);
-#if plat_is_windows
-    var_(info, CONSOLE_SCREEN_BUFFER_INFO) = cleared();
-    if (!GetConsoleScreenBufferInfo(fs_File_handle(self->output_file), &info)) {
-        return_err(E_cause$io_TTY_QueryFailed());
-    }
-    return_ok({
-        .x = as$(u16)(info.dwCursorPosition.X),
-        .y = as$(u16)(info.dwCursorPosition.Y),
-    });
-#else
-    return_err(E_cause$io_TTY_Unsupported());
-#endif
-} $unscoped(fn);
-
-fn_((io_TTY_inputReady(const io_TTY* self))(io_TTY_QueryE$bool) $scope) {
-    claim_assert_nonnull(self);
-#if plat_is_windows
-    var_(count, DWORD) = 0;
-    if (!GetNumberOfConsoleInputEvents(fs_File_handle(self->input_file), &count)) {
-        return_err(E_cause$io_TTY_QueryFailed());
-    }
-    return_ok(count != 0);
-#elif plat_is_posix
-    var_(count, int) = 0;
-    if (sys_posix_fionread(fs_File_handle(self->input_file), &count) != 0) {
-        return_err(E_cause$io_TTY_QueryFailed());
-    }
-    return_ok(count != 0);
-#else
-    return_err(E_cause$io_TTY_Unsupported());
-#endif
-} $unscoped(fn);
+#endif /* plat_is_windows || plat_is_posix */

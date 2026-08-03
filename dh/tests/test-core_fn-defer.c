@@ -107,13 +107,12 @@ TEST_fn_("core/fn: loop defer" $guard) {
     mem_set0Bytes(mem_asBytesMut(u_anyP(&s_test_state)));
 
     var_(visits, usize) = 0;
-
-    for (usize i = 0; i < 4; ++i) loop_defer {
+    for_(($rt(4))(i)) loop_defer {
         visits += 1;
         defer_(recordCleanup(as$(i32)(i)));
         if (i == 1) continue;
         if (i == 2) break;
-    } loop_deferral;
+    } loop_deferral $end(for);
 
     try_(TEST_expect(visits == 3));
     try_(TEST_expect(s_test_state.cleanup_index == 3));
@@ -129,8 +128,7 @@ TEST_fn_("core/fn: loop defer keeps nested block break local" $guard) {
 
     var_(visits, usize) = 0;
     var_(after_block, usize) = 0;
-
-    for (usize i = 0; i < 3; ++i) loop_defer {
+    for_(($rt(3))(i)) loop_defer {
         visits += 1;
         defer_(recordCleanup(as$(i32)(100 + i)));
         if (i == 0) blk_defer {
@@ -140,7 +138,7 @@ TEST_fn_("core/fn: loop defer keeps nested block break local" $guard) {
         } blk_deferral;
         after_block += 1;
         if (i == 1) break;
-    } loop_deferral;
+    } loop_deferral $end(for);
 
     try_(TEST_expect(visits == 2));
     try_(TEST_expect(after_block == 2));
@@ -149,5 +147,29 @@ TEST_fn_("core/fn: loop defer keeps nested block break local" $guard) {
     try_(TEST_expect(*A_at((s_test_state.cleanup_orders)[1]) == 100));
     try_(TEST_expect(*A_at((s_test_state.cleanup_orders)[2]) == 101));
 
+    return_ok({});
+} $unguarded(TEST_fn);
+
+TEST_fn_("core/fn: case defer owns an independent guard" $guard) {
+    mem_set0Bytes(mem_asBytesMut(u_anyP(&s_test_state)));
+
+    var_(after_block, bool) = false;
+    switch (2) {
+    case_((2)) case_defer {
+        using_() blk_defer {
+            defer_(recordCleanup(2));
+            recordCleanup(1);
+            break;
+            recordCleanup(99);
+        } blk_deferral;
+        after_block = true;
+    } case_deferral $end(case);
+    default_() claim_unreachable $end(default);
+    }
+
+    try_(TEST_expect(after_block));
+    try_(TEST_expect(s_test_state.cleanup_index == 2));
+    try_(TEST_expect(*A_at((s_test_state.cleanup_orders)[0]) == 1));
+    try_(TEST_expect(*A_at((s_test_state.cleanup_orders)[1]) == 2));
     return_ok({});
 } $unguarded(TEST_fn);

@@ -28,7 +28,7 @@ errset_((net_E)(
     net_NotConnected,
     net_ProtocolUnsupported,
     net_SocketModeUnsupported,
-    net_SystemResources,
+    net_SysResrcs,
     net_WouldBlock
 ) $union_errset_(Sched_TimeoutE));
 

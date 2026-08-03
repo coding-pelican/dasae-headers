@@ -54,6 +54,8 @@ errset_((io_CopyExactE)() $union_errset_(
 T_alias$((io_Reader)(struct io_Reader));
 T_alias$((io_Writer)(struct io_Writer));
 
+T_alias$((io_std_Self)(struct io_std_Self));
+
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */

@@ -23,11 +23,11 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-T_alias$((proc_Entry)(struct proc_Entry {
+struct proc_Entry {
     var_(args, proc_Args);
     var_(env, proc_Env);
     var_(preopens, proc_Preopens);
-}));
+};
 T_use_prl$(proc_Entry);
 
 #if defined(__cplusplus)

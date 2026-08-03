@@ -19,9 +19,9 @@ static BOOL CALLBACK net__windows_wsaInit(PINIT_ONCE init_once, PVOID param, PVO
 
 $static fn_((net__windows_ensureStarted(void))(E$void) $scope) {
     if (!InitOnceExecuteOnce(&net__windows_wsa_once, net__windows_wsaInit, null, null)) {
-        return_err(E_cause$net_SystemResources());
+        return_err(E_cause$net_SysResrcs());
     }
-    if (net__windows_wsa_status != ERROR_SUCCESS) return_err(E_cause$net_SystemResources());
+    if (net__windows_wsa_status != ERROR_SUCCESS) return_err(E_cause$net_SysResrcs());
     return_ok({});
 } $unscoped(fn);
 

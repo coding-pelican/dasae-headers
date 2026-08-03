@@ -27,10 +27,12 @@ extern "C" {
 errset_((fs_File_std_direct_E)(fs_File_std_direct_Unsupported));
 
 T_alias$((fs_File_std_Self_VTbl)(struct fs_File_std_Self_VTbl));
-T_alias$((fs_File_std_Self)(struct fs_File_std_Self {
+$extern let_(fs_File_std_VTbl_failing, fs_File_std_Self_VTbl);
+
+struct fs_File_std_Self {
     var_(ctx, P$raw);
     var_(vtbl, P_const$$(fs_File_std_Self_VTbl));
-}));
+};
 T_use_prl$(fs_File_std_Self);
 T_use_E$($set(fs_File_std_direct_E)(fs_File_std_Self));
 $attr($inline_always $must_check)
@@ -56,7 +58,6 @@ struct fs_File_std_Self_VTbl {
     fn_(((*outFn)(P$raw ctx))(fs_File));
     fn_(((*errFn)(P$raw ctx))(fs_File));
 };
-
 $extern fn_((fs_File_std_VTbl_unreachableIn(P$raw ctx))(fs_File));
 $extern fn_((fs_File_std_VTbl_unreachableOut(P$raw ctx))(fs_File));
 $extern fn_((fs_File_std_VTbl_unreachableErr(P$raw ctx))(fs_File));

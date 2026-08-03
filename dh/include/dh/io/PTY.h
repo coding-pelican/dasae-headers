@@ -35,13 +35,13 @@ errset_((io_PTY_SpawnFailedE)(io_PTY_SpawnFailed));
 errset_((io_PTY_InvalidCommandE)(io_PTY_InvalidCommand));
 errset_((io_PTY_InvalidSizeE)(io_PTY_InvalidSize));
 errset_((io_PTY_ResizeFailedE)(io_PTY_ResizeFailed));
-errset_((io_PTY_SystemResourcesE)(io_PTY_SystemResources));
+errset_((io_PTY_SysResrcsE)(io_PTY_SysResrcs));
 
 errset_((io_PTY_OpenE)() $union_errset_(
     io_PTY_UnsupportedE,
     io_PTY_OpenFailedE,
     io_PTY_InvalidSizeE,
-    io_PTY_SystemResourcesE,
+    io_PTY_SysResrcsE,
     io_TTY_ApplyModeE
 ));
 errset_((io_PTY_ResizeE)() $union_errset_(
@@ -53,7 +53,7 @@ errset_((io_PTY_SpawnE)() $union_errset_(
     io_PTY_UnsupportedE,
     io_PTY_SpawnFailedE,
     io_PTY_InvalidCommandE,
-    io_PTY_SystemResourcesE,
+    io_PTY_SysResrcsE,
     mem_E,
     io_PTY_OpenE
 ));
@@ -118,30 +118,20 @@ T_alias$((io_PTY_SpawnCfg)(struct io_PTY_SpawnCfg {
 }));
 T_use_prl$(io_PTY_SpawnCfg);
 $attr($inline_always)
-$static fn_((io_PTY_SpawnCfg_default(
-    mem_Alctr gpa,
-    proc_Env env,
-    proc_Spawn_Opts cmd
-))(io_PTY_SpawnCfg));
+$static fn_((io_PTY_SpawnCfg_default(mem_Alctr gpa, proc_Env env, proc_Spawn_Opts cmd))(io_PTY_SpawnCfg));
 
 /*---------- PTY Session Lifecycle ------------------------------------------*/
 
 $attr($must_check)
 $extern fn_((io_PTY_spawn(io_PTY_SpawnCfg cfg))(io_PTY_SpawnE$io_PTY_Session));
-$extern fn_((io_PTY_Session_close(
-    io_PTY_Session* self, proc_Self proc
-))(void));
+$extern fn_((io_PTY_Session_close(io_PTY_Session* self, proc_Self proc))(void));
 $extern fn_((io_PTY_Session_reader(io_PTY_Session* self))(io_Reader));
 $extern fn_((io_PTY_Session_writer(io_PTY_Session* self))(io_Writer));
 $attr($must_check)
 $extern fn_((io_PTY_Session_resize(io_PTY_Session* self, io_PTY_Size size))(io_PTY_ResizeE$void));
 $attr($must_check)
-$extern fn_((io_PTY_Session_wait(
-    io_PTY_Session* self, proc_Self proc
-))(proc_Child_Wait_E$proc_Child_Trm));
-$extern fn_((io_PTY_Session_kill(
-    io_PTY_Session* self, proc_Self proc
-))(void));
+$extern fn_((io_PTY_Session_wait(io_PTY_Session* self, proc_Self proc))(proc_Child_Wait_E$proc_Child_Trm));
+$extern fn_((io_PTY_Session_kill(io_PTY_Session* self, proc_Self proc))(void));
 
 /*========== Macros and Definitions =========================================*/
 

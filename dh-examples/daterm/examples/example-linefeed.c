@@ -22,10 +22,18 @@ fn_((main(proc_Entry entry))(E$void) $guard) {
     defer_(heap_Arena_fini(&arena));
     var ansi = try_(daterm_ANSI_init(with_((unwrap_(
         daterm_ANSI_Cfg_direct(heap_Sys_alctr(&heap))
-    ))((.output_mode)(when_(ascii_eqlSenseCase(output_mode_arg, u8_l("on")))(
-        provide_(daterm_ANSI_OutputMode_processed),
-        instead_(daterm_ANSI_OutputMode_raw),
-    ))))));
+    ))((.output_mode)(local_({
+        let is_processed = ascii_eqlSenseCase(output_mode_arg, u8_l("on"));
+        let is_raw = ascii_eqlSenseCase(output_mode_arg, u8_l("off"));
+        if (!is_processed && !is_raw) {
+            io_stream_eprintln(u8_l("Usage: example-linefeed <on|off>"));
+            start_exit(1);
+        }
+        local_return_(as$(daterm_ANSI_OutputMode)(when_(is_processed)(
+            provide_(daterm_ANSI_OutputMode_processed),
+            instead_(daterm_ANSI_OutputMode_raw)
+        )));
+    }))))));
     defer_(daterm_ANSI_fini(&ansi));
     try_(daterm_ANSI_enableRawMode(&ansi));
     defer_(daterm_ANSI_disableRawMode(&ansi));

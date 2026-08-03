@@ -57,7 +57,7 @@ self
 core
 impl/implement/implementation
 exnt/extent
-ext/extend/extn/extension
+extn/extend/ext/extension
 expn/expand/expsn/expansion
 xtr/extra
 

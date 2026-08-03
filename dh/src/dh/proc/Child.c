@@ -15,7 +15,6 @@ fn_((proc_Child_wait(proc_Child* self, proc_Self proc))(proc_Child_Wait_E$proc_C
     claim_assert(isNone(self->io.err));
     return_ok(terminated);
 } $unscoped(fn);
-
 fn_((proc_Child_kill(proc_Child* self, proc_Self proc))(void)) {
     claim_assert_nonnull(self);
     if_none(self->handle) {

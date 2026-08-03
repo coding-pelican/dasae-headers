@@ -36,6 +36,8 @@ T_decl_prl$(fs_Dir);
 typedef struct fs_File fs_File;
 T_decl_prl$(fs_File);
 
+typedef struct fs_File_std_Self fs_File_std_Self;
+
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */

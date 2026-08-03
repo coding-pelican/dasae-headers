@@ -2,53 +2,7 @@
 #include "dh/fs/File/std.h"
 #include "dh/thrd/Mtx.h"
 
-#if plat_is_windows
-#include "dh/sys/api/windows/console.h"
-#elif plat_is_posix
-#include "dh/sys/posix.h"
-#endif
-
-/*========== External Definitions ===========================================*/
-
-$static var_(io_std__ctx_noop, Void) $undefined_static;
-$static let_(io_std__vtbl_noop, io_std_Self_VTbl) = {
-    .inFn = io_std_VTbl_noIn,
-    .tryLockInFn = io_std_VTbl_noTryLockIn,
-    .lockInFn = io_std_VTbl_noLockIn,
-    .unlockInFn = io_std_VTbl_noUnlockIn,
-    .outFn = io_std_VTbl_noOut,
-    .tryLockOutFn = io_std_VTbl_noTryLockOut,
-    .lockOutFn = io_std_VTbl_noLockOut,
-    .unlockOutFn = io_std_VTbl_noUnlockOut,
-    .errFn = io_std_VTbl_noErr,
-    .tryLockErrFn = io_std_VTbl_noTryLockErr,
-    .lockErrFn = io_std_VTbl_noLockErr,
-    .unlockErrFn = io_std_VTbl_noUnlockErr,
-};
-let_(io_std_noop, io_std_Self) = {
-    .ctx = &io_std__ctx_noop,
-    .vtbl = &io_std__vtbl_noop,
-};
-
-$static var_(io_std__ctx_failing, Void) $undefined_static;
-$static let_(io_std__vtbl_failing, io_std_Self_VTbl) = {
-    .inFn = io_std_VTbl_failingIn,
-    .tryLockInFn = io_std_VTbl_noTryLockIn,
-    .lockInFn = io_std_VTbl_noLockIn,
-    .unlockInFn = io_std_VTbl_noUnlockIn,
-    .outFn = io_std_VTbl_failingOut,
-    .tryLockOutFn = io_std_VTbl_noTryLockOut,
-    .lockOutFn = io_std_VTbl_noLockOut,
-    .unlockOutFn = io_std_VTbl_noUnlockOut,
-    .errFn = io_std_VTbl_failingErr,
-    .tryLockErrFn = io_std_VTbl_noTryLockErr,
-    .lockErrFn = io_std_VTbl_noLockErr,
-    .unlockErrFn = io_std_VTbl_noUnlockErr,
-};
-let_(io_std_failing, io_std_Self) = {
-    .ctx = &io_std__ctx_failing,
-    .vtbl = &io_std__vtbl_failing,
-};
+/*========== Internal Declarations ==========================================*/
 
 T_alias$((io_std_direct__Ctx)(struct io_std_direct__Ctx {
     var_(in_file, fs_File);
@@ -70,6 +24,48 @@ $static fn_((io_std_direct__err(P$raw ctx))(io_Writer));
 $static fn_((io_std_direct__tryLockErr(P$raw ctx))(bool));
 $static fn_((io_std_direct__lockErr(P$raw ctx))(void));
 $static fn_((io_std_direct__unlockErr(P$raw ctx))(void));
+
+/*========== External Definitions ===========================================*/
+
+$static var_(io_std__ctx_noop, Void) $undefined_static;
+let_(io_std_VTbl_noop, io_std_Self_VTbl) = {
+    .inFn = io_std_VTbl_noIn,
+    .tryLockInFn = io_std_VTbl_noTryLockIn,
+    .lockInFn = io_std_VTbl_noLockIn,
+    .unlockInFn = io_std_VTbl_noUnlockIn,
+    .outFn = io_std_VTbl_noOut,
+    .tryLockOutFn = io_std_VTbl_noTryLockOut,
+    .lockOutFn = io_std_VTbl_noLockOut,
+    .unlockOutFn = io_std_VTbl_noUnlockOut,
+    .errFn = io_std_VTbl_noErr,
+    .tryLockErrFn = io_std_VTbl_noTryLockErr,
+    .lockErrFn = io_std_VTbl_noLockErr,
+    .unlockErrFn = io_std_VTbl_noUnlockErr,
+};
+let_(io_std_noop, io_std_Self) = {
+    .ctx = &io_std__ctx_noop,
+    .vtbl = &io_std_VTbl_noop,
+};
+
+$static var_(io_std__ctx_failing, Void) $undefined_static;
+let_(io_std_VTbl_failing, io_std_Self_VTbl) = {
+    .inFn = io_std_VTbl_failingIn,
+    .tryLockInFn = io_std_VTbl_noTryLockIn,
+    .lockInFn = io_std_VTbl_noLockIn,
+    .unlockInFn = io_std_VTbl_noUnlockIn,
+    .outFn = io_std_VTbl_failingOut,
+    .tryLockOutFn = io_std_VTbl_noTryLockOut,
+    .lockOutFn = io_std_VTbl_noLockOut,
+    .unlockOutFn = io_std_VTbl_noUnlockOut,
+    .errFn = io_std_VTbl_failingErr,
+    .tryLockErrFn = io_std_VTbl_noTryLockErr,
+    .lockErrFn = io_std_VTbl_noLockErr,
+    .unlockErrFn = io_std_VTbl_noUnlockErr,
+};
+let_(io_std_failing, io_std_Self) = {
+    .ctx = &io_std__ctx_failing,
+    .vtbl = &io_std_VTbl_failing,
+};
 
 fn_((io_std_direct(void))(io_std_direct_E$io_std_Self) $scope) {
     pp_if_(pp_or(plat_is_windows, plat_is_posix))(
@@ -205,95 +201,95 @@ fn_((io_std_lockErr(io_std_Self self))(io_Locked_Writer)) {
 };
 
 fn_((io_std_VTbl_noIn(P$raw ctx))(io_Reader)) {
-    let_ignore = ctx;
+    let_ignore = ensureNonnull(ctx);
     return io_Reader_noop;
 };
 fn_((io_std_VTbl_failingIn(P$raw ctx))(io_Reader)) {
-    let_ignore = ctx;
+    let_ignore = ensureNonnull(ctx);
     return io_Reader_failing;
 };
 fn_((io_std_VTbl_noTryLockIn(P$raw ctx))(bool)) {
-    let_ignore = ctx;
+    let_ignore = ensureNonnull(ctx);
     return true;
 };
 fn_((io_std_VTbl_unreachableTryLockIn(P$raw ctx))(bool)) {
-    let_ignore = ctx;
+    let_ignore = ensureNonnull(ctx);
     claim_unreachable;
 };
 fn_((io_std_VTbl_noLockIn(P$raw ctx))(void)) {
-    let_ignore = ctx;
+    let_ignore = ensureNonnull(ctx);
 };
 fn_((io_std_VTbl_unreachableLockIn(P$raw ctx))(void)) {
-    let_ignore = ctx;
+    let_ignore = ensureNonnull(ctx);
     claim_unreachable;
 };
 fn_((io_std_VTbl_noUnlockIn(P$raw ctx))(void)) {
-    let_ignore = ctx;
+    let_ignore = ensureNonnull(ctx);
 };
 fn_((io_std_VTbl_unreachableUnlockIn(P$raw ctx))(void)) {
-    let_ignore = ctx;
+    let_ignore = ensureNonnull(ctx);
     claim_unreachable;
 };
 
 fn_((io_std_VTbl_noOut(P$raw ctx))(io_Writer)) {
-    let_ignore = ctx;
+    let_ignore = ensureNonnull(ctx);
     return io_Writer_noop;
 };
 fn_((io_std_VTbl_failingOut(P$raw ctx))(io_Writer)) {
-    let_ignore = ctx;
+    let_ignore = ensureNonnull(ctx);
     return io_Writer_failing;
 };
 fn_((io_std_VTbl_noTryLockOut(P$raw ctx))(bool)) {
-    let_ignore = ctx;
+    let_ignore = ensureNonnull(ctx);
     return true;
 };
 fn_((io_std_VTbl_unreachableTryLockOut(P$raw ctx))(bool)) {
-    let_ignore = ctx;
+    let_ignore = ensureNonnull(ctx);
     claim_unreachable;
 };
 fn_((io_std_VTbl_noLockOut(P$raw ctx))(void)) {
-    let_ignore = ctx;
+    let_ignore = ensureNonnull(ctx);
 };
 fn_((io_std_VTbl_unreachableLockOut(P$raw ctx))(void)) {
-    let_ignore = ctx;
+    let_ignore = ensureNonnull(ctx);
     claim_unreachable;
 };
 fn_((io_std_VTbl_noUnlockOut(P$raw ctx))(void)) {
-    let_ignore = ctx;
+    let_ignore = ensureNonnull(ctx);
 };
 fn_((io_std_VTbl_unreachableUnlockOut(P$raw ctx))(void)) {
-    let_ignore = ctx;
+    let_ignore = ensureNonnull(ctx);
     claim_unreachable;
 };
 
 fn_((io_std_VTbl_noErr(P$raw ctx))(io_Writer)) {
-    let_ignore = ctx;
+    let_ignore = ensureNonnull(ctx);
     return io_Writer_noop;
 };
 fn_((io_std_VTbl_failingErr(P$raw ctx))(io_Writer)) {
-    let_ignore = ctx;
+    let_ignore = ensureNonnull(ctx);
     return io_Writer_failing;
 };
 fn_((io_std_VTbl_noTryLockErr(P$raw ctx))(bool)) {
-    let_ignore = ctx;
+    let_ignore = ensureNonnull(ctx);
     return true;
 };
 fn_((io_std_VTbl_unreachableTryLockErr(P$raw ctx))(bool)) {
-    let_ignore = ctx;
+    let_ignore = ensureNonnull(ctx);
     claim_unreachable;
 };
 fn_((io_std_VTbl_noLockErr(P$raw ctx))(void)) {
-    let_ignore = ctx;
+    let_ignore = ensureNonnull(ctx);
 };
 fn_((io_std_VTbl_unreachableLockErr(P$raw ctx))(void)) {
-    let_ignore = ctx;
+    let_ignore = ensureNonnull(ctx);
     claim_unreachable;
 };
 fn_((io_std_VTbl_noUnlockErr(P$raw ctx))(void)) {
-    let_ignore = ctx;
+    let_ignore = ensureNonnull(ctx);
 };
 fn_((io_std_VTbl_unreachableUnlockErr(P$raw ctx))(void)) {
-    let_ignore = ctx;
+    let_ignore = ensureNonnull(ctx);
     claim_unreachable;
 };
 

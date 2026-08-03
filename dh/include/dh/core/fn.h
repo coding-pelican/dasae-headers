@@ -72,6 +72,8 @@ extern "C" {
 #define blk_deferral comp_syn__blk_deferral
 #define loop_defer comp_syn__loop_defer
 #define loop_deferral comp_syn__loop_deferral
+#define case_defer comp_syn__case_defer
+#define case_deferral comp_syn__case_deferral
 
 /*
 #define errdefer_(_$Expr...) comp_syn__errdefer_(_$Expr)
@@ -242,6 +244,18 @@ extern fn_((__fn_memmove__no_hinting(void*, const void*, usize))(void*));
     } while (false); \
     if (__loop_defer_is_breaking) { break; } \
 } /* clang-format on */
+
+/* Switch-case defer boundary. The statement expression owns an independent
+ * guard because a case body cannot reuse its parent switch as defer storage.
+ * A raw break/continue remains local to the synthetic body; the surrounding
+ * case chooses its own control flow after case_deferral. */
+#define comp_syn__case_defer /* clang-format off */ \
+    comp_syn__expr_$_guard(Void) \
+        do
+#define comp_syn__case_deferral \
+        while (false); \
+        $break_(Void_()); \
+    $unguarded_expr /* clang-format on */
 
 #define comp_syn__defer__op_snapshot(_$Expr...) \
     { \
