@@ -150,9 +150,22 @@ dh-c build
 dh-c build release
 dh-c build main.c util.c
 dh-c build --example demo
+dh-c build --sample
+dh-c build --example
 dh-c build --lib --shared
 dh-c build --image firmware.c --link-script=layout.ld
 ```
+
+When `--sample` or `--example` is used without a member name or explicit source,
+the command is a batch operation over the selected built-in root:
+
+- each source file directly under the root becomes one executable;
+- each immediate subdirectory becomes one executable containing its recursively
+  discovered source files;
+- empty subdirectories and non-source files are ignored.
+
+The same batch selection applies to `build`, `run`, and `test`; each selected
+executable is processed independently.
 
 ### Run
 
@@ -214,6 +227,26 @@ dh-c format
 `plan` and `explain rebuild` are read-only. They do not build dependencies,
 write caches or build descriptions, acquire project build-state paths, or create
 `build/native`.
+
+`syntax` uses a dependency-aware cache under the active target/profile build
+tree. The cache key includes the effective compiler invocation, target, profile,
+and source. Clang-generated `.d` files extend freshness checks to included
+headers. A cache hit is reported as:
+
+```txt
+[SKIP] syntax path/to/source.c
+```
+
+Normal builds leave source/header freshness to Make. `dh-c` regenerates the
+plan only when its build contract changes and does not pre-parse every object
+dependency file before invoking Make. The more expensive read-only freshness
+walk remains available to `plan` and `explain rebuild`.
+
+`build --emit-disasm[=<path>]` invokes `llvm-objdump -d` after linking. Section
+contents are enabled by default (`-s`) unless
+`--disasm-section-contents=off` is explicit, so data sections present in the
+artifact—including ELF `.rodata` and PE/COFF `.rdata`—are emitted alongside the
+instruction disassembly.
 
 ## 6. Profiles
 
@@ -290,6 +323,56 @@ build/native -> build/<normalized-host-target>
 as a symbolic link or Windows junction where supported. Explicit cross-target
 builds do not move the native alias.
 
+An explicit target triple controls artifact naming and linker policy even when
+the host OS differs. For example, a Windows-hosted build targeting
+`x86_64-linux-gnu` is normalized to `x86_64-pc-linux-gnu` and produces Linux
+`.a`/`.so` artifacts rather than `.lib`/`.dll` artifacts. GNU Windows targets
+are normalized to the `*-w64-windows-gnu` form, while MSVC targets use
+`*-pc-windows-msvc`.
+
+`package --layout=prebuilt` is the immutable **library package** layout described
+below. It requires a generated library `manifest.dh`.
+
+The `dh-c` project additionally supports a relocatable, source-free SDK bundle:
+
+```bash
+cd dh-c
+dh-c package release --layout=self-prebuilt
+dh-c package release --layout=self-prebuilt --self-profiles=dev,test,release
+```
+
+The command profile (`release` above) selects how the bundled `dh-c` executable
+is built. `--self-profiles` independently selects the DH library profiles made
+available to projects using that executable. When omitted, it defaults to
+`dev,fast,test,stable,release`.
+
+The resulting SDK root is:
+
+```txt
+dh-c/self-prebuilt/<normalized-target>/<dh-c-profile>/
+  sdk.dh
+  LICENSE                         # when present in the source repository
+  bin/
+    dh-c[.exe]
+    <required runtime DLLs>
+  include/
+    dh.h
+    dh-main.h
+    dh-TEST-main.h
+    ...
+  prebuilt/
+    <normalized-target>/
+      <selected DH profile>/
+        manifest.dh
+        libs/
+        deps/                     # when required
+```
+
+The bundle is relocatable as one directory. Its `bin/dh-c` finds the SDK root
+through its executable location after explicit `--dh`, current-directory
+search, and `DH_HOME`. Creating it requires a source DH installation; consuming
+it does not require DH or dh-c sources.
+
 See:
 
 - [`dh-c/docs/dh-c-prebuilt-manifest.md`](./dh-c/docs/dh-c-prebuilt-manifest.md)
@@ -338,6 +421,13 @@ remain named-project operations.
 Provider cross-target inputs include compiler, archiver, target, sysroot,
 and provider-specific toolchain variables where applicable.
 
+Dependency staging preserves native and LTO static archives, shared libraries,
+and import libraries. Windows consumers accept both MSVC `.lib` and GNU `.a` /
+`.dll.a` forms. Dependency runtime DLLs staged under `lib/deps/` are copied into
+the package `bin/` directory and retained by `install`. Dependency-generated
+`.dh-exports` files carry exported compile constants, including version
+constants, into normal builds, `syntax`, and `compile_commands.json`.
+
 See [`dh-c/docs/external-dependencies.md`](./dh-c/docs/external-dependencies.md).
 
 ## 10. Generated state and source control
@@ -359,9 +449,19 @@ Normally ignored:
 ```txt
 build/
 .dh-c/
-prebuilt/   # unless deliberately vendored as source input
-dist/       # generated release output
+prebuilt/       # immutable library package output unless deliberately vendored
+self-prebuilt/  # generated relocatable dh-c SDK roots
+dist/           # generated release/archive output
 ```
+
+Generated paths are lazy. A dependency-free build or package does not create
+`lib/`, `lib/deps/`, or `.dh-c/deps/`. Project build serialization uses a lock
+under the global dh-c cache rather than `.dh-c/build.lock`; an obsolete local
+lock is removed, and an otherwise empty `.dh-c/` directory is removed with it.
+
+When PCH is disabled, unavailable, unused by the selected source set, or already
+fresh, the progress stream reports the reason with `[SKIP] PCH ...`. No PCH
+output path or build rule is emitted when no PCH is required.
 
 `manifest.dh` belongs inside generated build/prebuilt packages, not as a
 hand-authored root project file.
@@ -373,6 +473,9 @@ Pushes to `main` or `redesign-exec-model` dispatch the exact source commit to
 `dh-c/include`, or `dh-c/src` changes. Configure the source repository secret
 `DH_SDK_DISPATCH_TOKEN` with permission to trigger Actions in that repository.
 The SDK workflow owns cancellation of superseded runs and release publication.
+It may archive the directory produced by `package --layout=self-prebuilt`; the
+command itself deliberately creates a directory rather than assuming a release
+archive format or transport.
 
 ```mermaid
 sequenceDiagram

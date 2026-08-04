@@ -3,7 +3,8 @@
 `dh-c` separates requested dependency state, resolved dependency state, mutable
 source/provider state, and staged package output.
 
-Named project scope:
+Named project scope, created lazily when a dependency action actually needs
+the corresponding state:
 
 ```txt
 <project>/
@@ -16,6 +17,10 @@ Named project scope:
       packages/<target>/<profile>/<name>/
       usage/<name>.stamp
 ```
+
+A dependency-free build, package, or read-only status operation does not create
+`.dh-c/deps/`, `lib/`, or `lib/deps/`. Build serialization uses the global dh-c
+cache rather than a project-local `.dh-c/build.lock`.
 
 Projectless source-unit scope:
 
@@ -333,8 +338,17 @@ runtime-file=bin/SDL3.dll
 `runtime-file` may be repeated. During `dh-c package`, declared files are copied
 from the dependency's private package root into the current project's `bin/`
 directory. A missing declared runtime file is an error. When no runtime export
-is declared, the conventional dependency `bin/` tree is staged. External
-providers do not participate in the recursive `provider=dh` source build graph.
+is declared, the conventional dependency `bin/` tree is staged. DLLs already
+present anywhere in generated `lib/deps/` are also copied into package `bin/`
+and retained by `install`. External providers do not participate in the
+recursive `provider=dh` source build graph.
+
+`provider=dh` dependencies additionally stage generated `.dh-exports` metadata.
+It carries dependency-owned compile constants, including version constants,
+through transitive dependency copies. The consumer folds those constants into
+normal compilation, `syntax`, and `compile_commands.json`. Static/link staging
+accepts native and LTO archives, shared libraries, MSVC import `.lib` files, and
+GNU Windows `.a` / `.dll.a` forms.
 
 For the complete authored-file ownership and precedence model, see
 [`dh-c-configuration-files.md`](./dh-c-configuration-files.md).

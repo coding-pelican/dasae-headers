@@ -13,6 +13,9 @@
 #include <ctype.h>
 #ifdef _WIN32
 #include <windows.h>
+#else
+#include <sys/stat.h>
+#include <unistd.h>
 #endif
 /* Supported: single file build/run/test; --sample/--example/--test with bare filename
  * (e.g. dh-c build --sample target.c resolves to samples/target.c); aggregate test builds
@@ -79,6 +82,13 @@ static bool dal_c_Cmd__inputsNeedCategoryResoln(const dal_c_Cmd* cmd);
 static ArrStr* dal_c_Cmd__collectPathSources(const char* path, bool resolved_is_dir, bool skip_auto_paths);
 static ArrStr* dal_c_Cmd__collectExplicitSources(const dal_c_Cmd* cmd);
 static ArrStr* dal_c_Cmd__collectTargetSources(const dal_c_Project* proj, const dal_c_TargetRequest* request);
+static int dal_c_Cmd__runTargetRootBatch(
+    const dal_c_Cmd* self,
+    const dal_c_Project* proj,
+    const dal_c_TargetRequest* request,
+    const ArrStr* active_excludes,
+    bool* handled_out
+);
 static char* dal_c_Cmd__targetLocalSourceRoot(const dal_c_TargetRequest* request);
 static char* dal_c_Cmd__targetLocalIncludeRoot(const dal_c_TargetRequest* request);
 static char* dal_c_Cmd__targetLocalDHPath(const dal_c_Project* proj, const dal_c_Cmd* cmd);
@@ -200,19 +210,31 @@ static unsigned long long dal_c_Cmd__lockPathHash(const char* text) {
     return hash;
 }
 
-static char* dal_c_Cmd__makeProjectLockPath(const char* root) {
-    if (root && root[0] != '\0') {
-        char* state_dir = path_join(root, ".dh-c");
-        if (!state_dir || !dir_createRecur(state_dir)) {
-            free(state_dir);
-            return NULL;
-        }
-        char* lock_path = path_join(state_dir, "build.lock");
-        free(state_dir);
-        return lock_path;
-    }
+static void dal_c_Cmd__removeLegacyProjectLock(const char* root) {
+    if (!root || !root[0]) { return; }
+    char* state_dir = path_join(root, ".dh-c");
+    char* legacy_lock = state_dir ? path_join(state_dir, "build.lock") : NULL;
+    if (legacy_lock && path_isFile(legacy_lock)) { (void)remove(legacy_lock); }
 
-    char* cwd = env_getCWD();
+    int entry_count = 0;
+    char** entries = state_dir && path_isDir(state_dir)
+                   ? dir_listEntries(state_dir, &entry_count)
+                   : NULL;
+    for (int i = 0; entries && i < entry_count; ++i) { free(entries[i]); }
+    free(entries);
+    if (state_dir && path_isDir(state_dir) && entry_count == 0) {
+#ifdef _WIN32
+        (void)RemoveDirectoryA(state_dir);
+#else
+        (void)rmdir(state_dir);
+#endif
+    }
+    free(legacy_lock);
+    free(state_dir);
+}
+
+static char* dal_c_Cmd__makeProjectLockPath(const char* root) {
+    char* cwd = root && root[0] != '\0' ? path_abs(root) : env_getCWD();
     char* cache_root = dal_c__cacheBaseDir(NULL);
     char* locks_dir = cache_root ? path_join(cache_root, "locks") : NULL;
     if (!locks_dir || !dir_createRecur(locks_dir)) {
@@ -244,6 +266,7 @@ bool dal_c__projectLockAcquireAt(const char* root, dal_c_ProjectLock* lock) {
             dal_c_Cmd__held_locks[i].ref_count++;
             lock->path = lock_path;
             lock->acquired = true;
+            dal_c_Cmd__removeLegacyProjectLock(root);
             return true;
         }
     }
@@ -296,6 +319,7 @@ bool dal_c__projectLockAcquireAt(const char* root, dal_c_ProjectLock* lock) {
     lock->path = lock_path;
     lock->acquired = true;
     lock->waited = os_lock.waited;
+    dal_c_Cmd__removeLegacyProjectLock(root);
     return true;
 }
 
@@ -1651,6 +1675,16 @@ static int dal_c_Cmd__makeTargetUnlocked(const dal_c_Cmd* self, const dal_c_Proj
         }
     }
 
+    bool batch_handled = false;
+    int batch_result = dal_c_Cmd__runTargetRootBatch(
+        self, target_proj, &target_request, active_excludes, &batch_handled
+    );
+    if (batch_handled) {
+        ArrStr_fini(&active_excludes);
+        dal_c_TargetRequest_cleanup(&target_request);
+        return batch_result;
+    }
+
     if (is_test_mode) {
         ArrStr* tests = ArrStr_init();
         char* aggregate_compiler_args = NULL;
@@ -2246,6 +2280,147 @@ static int dal_c_Cmd__prepareCheckPlan(const dal_c_Cmd* self, const dal_c_Projec
     return 0;
 }
 
+static unsigned long long dal_c_Cmd__syntaxHash(ArrStr* argv) {
+    unsigned long long hash = 1469598103934665603ULL;
+    for (int i = 0; argv && i < ArrStr_len(argv); ++i) {
+        const unsigned char* text = (const unsigned char*)ArrStr_at(argv, i);
+        for (; text && *text; ++text) {
+            hash ^= (unsigned long long)*text;
+            hash *= 1099511628211ULL;
+        }
+        hash ^= 0xffu;
+        hash *= 1099511628211ULL;
+    }
+    return hash;
+}
+
+static unsigned long long dal_c_Cmd__fileMtimeTicks(const char* path) {
+    if (!path || !path[0]) { return 0; }
+#ifdef _WIN32
+    WIN32_FILE_ATTRIBUTE_DATA data;
+    if (!GetFileAttributesExA(path, GetFileExInfoStandard, &data)) { return 0; }
+    ULARGE_INTEGER ticks;
+    ticks.LowPart = data.ftLastWriteTime.dwLowDateTime;
+    ticks.HighPart = data.ftLastWriteTime.dwHighDateTime;
+    return ticks.QuadPart;
+#else
+    struct stat info;
+    if (stat(path, &info) != 0) { return 0; }
+#if defined(__APPLE__)
+    return (unsigned long long)info.st_mtimespec.tv_sec * 1000000000ULL
+         + (unsigned long long)info.st_mtimespec.tv_nsec;
+#else
+    return (unsigned long long)info.st_mtim.tv_sec * 1000000000ULL
+         + (unsigned long long)info.st_mtim.tv_nsec;
+#endif
+#endif
+}
+
+static bool dal_c_Cmd__syntaxDepTokenIsFresh(
+    const char* token,
+    unsigned long long stamp_mt,
+    bool* in_dependencies
+) {
+    assert(token != NULL);
+    assert(in_dependencies != NULL);
+    if (!token[0]) { return true; }
+
+    const char* dependency = token;
+    if (!*in_dependencies) {
+        const char* separator = strrchr(token, ':');
+        if (!separator) { return true; }
+        *in_dependencies = true;
+        dependency = separator + 1;
+        if (!dependency[0]) { return true; }
+    } else {
+        const size_t length = strlen(token);
+        if (length > 0 && token[length - 1] == ':') {
+            return false; /* Start of a -MP phony rule: dependency list is complete. */
+        }
+    }
+
+    const unsigned long long dependency_mt = dal_c_Cmd__fileMtimeTicks(dependency);
+    return dependency_mt != 0 && dependency_mt <= stamp_mt;
+}
+
+static bool dal_c_Cmd__syntaxDepFileIsFresh(const char* dep_path, unsigned long long stamp_mt) {
+    char* deps = file_read(dep_path);
+    if (!deps) { return false; }
+
+    bool ok = true;
+    bool in_dependencies = false;
+    size_t capacity = 128;
+    size_t length = 0;
+    char* token = (char*)malloc(capacity);
+    if (!token) {
+        free(deps);
+        return false;
+    }
+
+    for (size_t i = 0;; ++i) {
+        char c = deps[i];
+        bool escaped_literal = false;
+        if (c == '\\') {
+            const char next = deps[i + 1];
+            if (next == '\r' && deps[i + 2] == '\n') {
+                i += 2;
+                continue;
+            }
+            if (next == '\n') {
+                ++i;
+                continue;
+            }
+            if (next == ' ' || next == '\t' || next == '#'
+                || next == '$' || next == ':' || next == '\\') {
+                c = next;
+                ++i;
+                escaped_literal = true;
+            }
+        }
+
+        const bool separator = !escaped_literal
+                            && (c == '\0' || isspace((unsigned char)c));
+        if (!separator) {
+            if (length + 2u > capacity) {
+                const size_t next_capacity = capacity * 2u;
+                char* grown = (char*)realloc(token, next_capacity);
+                if (!grown) {
+                    ok = false;
+                    break;
+                }
+                token = grown;
+                capacity = next_capacity;
+            }
+            token[length++] = c;
+            continue;
+        }
+
+        if (length > 0) {
+            token[length] = '\0';
+            if (!dal_c_Cmd__syntaxDepTokenIsFresh(token, stamp_mt, &in_dependencies)) {
+                if (in_dependencies && token[length - 1] == ':') {
+                    break;
+                }
+                ok = false;
+                break;
+            }
+            length = 0;
+        }
+        if (c == '\0') { break; }
+    }
+
+    free(token);
+    free(deps);
+    return ok && in_dependencies;
+}
+
+static bool dal_c_Cmd__syntaxCacheIsFresh(const char* stamp_path, const char* dep_path, const char* src) {
+    const unsigned long long stamp_mt = dal_c_Cmd__fileMtimeTicks(stamp_path);
+    const unsigned long long source_mt = dal_c_Cmd__fileMtimeTicks(src);
+    if (stamp_mt == 0 || source_mt == 0 || source_mt > stamp_mt) { return false; }
+    return dal_c_Cmd__syntaxDepFileIsFresh(dep_path, stamp_mt);
+}
+
 static int dal_c_Cmd__runSyntaxPlan(dal_c_Cmd__CheckPlan* plan) {
     assert(plan != NULL);
     int result = 0;
@@ -2254,7 +2429,17 @@ static int dal_c_Cmd__runSyntaxPlan(dal_c_Cmd__CheckPlan* plan) {
     if (job_count < 1) { job_count = 1; }
     if (job_count > total) { job_count = total; }
     proc_Child** active = job_count > 0 ? (proc_Child**)calloc((size_t)job_count, sizeof(*active)) : NULL;
-    if (job_count > 0 && !active) { return 1; }
+    char** active_stamps = job_count > 0 ? (char**)calloc((size_t)job_count, sizeof(*active_stamps)) : NULL;
+    if (job_count > 0 && (!active || !active_stamps)) {
+        free(active_stamps);
+        free(active);
+        return 1;
+    }
+
+    char* profile_dir = dal_c__makeBuildProfileDir(plan->build_proj, &plan->effective.opts, plan->profile);
+    char* cache_dir = profile_dir ? path_join(profile_dir, ".syntax") : NULL;
+    free(profile_dir);
+    const bool cache_enabled = cache_dir && dir_createRecur(cache_dir);
 
     int next = 0;
     int active_count = 0;
@@ -2272,6 +2457,29 @@ static int dal_c_Cmd__runSyntaxPlan(dal_c_Cmd__CheckPlan* plan) {
             ArrStr* argv = ArrStr_init();
             dal_c__appendSyntaxArguments(argv, &plan->effective, plan->build_proj, plan->profile, src, plan->target_type);
             ArrStr_push(argv, "-fsyntax-only");
+            const unsigned long long key = dal_c_Cmd__syntaxHash(argv);
+            char* stamp_path = cache_enabled ? str_format("%s/%016llx.stamp", cache_dir, key) : NULL;
+            char* dep_path = cache_enabled ? str_format("%s/%016llx.d", cache_dir, key) : NULL;
+            if (stamp_path && dep_path && dal_c_Cmd__syntaxCacheIsFresh(stamp_path, dep_path, src)) {
+                if (plan->effective.show_progress) {
+                    printf("[%d/%d] SKIP syntax %s\n", source_index + 1, total, src);
+                }
+                free(dep_path);
+                free(stamp_path);
+                ArrStr_fini(&argv);
+                continue;
+            }
+            if (stamp_path && dep_path) {
+                (void)remove(stamp_path);
+                ArrStr_push(argv, "-MMD");
+                ArrStr_push(argv, "-MP");
+                ArrStr_push(argv, "-MT");
+                ArrStr_push(argv, stamp_path);
+                ArrStr_push(argv, "-MF");
+                ArrStr_push(argv, dep_path);
+            }
+            free(dep_path);
+
             if (plan->effective.show_progress) {
                 printf("[%d/%d] SYNTAX %s\n", source_index + 1, total, src);
             }
@@ -2292,41 +2500,50 @@ static int dal_c_Cmd__runSyntaxPlan(dal_c_Cmd__CheckPlan* plan) {
             dal_c_Cmd__freeRawArgv(raw);
             ArrStr_fini(&argv);
             if (!child) {
+                free(stamp_path);
                 result = 1;
                 break;
             }
-            active[active_count++] = child;
+            active[active_count] = child;
+            active_stamps[active_count] = stamp_path;
+            ++active_count;
         }
 
-        if (active_count == 0) {
-            break;
-        }
+        if (active_count == 0) { break; }
 
         int finished_index = -1;
         int code = proc_waitAny(active, active_count, &finished_index);
         if (finished_index >= 0 && finished_index < active_count) {
+            if (code == 0 && active_stamps[finished_index]
+                && !file_writeAtomic(active_stamps[finished_index], "syntax-cache-v1\n")) {
+                code = 1;
+            }
+            free(active_stamps[finished_index]);
             active[finished_index] = active[active_count - 1];
+            active_stamps[finished_index] = active_stamps[active_count - 1];
             active[active_count - 1] = NULL;
+            active_stamps[active_count - 1] = NULL;
             --active_count;
         } else {
             result = result == 0 ? 1 : result;
             break;
         }
-        if (code != 0 && result == 0) {
-            result = code;
-        }
+        if (code != 0 && result == 0) { result = code; }
     }
 
     for (int i = 0; i < active_count; ++i) {
         int code = proc_wait(&active[i]);
-        if (code != 0 && result == 0) {
-            result = code;
+        if (code == 0 && active_stamps[i]
+            && !file_writeAtomic(active_stamps[i], "syntax-cache-v1\n")) {
+            code = 1;
         }
+        free(active_stamps[i]);
+        if (code != 0 && result == 0) { result = code; }
     }
+    free(cache_dir);
+    free(active_stamps);
     free(active);
-    if (result == 0) {
-        printf("Syntax check successful!\n");
-    }
+    if (result == 0) { printf("Syntax check successful!\n"); }
     return result;
 }
 
@@ -4766,6 +4983,93 @@ static ArrStr* dal_c_Cmd__collectTargetSources(const dal_c_Project* proj, const 
         return sources;
     }
     return dal_c__collectPathSourcesCached(proj, request->resolved_path, request->resolved_is_dir, request->raw_target_path == NULL);
+}
+
+static int dal_c_Cmd__runTargetRootBatch(
+    const dal_c_Cmd* self,
+    const dal_c_Project* proj,
+    const dal_c_TargetRequest* request,
+    const ArrStr* active_excludes,
+    bool* handled_out
+) {
+    assert(self != NULL);
+    assert(proj != NULL);
+    assert(request != NULL);
+    assert(active_excludes != NULL);
+    assert(handled_out != NULL);
+    *handled_out = false;
+
+    if (!request->root || request->raw_target_path || self->input_count != 0
+        || !request->root->name
+        || (!str_eql(request->root->name, dal_c_dir_samples)
+            && !str_eql(request->root->name, dal_c_dir_examples))) {
+        return 0;
+    }
+    *handled_out = true;
+    if (!request->resolved_path || !path_isDir(request->resolved_path)) {
+        (void)fprintf(stderr, "Error: Target root not found: %s\n", request->root->name);
+        return 1;
+    }
+    if (request->kind != dal_c_Target_executable) {
+        (void)fprintf(stderr, "Error: Batch sample/example targets must be executable roots\n");
+        return 1;
+    }
+
+    int entry_count = 0;
+    char** entries = dir_listEntries(request->resolved_path, &entry_count);
+    if (entries && entry_count > 1) {
+        qsort(entries, (size_t)entry_count, sizeof(*entries), dal_c_Cmd__compareDepsHeaderPath);
+    }
+    int built_count = 0;
+    int result = 0;
+    for (int i = 0; entries && i < entry_count; ++i) {
+        const bool is_dir = path_isDir(entries[i]);
+        const bool is_file = path_isFile(entries[i]);
+        if (!is_dir && !is_file) { continue; }
+        if (is_file && !dal_c_Cmd__isBuildSource(entries[i])) { continue; }
+
+        ArrStr* sources = dal_c__collectPathSourcesCached(proj, entries[i], is_dir, true);
+        if (dal_c_Cmd__applyExcludeContract(&sources, active_excludes, false) != 0) {
+            ArrStr_fini(&sources);
+            result = 1;
+            break;
+        }
+        if (ArrStr_len(sources) == 0) {
+            ArrStr_fini(&sources);
+            continue;
+        }
+
+        char* output_name = is_dir ? path_basename(entries[i]) : dal_c_Cmd__basenameNoExt(entries[i]);
+        if (!output_name || output_name[0] == '\0') {
+            free(output_name);
+            ArrStr_fini(&sources);
+            result = 1;
+            break;
+        }
+        if (self->show_progress) {
+            (void)printf("[BATCH %d] %s -> %s\n", built_count + 1, entries[i], output_name);
+            (void)fflush(stdout);
+        }
+        result = dal_c_Cmd__buildFromSources(
+            self, proj, sources, output_name, dal_c_Target_executable, NULL, false, false
+        );
+        free(output_name);
+        ArrStr_fini(&sources);
+        if (result != 0) { break; }
+        ++built_count;
+    }
+    for (int i = 0; entries && i < entry_count; ++i) { free(entries[i]); }
+    free(entries);
+
+    if (result == 0 && built_count == 0) {
+        (void)fprintf(stderr, "Error: No sample/example build units found in %s\n", request->resolved_path);
+        return 1;
+    }
+    if (result == 0 && !self->dry_run) {
+        (void)printf("Batch %s successful: %d executable(s)\n", request->root->name, built_count);
+        (void)fflush(stdout);
+    }
+    return result;
 }
 
 static char* dal_c_Cmd__firstExistingChildDir(const char* root, const char* const* names) {

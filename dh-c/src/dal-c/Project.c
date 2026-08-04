@@ -16,6 +16,8 @@
 // === PRIVATE HELPERS ===
 
 static char* dal_c_Project__trimInPlace(char* text);
+static char** dal_c_Project__readLogicalLines(const char* path, int* line_count_out, int** line_numbers_out);
+static char* dal_c_Project__decodeValueInPlace(char* value);
 static char* dal_c_Project__findRoot(const char* start);
 static char* dal_c_Project__findWorkspaceRoot(const char* start);
 static char* dal_c_Project__findDHInstallation(const dal_c_Cmd* cmd);
@@ -67,6 +69,202 @@ static void dal_c_Project__resolveTargetRootExcludePaths(dal_c_TargetRoot* root)
 static void dal_c_Project__ensureBuiltinTargetRoots(dal_c_Project* proj);
 static bool dal_c_Project__resolveCategoryDirs(dal_c_Project* proj);
 static bool dal_c_Project__resolveCategoryDir(dal_c_Project* proj, char** slot, const char* const* aliases);
+
+static bool dal_c_Project__charIsEscaped(const char* text, size_t index) {
+    size_t slash_count = 0;
+    while (index > 0 && text[index - 1] == '\\') {
+        --index;
+        ++slash_count;
+    }
+    return (slash_count & 1u) != 0u;
+}
+
+static bool dal_c_Project__quoteIsOpen(const char* text) {
+    bool open = false;
+    for (size_t i = 0; text && text[i] != '\0'; ++i) {
+        if (text[i] == '"' && !dal_c_Project__charIsEscaped(text, i)) {
+            open = !open;
+        }
+    }
+    return open;
+}
+
+static bool dal_c_Project__hasLineContinuation(const char* text, size_t* slash_index_out) {
+    if (!text) { return false; }
+    size_t len = strlen(text);
+    while (len > 0 && isspace((unsigned char)text[len - 1])) { --len; }
+    if (len == 0 || text[len - 1] != '\\') { return false; }
+    if (dal_c_Project__charIsEscaped(text, len - 1)) { return false; }
+    if (slash_index_out) { *slash_index_out = len - 1; }
+    return true;
+}
+
+static bool dal_c_Project__appendLogicalText(char** dst, size_t* length, size_t* capacity, const char* text, char separator) {
+    assert(dst != NULL);
+    assert(length != NULL);
+    assert(capacity != NULL);
+    const size_t text_len = text ? strlen(text) : 0;
+    const size_t separator_len = (*length > 0 && separator != '\0') ? 1u : 0u;
+    const size_t needed = *length + separator_len + text_len + 1u;
+    if (needed > *capacity) {
+        size_t next = *capacity ? *capacity : 64u;
+        while (next < needed) { next *= 2u; }
+        char* grown = (char*)realloc(*dst, next);
+        if (!grown) { return false; }
+        *dst = grown;
+        *capacity = next;
+    }
+    if (separator_len) { (*dst)[(*length)++] = separator; }
+    if (text_len) {
+        memcpy(*dst + *length, text, text_len);
+        *length += text_len;
+    }
+    (*dst)[*length] = '\0';
+    return true;
+}
+
+static bool dal_c_Project__growLogicalLines(
+    char*** lines,
+    int** line_numbers,
+    int count,
+    int* capacity
+) {
+    assert(lines != NULL);
+    assert(line_numbers != NULL);
+    assert(capacity != NULL);
+    if (count < *capacity) { return true; }
+
+    const int next = *capacity ? *capacity * 2 : 16;
+    char** grown_lines = (char**)malloc((size_t)next * sizeof(**lines));
+    int* grown_numbers = (int*)malloc((size_t)next * sizeof(**line_numbers));
+    if (!grown_lines || !grown_numbers) {
+        free(grown_numbers);
+        free(grown_lines);
+        return false;
+    }
+    if (count > 0) {
+        memcpy(grown_lines, *lines, (size_t)count * sizeof(**lines));
+        memcpy(grown_numbers, *line_numbers, (size_t)count * sizeof(**line_numbers));
+    }
+    free(*lines);
+    free(*line_numbers);
+    *lines = grown_lines;
+    *line_numbers = grown_numbers;
+    *capacity = next;
+    return true;
+}
+
+static void dal_c_Project__freeLogicalLines(char** lines, int count, int* line_numbers) {
+    for (int i = 0; lines && i < count; ++i) { free(lines[i]); }
+    free(lines);
+    free(line_numbers);
+}
+
+static char** dal_c_Project__readLogicalLines(const char* path, int* line_count_out, int** line_numbers_out) {
+    assert(line_count_out != NULL);
+    assert(line_numbers_out != NULL);
+    *line_count_out = 0;
+    *line_numbers_out = NULL;
+
+    int physical_count = 0;
+    char** physical = file_readLines(path, &physical_count);
+    if (!physical) { return NULL; }
+
+    char** logical = NULL;
+    int* line_numbers = NULL;
+    int logical_count = 0;
+    int logical_capacity = 0;
+    char* current = NULL;
+    size_t current_length = 0;
+    size_t current_capacity = 0;
+    int current_start = 1;
+    bool quote_open = false;
+    bool continued = false;
+
+    for (int i = 0; i < physical_count; ++i) {
+        char* part = physical[i];
+        size_t slash_index = 0;
+        const bool line_continues = !quote_open && dal_c_Project__hasLineContinuation(part, &slash_index);
+        if (line_continues) {
+            part[slash_index] = '\0';
+            char* trimmed_end = part + strlen(part);
+            while (trimmed_end > part && isspace((unsigned char)trimmed_end[-1])) { *--trimmed_end = '\0'; }
+        }
+
+        if (!current) { current_start = i + 1; }
+        const char separator = current ? (quote_open ? '\n' : ' ') : '\0';
+        if (!dal_c_Project__appendLogicalText(&current, &current_length, &current_capacity, part, separator)) {
+            free(current);
+            dal_c_Project__freeLogicalLines(logical, logical_count, line_numbers);
+            dal_c_Project__freeLines(physical, physical_count);
+            return NULL;
+        }
+
+        quote_open = dal_c_Project__quoteIsOpen(current);
+        continued = line_continues;
+        if (quote_open || line_continues) { continue; }
+
+        if (!dal_c_Project__growLogicalLines(
+                &logical, &line_numbers, logical_count, &logical_capacity
+            )) {
+            free(current);
+            dal_c_Project__freeLogicalLines(logical, logical_count, line_numbers);
+            dal_c_Project__freeLines(physical, physical_count);
+            return NULL;
+        }
+        logical[logical_count] = current;
+        line_numbers[logical_count] = current_start;
+        ++logical_count;
+        current = NULL;
+        current_length = 0;
+        current_capacity = 0;
+    }
+
+    if (current) {
+        if (quote_open || continued) {
+            (void)fprintf(stderr, "Error: %s:%d: unterminated multiline value\n", path, current_start);
+            free(current);
+            dal_c_Project__freeLogicalLines(logical, logical_count, line_numbers);
+            dal_c_Project__freeLines(physical, physical_count);
+            return NULL;
+        }
+        if (!dal_c_Project__growLogicalLines(
+                &logical, &line_numbers, logical_count, &logical_capacity
+            )) {
+            free(current);
+            dal_c_Project__freeLogicalLines(logical, logical_count, line_numbers);
+            dal_c_Project__freeLines(physical, physical_count);
+            return NULL;
+        }
+        logical[logical_count] = current;
+        line_numbers[logical_count] = current_start;
+        ++logical_count;
+    }
+
+    dal_c_Project__freeLines(physical, physical_count);
+    if (!logical) {
+        logical = (char**)calloc(1, sizeof(*logical));
+        line_numbers = (int*)calloc(1, sizeof(*line_numbers));
+        if (!logical || !line_numbers) {
+            free(logical);
+            free(line_numbers);
+            return NULL;
+        }
+    }
+    *line_count_out = logical_count;
+    *line_numbers_out = line_numbers;
+    return logical;
+}
+
+static char* dal_c_Project__decodeValueInPlace(char* value) {
+    value = dal_c_Project__trimInPlace(value);
+    const size_t len = strlen(value);
+    if (len >= 2 && value[0] == '"' && value[len - 1] == '"' && !dal_c_Project__charIsEscaped(value, len - 1)) {
+        value[len - 1] = '\0';
+        return dal_c_Project__trimInPlace(value + 1);
+    }
+    return value;
+}
 
 // === PUBLIC API ===
 
@@ -548,7 +746,8 @@ static bool dal_c_Project__applyFlatDHFile(
     }
 
     int line_count = 0;
-    char** lines = file_readLines(path, &line_count);
+    int* line_numbers = NULL;
+    char** lines = dal_c_Project__readLogicalLines(path, &line_count, &line_numbers);
     if (!lines) {
         (void)fprintf(stderr, "Error: Unable to read %s: %s\n", kind_name ? kind_name : ".dh file", path);
         return false;
@@ -561,22 +760,22 @@ static bool dal_c_Project__applyFlatDHFile(
         if (line[0] == '\0' || line[0] == '#' || line[0] == ';') { continue; }
         if (line[0] == '[') {
             (void)fprintf(stderr, "Error: %s:%d: sections are not allowed in %s; use root project.dh for dependencies and target roots\n",
-                          path, i + 1, kind_name ? kind_name : "this .dh file");
+                          path, line_numbers[i], kind_name ? kind_name : "this .dh file");
             ok = false;
             break;
         }
 
         char* eq = strchr(line, '=');
         if (!eq) {
-            (void)fprintf(stderr, "Error: %s:%d: expected key=value\n", path, i + 1);
+            (void)fprintf(stderr, "Error: %s:%d: expected key=value\n", path, line_numbers[i]);
             ok = false;
             break;
         }
         *eq = '\0';
         const char* key = dal_c_Project__trimInPlace(line);
-        const char* value = dal_c_Project__trimInPlace(eq + 1);
+        const char* value = dal_c_Project__decodeValueInPlace(eq + 1);
         if (key[0] == '\0') {
-            (void)fprintf(stderr, "Error: %s:%d: empty key\n", path, i + 1);
+            (void)fprintf(stderr, "Error: %s:%d: empty key\n", path, line_numbers[i]);
             ok = false;
             break;
         }
@@ -590,7 +789,7 @@ static bool dal_c_Project__applyFlatDHFile(
         }
         if (!value_valid) {
             (void)fprintf(stderr, "Error: %s:%d: invalid value `%s` for `%s` in %s\n",
-                          path, i + 1, value, key, kind_name ? kind_name : ".dh file");
+                          path, line_numbers[i], value, key, kind_name ? kind_name : ".dh file");
             ok = false;
             break;
         }
@@ -606,13 +805,14 @@ static bool dal_c_Project__applyFlatDHFile(
         }
         if (!recognized) {
             (void)fprintf(stderr, "Error: %s:%d: unsupported key `%s` in %s\n",
-                          path, i + 1, key, kind_name ? kind_name : ".dh file");
+                          path, line_numbers[i], key, kind_name ? kind_name : ".dh file");
             ok = false;
             break;
         }
     }
 
     free(base_dir);
+    free(line_numbers);
     dal_c_Project__freeLines(lines, line_count);
     return ok;
 }
@@ -963,7 +1163,8 @@ static bool dal_c_Project__parseUnitDH(const char* path, dal_c_Project* proj) {
     assert(proj != NULL);
 
     int line_count = 0;
-    char** lines = file_readLines(path, &line_count);
+    int* line_numbers = NULL;
+    char** lines = dal_c_Project__readLogicalLines(path, &line_count, &line_numbers);
     if (!lines) { return false; }
 
     dal_c_Lib* current_lib = NULL;
@@ -975,12 +1176,14 @@ static bool dal_c_Project__parseUnitDH(const char* path, dal_c_Project* proj) {
         if (line[0] == '[') {
             if (current_lib) {
                 if (dal_c_Project__hasLibraryNamed(proj, current_lib->name)) {
-                    (void)fprintf(stderr, "Error: %s:%d: duplicate dependency section `%s`\n", path, i + 1, current_lib->name);
+                    (void)fprintf(stderr, "Error: %s:%d: duplicate dependency section `%s`\n", path, line_numbers[i], current_lib->name);
                     dal_c_Project__freeLibraryDraft(current_lib);
+                    free(line_numbers);
                     dal_c_Project__freeLines(lines, line_count);
                     return false;
                 }
                 if (!dal_c_Project__addLibrary(proj, current_lib)) {
+                    free(line_numbers);
                     dal_c_Project__freeLines(lines, line_count);
                     return false;
                 }
@@ -988,35 +1191,41 @@ static bool dal_c_Project__parseUnitDH(const char* path, dal_c_Project* proj) {
             }
             char* end = strchr(line, ']');
             if (!end || dal_c_Project__trimInPlace(end + 1)[0] != '\0') {
-                (void)fprintf(stderr, "Error: %s:%d: malformed dependency section\n", path, i + 1);
+                (void)fprintf(stderr, "Error: %s:%d: malformed dependency section\n", path, line_numbers[i]);
+                free(line_numbers);
                 dal_c_Project__freeLines(lines, line_count);
                 return false;
             }
             *end = '\0';
             char* section = dal_c_Project__trimInPlace(line + 1);
             if (!section[0]) {
-                (void)fprintf(stderr, "Error: %s:%d: empty dependency section\n", path, i + 1);
+                (void)fprintf(stderr, "Error: %s:%d: empty dependency section\n", path, line_numbers[i]);
+                free(line_numbers);
                 dal_c_Project__freeLines(lines, line_count);
                 return false;
             }
             if (str_startsWith(section, dal_c_project_section_target_root)) {
-                (void)fprintf(stderr, "Error: %s:%d: target-root sections require project.dh\n", path, i + 1);
+                (void)fprintf(stderr, "Error: %s:%d: target-root sections require project.dh\n", path, line_numbers[i]);
+                free(line_numbers);
                 dal_c_Project__freeLines(lines, line_count);
                 return false;
             }
             if (dal_c_Project__hasLibraryNamed(proj, section)) {
-                (void)fprintf(stderr, "Error: %s:%d: duplicate dependency section `%s`\n", path, i + 1, section);
+                (void)fprintf(stderr, "Error: %s:%d: duplicate dependency section `%s`\n", path, line_numbers[i], section);
+                free(line_numbers);
                 dal_c_Project__freeLines(lines, line_count);
                 return false;
             }
             current_lib = calloc(1, sizeof(*current_lib));
             if (!current_lib) {
+                free(line_numbers);
                 dal_c_Project__freeLines(lines, line_count);
                 return false;
             }
             current_lib->name = strdup(section);
             if (!current_lib->name) {
                 dal_c_Project__freeLibraryDraft(current_lib);
+                free(line_numbers);
                 dal_c_Project__freeLines(lines, line_count);
                 return false;
             }
@@ -1028,14 +1237,15 @@ static bool dal_c_Project__parseUnitDH(const char* path, dal_c_Project* proj) {
 
         char* eq = strchr(line, '=');
         if (!eq) {
-            (void)fprintf(stderr, "Error: %s:%d: expected key=value\n", path, i + 1);
+            (void)fprintf(stderr, "Error: %s:%d: expected key=value\n", path, line_numbers[i]);
             dal_c_Project__freeLibraryDraft(current_lib);
+            free(line_numbers);
             dal_c_Project__freeLines(lines, line_count);
             return false;
         }
         *eq = '\0';
         const char* key = dal_c_Project__trimInPlace(line);
-        const char* value = dal_c_Project__trimInPlace(eq + 1);
+        const char* value = dal_c_Project__decodeValueInPlace(eq + 1);
         bool allowed = current_lib
                      ? dal_c_Project__isLibraryKey(key)
                      : (dal_c_Project__isBuildDefaultsKey(key) || dal_c_Project__isPropertyKey(key));
@@ -1046,13 +1256,14 @@ static bool dal_c_Project__parseUnitDH(const char* path, dal_c_Project* proj) {
                         : dal_c_Project__validatePropertyValue(key, value));
         if (!allowed || !valid) {
             if (!allowed) {
-                (void)fprintf(stderr, "Error: %s:%d: unsupported key `%s` in %s\n", path, i + 1, key,
+                (void)fprintf(stderr, "Error: %s:%d: unsupported key `%s` in %s\n", path, line_numbers[i], key,
                     current_lib ? "dependency section" : "ad-hoc unit scope");
             } else {
-                (void)fprintf(stderr, "Error: %s:%d: invalid value `%s` for `%s` in %s\n", path, i + 1, value, key,
+                (void)fprintf(stderr, "Error: %s:%d: invalid value `%s` for `%s` in %s\n", path, line_numbers[i], value, key,
                     current_lib ? "dependency section" : "ad-hoc unit scope");
             }
             dal_c_Project__freeLibraryDraft(current_lib);
+            free(line_numbers);
             dal_c_Project__freeLines(lines, line_count);
             return false;
         }
@@ -1070,14 +1281,17 @@ static bool dal_c_Project__parseUnitDH(const char* path, dal_c_Project* proj) {
         if (dal_c_Project__hasLibraryNamed(proj, current_lib->name)) {
             (void)fprintf(stderr, "Error: %s: duplicate dependency section `%s`\n", path, current_lib->name);
             dal_c_Project__freeLibraryDraft(current_lib);
+            free(line_numbers);
             dal_c_Project__freeLines(lines, line_count);
             return false;
         }
         if (!dal_c_Project__addLibrary(proj, current_lib)) {
+            free(line_numbers);
             dal_c_Project__freeLines(lines, line_count);
             return false;
         }
     }
+    free(line_numbers);
     dal_c_Project__freeLines(lines, line_count);
     return true;
 }
@@ -1234,6 +1448,24 @@ static char* dal_c_Project__findDHInstallation(const dal_c_Cmd* cmd) {
         return exe_child_dh;
     }
     free(exe_child_dh);
+
+    /* A self-prebuilt SDK stores the executable in <sdk>/bin and the DH
+       installation contract at <sdk>. Keep the executable-relative lookup
+       after explicit --dh, cwd discovery, and DH_HOME so those user choices
+       continue to take precedence over the bundled fallback. */
+    char* exe_parent = exe_dir ? path_parent(exe_dir) : NULL;
+    if (dal_c_Project__isDHRoot(exe_parent)) {
+        free(exe_dir);
+        return exe_parent;
+    }
+    char* parent_child_dh = exe_parent ? path_join(exe_parent, "dh") : NULL;
+    if (dal_c_Project__isDHRoot(parent_child_dh)) {
+        free(exe_parent);
+        free(exe_dir);
+        return parent_child_dh;
+    }
+    free(parent_child_dh);
+    free(exe_parent);
     free(exe_dir);
     return NULL;
 }
@@ -2184,7 +2416,8 @@ bool dal_c_Project_dependencySourceMatchesLock(const dal_c_Project* proj, const 
 
 static bool dal_c_Project__parseProjectDH(const char* path, dal_c_Project* proj) {
     int line_count = 0;
-    char** lines = file_readLines(path, &line_count);
+    int* line_numbers = NULL;
+    char** lines = dal_c_Project__readLogicalLines(path, &line_count, &line_numbers);
     if (!lines) { return false; }
 
     dal_c_Lib* current_lib = NULL;
@@ -2200,6 +2433,7 @@ static bool dal_c_Project__parseProjectDH(const char* path, dal_c_Project* proj)
         if (line[0] == '[') {
             if (current_lib) {
                 if (!dal_c_Project__addLibrary(proj, current_lib)) {
+                    free(line_numbers);
                     dal_c_Project__freeLines(lines, line_count);
                     return false;
                 }
@@ -2210,6 +2444,7 @@ static bool dal_c_Project__parseProjectDH(const char* path, dal_c_Project* proj)
                     free(current_target_root->name);
                     free(current_target_root->path);
                     free(current_target_root);
+                    free(line_numbers);
                     dal_c_Project__freeLines(lines, line_count);
                     return false;
                 }
@@ -2221,6 +2456,7 @@ static bool dal_c_Project__parseProjectDH(const char* path, dal_c_Project* proj)
                         free(current_target_root->name);
                         free(current_target_root->path);
                         free(current_target_root);
+                        free(line_numbers);
                         dal_c_Project__freeLines(lines, line_count);
                         return false;
                     }
@@ -2231,21 +2467,24 @@ static bool dal_c_Project__parseProjectDH(const char* path, dal_c_Project* proj)
 
             char* end = strchr(line, ']');
             if (!end || dal_c_Project__trimInPlace(end + 1)[0] != '\0') {
-                (void)fprintf(stderr, "Error: %s:%d: malformed section header\n", path, i + 1);
+                (void)fprintf(stderr, "Error: %s:%d: malformed section header\n", path, line_numbers[i]);
+                free(line_numbers);
                 dal_c_Project__freeLines(lines, line_count);
                 return false;
             }
             *end = '\0';
             char* section = dal_c_Project__trimInPlace(line + 1);
             if (section[0] == '\0') {
-                (void)fprintf(stderr, "Error: %s:%d: empty section name\n", path, i + 1);
+                (void)fprintf(stderr, "Error: %s:%d: empty section name\n", path, line_numbers[i]);
+                free(line_numbers);
                 dal_c_Project__freeLines(lines, line_count);
                 return false;
             }
             if (str_startsWith(section, dal_c_project_section_target_root " ")) {
                 const char* name = dal_c_Project__trimInPlace(section + strlen(dal_c_project_section_target_root));
                 if (name[0] == '\0') {
-                    (void)fprintf(stderr, "Error: %s:%d: target-root requires a name\n", path, i + 1);
+                    (void)fprintf(stderr, "Error: %s:%d: target-root requires a name\n", path, line_numbers[i]);
+                    free(line_numbers);
                     dal_c_Project__freeLines(lines, line_count);
                     return false;
                 }
@@ -2268,15 +2507,17 @@ static bool dal_c_Project__parseProjectDH(const char* path, dal_c_Project* proj)
 
         char* eq = strchr(line, '=');
         if (!eq) {
-            (void)fprintf(stderr, "Error: %s:%d: expected key=value\n", path, i + 1);
+            (void)fprintf(stderr, "Error: %s:%d: expected key=value\n", path, line_numbers[i]);
+            free(line_numbers);
             dal_c_Project__freeLines(lines, line_count);
             return false;
         }
         *eq = '\0';
         const char* key = dal_c_Project__trimInPlace(line);
-        const char* value = dal_c_Project__trimInPlace(eq + 1);
+        const char* value = dal_c_Project__decodeValueInPlace(eq + 1);
         if (key[0] == '\0') {
-            (void)fprintf(stderr, "Error: %s:%d: empty key\n", path, i + 1);
+            (void)fprintf(stderr, "Error: %s:%d: empty key\n", path, line_numbers[i]);
+            free(line_numbers);
             dal_c_Project__freeLines(lines, line_count);
             return false;
         }
@@ -2295,8 +2536,9 @@ static bool dal_c_Project__parseProjectDH(const char* path, dal_c_Project* proj)
         }
         if (!key_allowed) {
             (void)fprintf(stderr, "Error: %s:%d: unsupported key `%s` in %s\n",
-                          path, i + 1, key,
+                          path, line_numbers[i], key,
                           current_target_root ? "target-root section" : (current_lib ? "dependency section" : "project scope"));
+            free(line_numbers);
             dal_c_Project__freeLines(lines, line_count);
             return false;
         }
@@ -2314,8 +2556,9 @@ static bool dal_c_Project__parseProjectDH(const char* path, dal_c_Project* proj)
         }
         if (!value_valid) {
             (void)fprintf(stderr, "Error: %s:%d: invalid value `%s` for `%s` in %s\n",
-                          path, i + 1, value, key,
+                          path, line_numbers[i], value, key,
                           current_target_root ? "target-root section" : (current_lib ? "dependency section" : "project scope"));
+            free(line_numbers);
             dal_c_Project__freeLines(lines, line_count);
             return false;
         }
@@ -2360,6 +2603,7 @@ static bool dal_c_Project__parseProjectDH(const char* path, dal_c_Project* proj)
 
     if (current_lib) {
         if (!dal_c_Project__addLibrary(proj, current_lib)) {
+            free(line_numbers);
             dal_c_Project__freeLines(lines, line_count);
             return false;
         }
@@ -2369,6 +2613,7 @@ static bool dal_c_Project__parseProjectDH(const char* path, dal_c_Project* proj)
             free(current_target_root->name);
             free(current_target_root->path);
             free(current_target_root);
+            free(line_numbers);
             dal_c_Project__freeLines(lines, line_count);
             return false;
         }
@@ -2380,12 +2625,14 @@ static bool dal_c_Project__parseProjectDH(const char* path, dal_c_Project* proj)
                 free(current_target_root->name);
                 free(current_target_root->path);
                 free(current_target_root);
+                free(line_numbers);
                 dal_c_Project__freeLines(lines, line_count);
                 return false;
             }
         }
         dal_c_Project__addTargetRoot(proj, current_target_root);
     }
+    free(line_numbers);
     dal_c_Project__freeLines(lines, line_count);
     return true;
 }

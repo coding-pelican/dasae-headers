@@ -101,6 +101,26 @@ Sections are not allowed in ordinary flat files. Target-root declarations belong
 in root `project.dh`. Dependencies belong either in root `project.dh` or, for a
 projectless unit, in the first selected source's companion.
 
+Values may span physical lines in either of two forms:
+
+```ini
+comp-args="
+  -DFEATURE_A=1
+  -DFEATURE_B=1
+"
+
+link-args=-Wl,--gc-sections \
+  -Wl,--build-id
+```
+
+A double-quoted value continues until its closing `"`. Physical newlines inside
+the quotes are preserved in the parsed value and are subsequently tokenized by
+the property that consumes it. A trailing unescaped `\` continues onto the next
+physical line and joins the two fragments with one space. Diagnostics report the
+line where the logical assignment began. These forms apply consistently to
+`workspace.dh`, `project.dh`, `target.dh`, source companions, and explicit
+`--dh-file` overlays.
+
 ### 4.1 Build defaults
 
 ```ini
@@ -503,6 +523,17 @@ workspace unit scope when `workspace.dh` is found, otherwise under the user/glob
 - is not replaced by test/sample/example executables
 - rejects old or structurally invalid manifests rather than preserving
   unnecessary schema compatibility
+
+### `.dh-exports`
+
+Generated beside staged dependency artifacts. It exports compile-time constants,
+such as a dependency's version constants, to consumers. `dh-c` folds these
+exports into normal compilation, `syntax`, and `compile_commands.json`; users do
+not edit the file by hand.
+
+Generated directories are created only when needed. A dependency-free operation
+does not create `lib/deps/` or `.dh-c/deps/`, and project locking does not require
+a local `.dh-c/build.lock`.
 
 ## 12. Discoverability
 

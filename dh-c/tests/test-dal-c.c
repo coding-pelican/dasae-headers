@@ -67,6 +67,7 @@ static void test_workspace_configuration_precedence(void);
 static void test_scaffold_commands(void);
 static void test_archive_hash_contract(void);
 static void test_dependency_lock_contract(void);
+static void test_project_lock_avoids_local_state(void);
 static void test_prebuilt_dependency_staging(void);
 static void test_clean_prefers_local_build_dir(void);
 static void test_clean_profile_removes_dependency_exports(void);
@@ -125,6 +126,7 @@ int main(void) {
     RUN_TEST(test_scaffold_commands);
     RUN_TEST(test_archive_hash_contract);
     RUN_TEST(test_dependency_lock_contract);
+    RUN_TEST(test_project_lock_avoids_local_state);
     RUN_TEST(test_prebuilt_dependency_staging);
     RUN_TEST(test_clean_prefers_local_build_dir);
     RUN_TEST(test_clean_profile_removes_dependency_exports);
@@ -1423,6 +1425,12 @@ static void test_compiler_mode_contracts(void) {
         "exceptions=off\n"
         "macro-backtrace-limit=unlimited\n"
         "loose-errors=suppress\n"
+        "comp-args=\"\n"
+        "  -DMULTILINE_QUOTED_A=1\n"
+        "  -DMULTILINE_QUOTED_B=2\n"
+        "\"\n"
+        "link-args=-Wl,--gc-sections \\" "\n"
+        "  -Wl,--build-id\n"
     ));
     TEST_ASSERT(dal_c_CompilerOpts_applyDHFile(&file_opts, opts_dh));
     TEST_ASSERT(file_opts.compile_env == dal_c_CompileEnv_freestanding);
@@ -1445,6 +1453,10 @@ static void test_compiler_mode_contracts(void) {
     TEST_ASSERT(file_opts.macro_backtrace_limit_set);
     TEST_ASSERT(file_opts.macro_backtrace_limit == 0);
     TEST_ASSERT(file_opts.loose_errors == dal_c_LooseErrorsMode_suppress);
+    TEST_ASSERT(strstr(file_opts.compiler_args, "-DMULTILINE_QUOTED_A=1") != NULL);
+    TEST_ASSERT(strstr(file_opts.compiler_args, "-DMULTILINE_QUOTED_B=2") != NULL);
+    TEST_ASSERT(strstr(file_opts.link_args, "-Wl,--gc-sections") != NULL);
+    TEST_ASSERT(strstr(file_opts.link_args, "-Wl,--build-id") != NULL);
     dal_c_CompilerOpts_cleanup(&file_opts);
     free(opts_dh);
     free(temp_root);
@@ -1456,6 +1468,9 @@ static void test_makefile_mode_contracts(void) {
     TEST_ASSERT(dal_c__shouldLinkDependencyArtifact("dep.dll.lib", true, false));
     TEST_ASSERT(dal_c__shouldLinkDependencyArtifact("libdep.dll.a", true, false));
     TEST_ASSERT(dal_c__shouldLinkDependencyArtifact("libdep.dll.a", false, false));
+    TEST_ASSERT(dal_c__shouldLinkDependencyArtifact("dep.a", true, false));
+    TEST_ASSERT(dal_c__shouldLinkDependencyArtifact("libdep.a", true, false));
+    TEST_ASSERT(dal_c__shouldLinkDependencyArtifact("libdep.lto.a", true, true));
     TEST_ASSERT(dal_c__shouldLinkDependencyArtifact("libdep.so", false, false));
 
     dal_c_CompilerOpts parent_opts = {
@@ -3181,7 +3196,12 @@ static void test_dh_file_contract(void) {
                                        "kind=shared-lib\n"
                                        "comp-args=-fvisibility=hidden\n"
                                        "comp-args=-fno-common\n"
-                                       "link-args=-Wl,--as-needed\n"
+                                       "comp-args=\"\n"
+                                       "  -DMULTILINE_A=1\n"
+                                       "  -DMULTILINE_B=2\n"
+                                       "\"\n"
+                                       "link-args=-Wl,--as-needed \\" "\n"
+                                       "  -Wl,--build-id\n"
                                        "output-ext=.pyd\n"
                                        "link-script=layout.ld\n"
                                        "objcopy=llvm-objcopy\n"
@@ -3195,8 +3215,11 @@ static void test_dh_file_contract(void) {
     TEST_ASSERT(dal_c_DHFile_apply(&opts, &defaults, valid_path, "test .dh"));
     TEST_ASSERT(str_eql(defaults.output_name, "module"));
     TEST_ASSERT(defaults.target_kind == dal_c_Target_shared_lib);
-    TEST_ASSERT(str_eql(opts.compiler_args, "-fvisibility=hidden -fno-common"));
-    TEST_ASSERT(str_eql(opts.link_args, "-Wl,--as-needed"));
+    TEST_ASSERT(strstr(opts.compiler_args, "-fvisibility=hidden -fno-common") != NULL);
+    TEST_ASSERT(strstr(opts.compiler_args, "-DMULTILINE_A=1") != NULL);
+    TEST_ASSERT(strstr(opts.compiler_args, "-DMULTILINE_B=2") != NULL);
+    TEST_ASSERT(strstr(opts.link_args, "-Wl,--as-needed") != NULL);
+    TEST_ASSERT(strstr(opts.link_args, "-Wl,--build-id") != NULL);
     TEST_ASSERT(str_eql(opts.output_ext, ".pyd"));
     char* expected_linker_script = path_join(temp_root, "layout.ld");
     TEST_ASSERT(test_path_text_eql(opts.linker_script, expected_linker_script));
@@ -3506,6 +3529,29 @@ static void test_dependency_lock_contract(void) {
 
     free(lock_path);
     free(project_dh);
+    free(project_root);
+    free(temp_root);
+}
+
+static void test_project_lock_avoids_local_state(void) {
+    test_reset_temp_root();
+    char* temp_root = test_temp_root();
+    char* project_root = path_join(temp_root, "lock-without-local-state");
+    char* local_state = path_join(project_root, ".dh-c");
+    char* legacy_lock = path_join(local_state, "build.lock");
+    TEST_ASSERT(project_root != NULL);
+    TEST_ASSERT(local_state != NULL);
+    TEST_ASSERT(legacy_lock != NULL);
+    TEST_ASSERT(dir_createRecur(local_state));
+    TEST_ASSERT(file_write(legacy_lock, "legacy\n"));
+
+    dal_c_ProjectLock lock = { 0 };
+    TEST_ASSERT(dal_c__projectLockAcquireAt(project_root, &lock));
+    dal_c__projectLockRelease(&lock);
+    TEST_ASSERT(!path_exists(local_state));
+
+    free(legacy_lock);
+    free(local_state);
     free(project_root);
     free(temp_root);
 }
@@ -3991,10 +4037,19 @@ static void test_clean_unused_dependencies(void) {
 static void test_linux_gnu_target_vendor_is_canonical(void) {
     dal_c_CompilerOpts opts = { 0 };
     char x64_unknown[] = "x86_64-unknown-linux-gnu";
+    char x64_omitted[] = "x86_64-linux-gnu";
     char arm64_unknown[] = "aarch64-unknown-linux-gnu";
+    char linux_musl[] = "x86_64-unknown-linux-musl";
     char windows_gnu[] = "x86_64-w64-windows-gnu";
+    char windows_omitted[] = "x86_64-windows-gnu";
+    char windows_msvc[] = "x86_64-windows-msvc";
     opts.arch_target = x64_unknown;
     char* target = dal_c__resolveTargetDirName(&opts);
+    TEST_ASSERT(str_eql(target, "x86_64-pc-linux-gnu"));
+    free(target);
+
+    opts.arch_target = x64_omitted;
+    target = dal_c__resolveTargetDirName(&opts);
     TEST_ASSERT(str_eql(target, "x86_64-pc-linux-gnu"));
     free(target);
 
@@ -4003,9 +4058,24 @@ static void test_linux_gnu_target_vendor_is_canonical(void) {
     TEST_ASSERT(str_eql(target, "aarch64-pc-linux-gnu"));
     free(target);
 
+    opts.arch_target = linux_musl;
+    target = dal_c__resolveTargetDirName(&opts);
+    TEST_ASSERT(str_eql(target, "x86_64-unknown-linux-musl"));
+    free(target);
+
     opts.arch_target = windows_gnu;
     target = dal_c__resolveTargetDirName(&opts);
     TEST_ASSERT(str_eql(target, "x86_64-w64-windows-gnu"));
+    free(target);
+
+    opts.arch_target = windows_omitted;
+    target = dal_c__resolveTargetDirName(&opts);
+    TEST_ASSERT(str_eql(target, "x86_64-w64-windows-gnu"));
+    free(target);
+
+    opts.arch_target = windows_msvc;
+    target = dal_c__resolveTargetDirName(&opts);
+    TEST_ASSERT(str_eql(target, "x86_64-pc-windows-msvc"));
     free(target);
 }
 
@@ -4114,6 +4184,33 @@ static void test_output_override_generates_target_extensions(void) {
         TEST_ASSERT(test_path_text_eql(shared_path, expected_shared));
         free(expected_shared);
         free(expected_static);
+        free(shared_path);
+        free(static_path);
+        dal_c_Cmd_cleanup(&cmd);
+    }
+
+    {
+        const char* argv[] = { dal_c_tool_name, "build", "dev", "--target=x86_64-linux-gnu", NULL };
+        dal_c_Cmd* cmd = dal_c_Cmd_parse(4, argv);
+        TEST_ASSERT(cmd != NULL);
+        char* static_path = dal_c__resolveOutputPath(proj, cmd, build_dir, "widget", dal_c_Target_static_lib);
+        char* shared_path = dal_c__resolveOutputPath(proj, cmd, build_dir, "widget", dal_c_Target_shared_lib);
+        TEST_ASSERT(static_path != NULL && str_endsWith(static_path, ".a"));
+        TEST_ASSERT(shared_path != NULL && str_endsWith(shared_path, ".so"));
+        TEST_ASSERT(!str_endsWith(shared_path, ".dll"));
+        free(shared_path);
+        free(static_path);
+        dal_c_Cmd_cleanup(&cmd);
+    }
+
+    {
+        const char* argv[] = { dal_c_tool_name, "build", "dev", "--target=x86_64-w64-windows-gnu", NULL };
+        dal_c_Cmd* cmd = dal_c_Cmd_parse(4, argv);
+        TEST_ASSERT(cmd != NULL);
+        char* static_path = dal_c__resolveOutputPath(proj, cmd, build_dir, "widget", dal_c_Target_static_lib);
+        char* shared_path = dal_c__resolveOutputPath(proj, cmd, build_dir, "widget", dal_c_Target_shared_lib);
+        TEST_ASSERT(static_path != NULL && str_endsWith(static_path, ".lib"));
+        TEST_ASSERT(shared_path != NULL && str_endsWith(shared_path, ".dll"));
         free(shared_path);
         free(static_path);
         dal_c_Cmd_cleanup(&cmd);

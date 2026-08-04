@@ -28,6 +28,18 @@ static int dal_c__printProjectGraph(const dal_c_Cmd* cmd, const dal_c_Project* p
 
 #define DAL_C_COUNT_OF(a) ((int)(sizeof(a) / sizeof((a)[0])))
 
+typedef enum dal_c__PackageLayout {
+    dal_c__PackageLayout_install = 0,
+    dal_c__PackageLayout_prebuilt = 1,
+    dal_c__PackageLayout_self_prebuilt = 2,
+} dal_c__PackageLayout;
+
+typedef struct dal_c__SelfPrebuiltProfiles {
+    dal_c_Profile items[9];
+    int count;
+    char* text;
+} dal_c__SelfPrebuiltProfiles;
+
 static const char* const dal_c_help_topic_files_lines[] = {
     "User-authored files are layered build input; generated files are never edited by hand.",
     "workspace.dh: workspace-wide flat defaults and the project-discovery/cache boundary.",
@@ -37,6 +49,7 @@ static const char* const dal_c_help_topic_files_lines[] = {
     "--dh-file=<path>: explicit reusable flat overlay loaded after companions.",
     "lock.dh or <source>.lock.dh and manifest.dh are generated state and should not be authored manually.",
     "All authored .dh files are strict: unknown keys, malformed lines, and illegal sections are errors.",
+    "Values may span lines inside double quotes or with an unescaped trailing backslash continuation.",
 };
 static const char* const dal_c_help_topic_files_examples[] = {
     "project app",
@@ -100,6 +113,7 @@ static const char* const dal_c_help_topic_dh_file_lines[] = {
     "Artifact policy: output-ext, objcopy, objcopy-format, lto, prebuilt, strip, icf, section/exception/unwind/stack policies.",
     "Version properties: version-namespace, version-core, version-prefix, version-suffix, version-build.",
     "Repeatable keys accumulate in file/config order; scalar keys are replaced by later layers.",
+    "Double quotes preserve multiline values; an unescaped trailing backslash joins the next physical line with one space.",
     "Use --dh-file, not --dh: --dh selects the DH installation path.",
 };
 static const char* const dal_c_help_topic_dh_file_examples[] = {
@@ -116,6 +130,8 @@ static const char* const dal_c_help_topic_dependencies_lines[] = {
     "fetch preserves an existing lock; update resolves requests again and rewrites lock.dh or <source>.lock.dh.",
     "status reports READY, DRIFT, or UNLOCKED without mutating resolution.",
     "Header-only dependencies are valid: they may export include files without producing a linked artifact.",
+    "Generated .dh-exports metadata propagates dependency compile constants to builds, syntax checks, and compile_commands.json.",
+    "Staged dependency DLLs are delivered through package/install; Windows linking accepts MSVC .lib and GNU .a/.dll.a artifacts.",
     "Final static links follow the declared dependency graph in stable consumer-before-provider order; providers shared by multiple consumers are emitted once.",
 };
 static const char* const dal_c_help_topic_dependencies_examples[] = {
@@ -335,6 +351,21 @@ static bool dal_c__copyFileInto(const char* src, const char* dst_dir) {
     return ok;
 }
 
+static bool dal_c__copyRuntimeDlls(const char* src_root, const char* dst_dir) {
+    if (!src_root || !path_isDir(src_root)) return true;
+    int count = 0;
+    char** files = dir_listRecur(src_root, &count);
+    bool ok = true;
+    for (int i = 0; files && i < count; ++i) {
+        if (dal_c__endsWith(files[i], ".dll") && !dal_c__copyFileInto(files[i], dst_dir)) {
+            ok = false;
+        }
+        free(files[i]);
+    }
+    free(files);
+    return ok;
+}
+
 static char* dal_c__packageDir(const dal_c_Cmd* cmd, const dal_c_Project* proj);
 static int dal_c__packageProject(const dal_c_Cmd* cmd, const dal_c_Project* proj) {
     int result = dal_c__depsCommand("install", cmd, proj);
@@ -363,9 +394,9 @@ static int dal_c__packageProject(const dal_c_Cmd* cmd, const dal_c_Project* proj
     const char* output_name = proj->defaults.output_name && proj->defaults.output_name[0]
                             ? proj->defaults.output_name
                             : proj->name;
-    char* executable_output = package_kind == dal_c_Target_executable && output_name
-                            ? dal_c__resolveOutputPath(proj, cmd, build_dir, output_name, package_kind)
-                            : NULL;
+    char* primary_output = package_kind != dal_c_Target_lib && output_name
+                         ? dal_c__resolveOutputPath(proj, cmd, build_dir, output_name, package_kind)
+                         : NULL;
     int artifact_count = 0;
     char** artifacts = dir_list(build_dir, &artifact_count);
     for (int i = 0; i < artifact_count; ++i) {
@@ -375,15 +406,26 @@ static int dal_c__packageProject(const dal_c_Cmd* cmd, const dal_c_Project* proj
             free(artifacts[i]);
             continue; /* manifest.dh describes the prebuilt `libs/` layout, not an install package. */
         }
-        const char* stage = executable_output && str_eql(artifacts[i], executable_output)
-                          ? "bin"
-                          : dal_c__artifactStageDir(name);
-        char* dst_dir = stage ? path_join(package_dir, stage) : strdup(package_dir);
-        if (!dal_c__copyFileInto(artifacts[i], dst_dir)) ok = false;
-        free(dst_dir); free(name); free(artifacts[i]);
+        const bool is_primary = primary_output && str_eql(artifacts[i], primary_output);
+        const char* stage = dal_c__artifactStageDir(name);
+        if (is_primary) {
+            if (package_kind == dal_c_Target_executable) {
+                stage = "bin";
+            } else if (package_kind == dal_c_Target_static_lib) {
+                stage = "lib";
+            } else if (package_kind == dal_c_Target_shared_lib && !stage) {
+                stage = "bin"; /* Custom shared-module extensions such as .pyd. */
+            }
+        }
+        if (stage || is_primary) {
+            char* dst_dir = stage ? path_join(package_dir, stage) : strdup(package_dir);
+            if (!dal_c__copyFileInto(artifacts[i], dst_dir)) ok = false;
+            free(dst_dir);
+        }
+        free(name); free(artifacts[i]);
     }
     free(artifacts);
-    free(executable_output);
+    free(primary_output);
 
     char* build_libs = path_join(build_dir, "libs");
     int library_count = 0;
@@ -438,6 +480,12 @@ static int dal_c__packageProject(const dal_c_Cmd* cmd, const dal_c_Project* proj
         }
         free(bin_dir); free(lib_package);
     }
+
+    char* staged_deps = dal_c_Project_getDepsDir(proj);
+    char* package_bin = path_join(package_dir, "bin");
+    if (!dal_c__copyRuntimeDlls(staged_deps, package_bin)) ok = false;
+    free(package_bin);
+    free(staged_deps);
 
     const char* asset_names[] = { "assets", "resources", NULL };
     for (int i = 0; asset_names[i]; ++i) {
@@ -497,6 +545,390 @@ static int dal_c__packagePrebuiltProject(const dal_c_Cmd* cmd, const dal_c_Proje
     free(package_dir); free(target_root); free(prebuilt_root);
     free(target); free(build_dir);
     return ok ? 0 : 1;
+}
+
+static bool dal_c__selfPrebuiltAppendProfile(
+    dal_c__SelfPrebuiltProfiles* profiles,
+    const char* raw_profile
+) {
+    if (!profiles || !raw_profile) return false;
+    char* profile_name = str_trim(raw_profile);
+    if (!profile_name || !profile_name[0]) {
+        free(profile_name);
+        return false;
+    }
+    dal_c_Profile profile = dal_c_Profile_parse(profile_name);
+    if (profile == dal_c_Profile_invalid) {
+        (void)fprintf(stderr, "Error: Invalid self-prebuilt profile: %s\n", profile_name);
+        free(profile_name);
+        return false;
+    }
+    for (int i = 0; i < profiles->count; ++i) {
+        if (profiles->items[i] == profile) {
+            (void)fprintf(stderr, "Error: Duplicate self-prebuilt profile: %s\n", profile_name);
+            free(profile_name);
+            return false;
+        }
+    }
+    if (profiles->count >= (int)DAL_C_COUNT_OF(profiles->items)) {
+        free(profile_name);
+        return false;
+    }
+    profiles->items[profiles->count++] = profile;
+    char* next = profiles->text
+               ? str_format("%s,%s", profiles->text, profile_name)
+               : strdup(profile_name);
+    free(profiles->text);
+    profiles->text = next;
+    free(profile_name);
+    return next != NULL;
+}
+
+static bool dal_c__selfPrebuiltParseProfiles(
+    const char* spec,
+    dal_c__SelfPrebuiltProfiles* profiles
+) {
+    if (!profiles) return false;
+    memset(profiles, 0, sizeof(*profiles));
+    static const dal_c_Profile defaults[] = {
+        dal_c_Profile_dev,
+        dal_c_Profile_fast,
+        dal_c_Profile_test,
+        dal_c_Profile_stable,
+        dal_c_Profile_release,
+    };
+    if (!spec) {
+        for (int i = 0; i < (int)DAL_C_COUNT_OF(defaults); ++i) {
+            const char* name = dal_c_Profile_format(defaults[i]);
+            if (!name || !dal_c__selfPrebuiltAppendProfile(profiles, name)) return false;
+        }
+        return true;
+    }
+    if (!spec[0]) {
+        (void)fprintf(stderr, "Error: --self-profiles requires at least one DH profile.\n");
+        return false;
+    }
+
+    const char* cursor = spec;
+    while (*cursor) {
+        const char* comma = strchr(cursor, ',');
+        size_t length = comma ? (size_t)(comma - cursor) : strlen(cursor);
+        char* token = (char*)malloc(length + 1u);
+        if (!token) return false;
+        memcpy(token, cursor, length);
+        token[length] = '\0';
+        bool ok = dal_c__selfPrebuiltAppendProfile(profiles, token);
+        free(token);
+        if (!ok) return false;
+        if (!comma) break;
+        cursor = comma + 1;
+    }
+    if (profiles->count == 0) {
+        (void)fprintf(stderr, "Error: self-prebuilt requires at least one DH profile.\n");
+        return false;
+    }
+    return true;
+}
+
+static void dal_c__selfPrebuiltProfilesCleanup(dal_c__SelfPrebuiltProfiles* profiles) {
+    if (!profiles) return;
+    free(profiles->text);
+    memset(profiles, 0, sizeof(*profiles));
+}
+
+static void dal_c__appendBuildOption(ArrStr* args, const char* name, const char* value) {
+    if (!args || !name || !value || !value[0]) return;
+    char* option = str_format("--%s=%s", name, value);
+    if (option) ArrStr_push(args, option);
+    free(option);
+}
+
+static dal_c_Cmd* dal_c__makeSelfPrebuiltDHCommand(
+    const dal_c_Cmd* source,
+    dal_c_Profile profile,
+    const char* target
+) {
+    if (!source || !target) return NULL;
+    const char* profile_name = dal_c_Profile_format(profile);
+    if (!profile_name) return NULL;
+    ArrStr* args = ArrStr_init();
+    if (!args) return NULL;
+    ArrStr_push(args, dal_c_tool_name);
+    ArrStr_push(args, "build");
+    ArrStr_push(args, profile_name);
+    dal_c__appendBuildOption(args, dal_c_opt_target, target);
+    dal_c__appendBuildOption(args, dal_c_opt_compiler, source->opts.compiler);
+    dal_c__appendBuildOption(args, dal_c_opt_target_arch, source->opts.target_arch);
+    dal_c__appendBuildOption(args, dal_c_opt_target_tune, source->opts.target_tune);
+    dal_c__appendBuildOption(args, dal_c_opt_target_abi, source->opts.target_abi);
+    dal_c__appendBuildOption(args, dal_c_opt_sysroot, source->opts.sysroot);
+    dal_c__appendBuildOption(args, dal_c_opt_jobs, source->make_jobs);
+    ArrStr_push(args, "--prebuilt=off");
+    ArrStr_push(args, source->show_commands ? "--commands=show" : "--commands=hide");
+    ArrStr_push(args, source->show_progress ? "--progress=show" : "--progress=hide");
+    char precision[24];
+    (void)snprintf(precision, sizeof(precision), "%d", source->elapsed_precision);
+    dal_c__appendBuildOption(args, dal_c_opt_elapsed_precision, precision);
+
+    int argc = ArrStr_len(args);
+    const char** argv = (const char**)calloc((size_t)argc, sizeof(*argv));
+    if (!argv) {
+        ArrStr_fini(&args);
+        return NULL;
+    }
+    for (int i = 0; i < argc; ++i) argv[i] = args->items[i];
+    dal_c_Cmd* result = dal_c_Cmd_parse(argc, argv);
+    free(argv);
+    ArrStr_fini(&args);
+    return result;
+}
+
+static char* dal_c__formatVersionSpec(const dal_c_VersionSpec* version) {
+    if (!version || !version->core_set) return strdup("0.0.0");
+    char* result = str_format(
+        "%u.%u.%u",
+        version->core_major,
+        version->core_minor,
+        version->core_patch
+    );
+    if (!result) return NULL;
+    if (version->label_prefix_set && version->label_prefix_str && version->label_prefix_str[0]) {
+        char* next = version->label_suffix_set
+                   ? str_format("%s-%s.%u", result, version->label_prefix_str, version->label_suffix_num)
+                   : str_format("%s-%s", result, version->label_prefix_str);
+        free(result);
+        result = next;
+    }
+    if (result && version->build_set && version->build_str && version->build_str[0]) {
+        char* next = str_format("%s+%s", result, version->build_str);
+        free(result);
+        result = next;
+    }
+    return result;
+}
+
+static char* dal_c__selfPrebuiltArchitecture(const char* target) {
+    if (!target || !target[0]) return strdup("unknown");
+    const char* separator = strchr(target, '-');
+    size_t length = separator ? (size_t)(separator - target) : strlen(target);
+    if (length == strlen("x86_64") && strncmp(target, "x86_64", length) == 0) return strdup("x64");
+    if (length == strlen("aarch64") && strncmp(target, "aarch64", length) == 0) return strdup("arm64");
+    char* result = (char*)malloc(length + 1u);
+    if (!result) return NULL;
+    memcpy(result, target, length);
+    result[length] = '\0';
+    return result;
+}
+
+static const char* dal_c__selfPrebuiltPlatform(const char* target) {
+    if (!target) return "unknown";
+    if (strstr(target, "windows")) return "windows";
+    if (strstr(target, "linux")) return "linux";
+    if (strstr(target, "darwin") || strstr(target, "apple")) return "macos";
+    if (strstr(target, "freebsd")) return "freebsd";
+    return "unknown";
+}
+
+static bool dal_c__writeSelfPrebuiltMetadata(
+    const char* package_dir,
+    const dal_c_Project* self_proj,
+    const dal_c_Project* dh_proj,
+    const char* target,
+    const dal_c_ProfileSpec* self_profile,
+    const dal_c__SelfPrebuiltProfiles* profiles
+) {
+    if (!package_dir || !self_proj || !dh_proj || !target || !self_profile || !profiles || !profiles->text) {
+        return false;
+    }
+    char* dh_c_version = dal_c__formatVersionSpec(&self_proj->opts.version);
+    char* dh_version = dal_c__formatVersionSpec(&dh_proj->opts.version);
+    char* architecture = dal_c__selfPrebuiltArchitecture(target);
+    char* metadata = str_format(
+        "sdk-format=1\n"
+        "layout=self-prebuilt\n"
+        "dh-version=%s\n"
+        "dh-c-version=%s\n"
+        "platform=%s\n"
+        "architecture=%s\n"
+        "target=%s\n"
+        "targets=%s\n"
+        "dh-c-profile=%s\n"
+        "profiles=%s\n",
+        dh_version ? dh_version : "0.0.0",
+        dh_c_version ? dh_c_version : "0.0.0",
+        dal_c__selfPrebuiltPlatform(target),
+        architecture ? architecture : "unknown",
+        target,
+        target,
+        self_profile->name,
+        profiles->text
+    );
+    char* path = path_join(package_dir, "sdk.dh");
+    bool ok = metadata && path && file_writeAtomic(path, metadata);
+    free(path);
+    free(metadata);
+    free(architecture);
+    free(dh_version);
+    free(dh_c_version);
+    return ok;
+}
+
+static int dal_c__packageSelfPrebuiltProject(
+    const dal_c_Cmd* cmd,
+    const dal_c_Project* proj,
+    const char* profiles_spec
+) {
+    if (!cmd || !proj || !proj->root) return 1;
+    const char* output_name = proj->defaults.output_name && proj->defaults.output_name[0]
+                            ? proj->defaults.output_name
+                            : proj->name;
+    dal_c_Target target_kind = proj->defaults.target_kind_set
+                             ? proj->defaults.target_kind
+                             : dal_c_Target_executable;
+    if (target_kind != dal_c_Target_executable || !output_name || !str_eql(output_name, dal_c_tool_name)) {
+        (void)fprintf(stderr,
+            "Error: --layout=self-prebuilt requires the dh-c executable project (kind=executable, output=%s).\n",
+            dal_c_tool_name);
+        return 1;
+    }
+    if (!proj->dh_path || !path_isDir(proj->dh_path)) {
+        (void)fprintf(stderr, "Error: A source DH installation is required to create a self-prebuilt SDK.\n");
+        return 1;
+    }
+
+    dal_c__SelfPrebuiltProfiles profiles;
+    if (!dal_c__selfPrebuiltParseProfiles(profiles_spec, &profiles)) {
+        dal_c__selfPrebuiltProfilesCleanup(&profiles);
+        return 1;
+    }
+
+    int result = dal_c__packageProject(cmd, proj);
+    if (result != 0) {
+        dal_c__selfPrebuiltProfilesCleanup(&profiles);
+        return result;
+    }
+
+    const dal_c_ProfileSpec* self_profile = dal_c_ProfileSpec_by(cmd->opts.profile);
+    char* target = dal_c__resolveTargetDirName(&cmd->opts);
+    if (!self_profile || !target) {
+        free(target);
+        dal_c__selfPrebuiltProfilesCleanup(&profiles);
+        return 1;
+    }
+
+    dal_c_Project* metadata_dh_proj = dal_c_Project_detectAt(proj->dh_path, proj->dh_path);
+    if (!metadata_dh_proj) {
+        (void)fprintf(stderr, "Error: Failed to detect the DH project at %s.\n", proj->dh_path);
+        free(target);
+        dal_c__selfPrebuiltProfilesCleanup(&profiles);
+        return 1;
+    }
+
+    for (int i = 0; i < profiles.count; ++i) {
+        dal_c_Cmd* dh_cmd = dal_c__makeSelfPrebuiltDHCommand(cmd, profiles.items[i], target);
+        dal_c_Project* dh_proj = dal_c_Project_detectAt(proj->dh_path, proj->dh_path);
+        if (!dh_cmd || !dh_proj) {
+            if (dh_proj) dal_c_Project_cleanup(&dh_proj);
+            if (dh_cmd) dal_c_Cmd_cleanup(&dh_cmd);
+            result = 1;
+            break;
+        }
+        result = dal_c__packagePrebuiltProject(dh_cmd, dh_proj);
+        dal_c_Project_cleanup(&dh_proj);
+        dal_c_Cmd_cleanup(&dh_cmd);
+        if (result != 0) break;
+    }
+
+    char* package_root = NULL;
+    char* target_root = NULL;
+    char* package_dir = NULL;
+    char* temp_dir = NULL;
+    char* normal_package = NULL;
+    char* normal_bin = NULL;
+    char* package_bin = NULL;
+    char* dh_include = NULL;
+    char* package_include = NULL;
+    char* dh_prebuilt = NULL;
+    char* package_prebuilt = NULL;
+
+    if (result == 0) {
+        package_root = path_join(proj->root, "self-prebuilt");
+        target_root = package_root ? path_join(package_root, target) : NULL;
+        package_dir = target_root ? path_join(target_root, self_profile->name) : NULL;
+        temp_dir = package_dir ? str_format("%s.tmp", package_dir) : NULL;
+        normal_package = dal_c__packageDir(cmd, proj);
+        normal_bin = normal_package ? path_join(normal_package, "bin") : NULL;
+        package_bin = temp_dir ? path_join(temp_dir, "bin") : NULL;
+        dh_include = path_join(proj->dh_path, "include");
+        package_include = temp_dir ? path_join(temp_dir, "include") : NULL;
+        dh_prebuilt = path_join(proj->dh_path, "prebuilt");
+        package_prebuilt = temp_dir ? path_join(temp_dir, "prebuilt") : NULL;
+
+        bool ok = package_dir && temp_dir && normal_bin && path_isDir(normal_bin)
+               && dh_include && path_isDir(dh_include)
+               && dh_prebuilt && path_isDir(dh_prebuilt);
+        if (temp_dir && path_isDir(temp_dir)) ok = dir_removeRecur(temp_dir) && ok;
+        if (ok) ok = dal_c__copyTree(normal_bin, package_bin);
+        if (ok) ok = dal_c__copyTree(dh_include, package_include);
+
+        for (int i = 0; ok && i < profiles.count; ++i) {
+            const char* name = dal_c_Profile_format(profiles.items[i]);
+            char* source_target = path_join(dh_prebuilt, target);
+            char* source_profile = source_target ? path_join(source_target, name) : NULL;
+            char* destination_target = path_join(package_prebuilt, target);
+            char* destination_profile = destination_target ? path_join(destination_target, name) : NULL;
+            ok = source_profile && path_isDir(source_profile)
+              && destination_profile && dal_c__copyTree(source_profile, destination_profile);
+            free(destination_profile);
+            free(destination_target);
+            free(source_profile);
+            free(source_target);
+        }
+        if (ok) {
+            ok = dal_c__writeSelfPrebuiltMetadata(
+                temp_dir, proj, metadata_dh_proj, target, self_profile, &profiles
+            );
+        }
+
+        char* repository_root = path_parent(proj->root);
+        char* license_src = repository_root ? path_join(repository_root, "LICENSE") : NULL;
+        char* license_dst = temp_dir ? path_join(temp_dir, "LICENSE") : NULL;
+        if (ok && license_src && path_isFile(license_src)) ok = file_copy(license_src, license_dst);
+        free(license_dst);
+        free(license_src);
+        free(repository_root);
+
+        if (ok && path_isDir(package_dir)) ok = dir_removeRecur(package_dir);
+        if (ok) {
+            char* parent = path_parent(package_dir);
+            ok = parent && dir_createRecur(parent) && rename(temp_dir, package_dir) == 0;
+            free(parent);
+        }
+        if (!ok) {
+            (void)fprintf(stderr, "Error: Failed to assemble self-prebuilt SDK at %s.\n",
+                package_dir ? package_dir : "(unknown)");
+            if (temp_dir && path_isDir(temp_dir)) (void)dir_removeRecur(temp_dir);
+            result = 1;
+        } else {
+            printf("[SELF-PREBUILT] %s\n", package_dir);
+        }
+    }
+
+    free(package_prebuilt);
+    free(dh_prebuilt);
+    free(package_include);
+    free(dh_include);
+    free(package_bin);
+    free(normal_bin);
+    free(normal_package);
+    free(temp_dir);
+    free(package_dir);
+    free(target_root);
+    free(package_root);
+    dal_c_Project_cleanup(&metadata_dh_proj);
+    free(target);
+    dal_c__selfPrebuiltProfilesCleanup(&profiles);
+    return result;
 }
 
 static int dal_c__installProject(const dal_c_Cmd* cmd, const dal_c_Project* proj, const char* prefix);
@@ -580,7 +1012,8 @@ int main(int argc, const char* argv[]) {
 
     if (special_package || special_install) {
         const char* prefix = getenv("DH_PREFIX");
-        bool prebuilt_layout = false;
+        dal_c__PackageLayout package_layout = dal_c__PackageLayout_install;
+        const char* self_profiles = NULL;
         const char** filtered = calloc((size_t)argc + 1u, sizeof(*filtered));
         if (!filtered) return 1;
         int filtered_argc = 0;
@@ -590,11 +1023,15 @@ int main(int argc, const char* argv[]) {
             if (strncmp(argv[i], "--layout=", 9) == 0) {
                 const char* layout = argv[i] + 9;
                 if (special_package && str_eql(layout, "prebuilt")) {
-                    prebuilt_layout = true;
+                    package_layout = dal_c__PackageLayout_prebuilt;
                     continue;
                 }
                 if (special_package && str_eql(layout, "install")) {
-                    prebuilt_layout = false;
+                    package_layout = dal_c__PackageLayout_install;
+                    continue;
+                }
+                if (special_package && str_eql(layout, "self-prebuilt")) {
+                    package_layout = dal_c__PackageLayout_self_prebuilt;
                     continue;
                 }
                 (void)fprintf(stderr, "Error: Unsupported package layout: %s\n", layout);
@@ -604,11 +1041,15 @@ int main(int argc, const char* argv[]) {
             if (str_eql(argv[i], "--layout") && i + 1 < argc) {
                 const char* layout = argv[++i];
                 if (special_package && str_eql(layout, "prebuilt")) {
-                    prebuilt_layout = true;
+                    package_layout = dal_c__PackageLayout_prebuilt;
                     continue;
                 }
                 if (special_package && str_eql(layout, "install")) {
-                    prebuilt_layout = false;
+                    package_layout = dal_c__PackageLayout_install;
+                    continue;
+                }
+                if (special_package && str_eql(layout, "self-prebuilt")) {
+                    package_layout = dal_c__PackageLayout_self_prebuilt;
                     continue;
                 }
                 (void)fprintf(stderr, "Error: Unsupported package layout: %s\n", layout);
@@ -623,7 +1064,20 @@ int main(int argc, const char* argv[]) {
                 prefix = argv[++i];
                 continue;
             }
+            if (strncmp(argv[i], "--self-profiles=", 16) == 0) {
+                self_profiles = argv[i] + 16;
+                continue;
+            }
+            if (str_eql(argv[i], "--self-profiles") && i + 1 < argc) {
+                self_profiles = argv[++i];
+                continue;
+            }
             filtered[filtered_argc++] = argv[i];
+        }
+        if (self_profiles && package_layout != dal_c__PackageLayout_self_prebuilt) {
+            (void)fprintf(stderr, "Error: --self-profiles is valid only with --layout=self-prebuilt.\n");
+            free(filtered);
+            return 1;
         }
         dal_c_Cmd* package_cmd = dal_c_Cmd_parse(filtered_argc, filtered);
         free(filtered);
@@ -638,11 +1092,16 @@ int main(int argc, const char* argv[]) {
             dal_c_Cmd_cleanup(&package_cmd);
             return 1;
         }
-        int package_result = special_package
-            ? (prebuilt_layout
-                ? dal_c__packagePrebuiltProject(package_cmd, package_proj)
-                : dal_c__packageProject(package_cmd, package_proj))
-            : dal_c__installProject(package_cmd, package_proj, prefix);
+        int package_result = 0;
+        if (!special_package) {
+            package_result = dal_c__installProject(package_cmd, package_proj, prefix);
+        } else if (package_layout == dal_c__PackageLayout_prebuilt) {
+            package_result = dal_c__packagePrebuiltProject(package_cmd, package_proj);
+        } else if (package_layout == dal_c__PackageLayout_self_prebuilt) {
+            package_result = dal_c__packageSelfPrebuiltProject(package_cmd, package_proj, self_profiles);
+        } else {
+            package_result = dal_c__packageProject(package_cmd, package_proj);
+        }
         dal_c_Project_cleanup(&package_proj);
         dal_c_Cmd_cleanup(&package_cmd);
         return package_result;
@@ -1096,6 +1555,12 @@ static bool dal_c__stageExternalPackageForBuild(const dal_c_Project* proj, const
         free(files);
     }
     free(lib_src);
+
+    char* bin_src = path_join(package_dir, "bin");
+    char* runtime_dst = path_join(deps_dir, lib->name);
+    if (!dal_c__copyRuntimeDlls(bin_src, runtime_dst)) ok = false;
+    free(runtime_dst);
+    free(bin_src);
     free(deps_dir);
     return ok;
 }
@@ -1125,15 +1590,37 @@ static int dal_c__depsCommand(const char* action, const dal_c_Cmd* cmd, const da
     assert(dal_c__hasDependencyScope(proj));
     assert(cmd != NULL);
 
+    const bool provider_action = str_eql(action, "build") || str_eql(action, "install");
+    const bool source_action = str_eql(action, "fetch") || str_eql(action, "update");
+    bool has_matching_dependency = false;
+    bool needs_source_state = false;
+    for (int i = 0; i < proj->lib_count; ++i) {
+        const dal_c_Lib* lib = &proj->libraries[i];
+        const char* provider = (lib->provider && lib->provider[0]) ? lib->provider : "dh";
+        const bool has_remote_input = (lib->source && lib->source[0])
+                                   || (lib->archive && lib->archive[0]);
+        const bool has_local_provider_path = provider_action && lib->path && lib->path[0]
+                                           && !str_eql(provider, "dh");
+        const bool matches = has_remote_input || has_local_provider_path
+                          || (provider_action && str_eql(provider, "prebuilt"));
+        if (!matches) { continue; }
+        has_matching_dependency = true;
+        needs_source_state = needs_source_state || (source_action && has_remote_input);
+    }
+    if (!has_matching_dependency) {
+        printf("No dependencies match this operation.\n");
+        return 0;
+    }
+
     char* state_root = dal_c_Project_getStateRoot(proj);
     char* deps_root = state_root ? path_join(state_root, "deps") : NULL;
     char* src_root = deps_root ? path_join(deps_root, "src") : NULL;
     char* build_root = deps_root ? path_join(deps_root, "build") : NULL;
     char* package_root = deps_root ? path_join(deps_root, "packages") : NULL;
     char* lock_path = dal_c_Project_getDependencyLockPath(proj);
-    bool mutates_state = !str_eql(action, "status");
-    if (!state_root || !deps_root || !src_root || !build_root || !package_root || !lock_path
-        || (mutates_state && (!dir_createRecur(src_root) || !dir_createRecur(build_root) || !dir_createRecur(package_root)))) {
+    const bool state_ready = state_root && deps_root && src_root && build_root && package_root && lock_path
+                          && (!needs_source_state || dir_createRecur(src_root));
+    if (!state_ready) {
         (void)fprintf(stderr, "Error: Failed to access dependency state under %s\n",
             deps_root ? deps_root : "(unknown)");
         free(lock_path); free(package_root); free(build_root); free(src_root); free(deps_root); free(state_root);
@@ -1147,7 +1634,6 @@ static int dal_c__depsCommand(const char* action, const dal_c_Cmd* cmd, const da
     for (int i = 0; i < proj->lib_count; ++i) {
         const dal_c_Lib* lib = &proj->libraries[i];
         const char* provider = (lib->provider && lib->provider[0]) ? lib->provider : "dh";
-        bool provider_action = str_eql(action, "build") || str_eql(action, "install");
         bool has_source = lib->source && lib->source[0] != '\0';
         bool has_archive = lib->archive && lib->archive[0] != '\0';
         bool has_remote_input = has_source || has_archive;
@@ -1500,8 +1986,10 @@ static int dal_c__printUsage(const char* topic) {
         } else if (str_eql(topic, "package")) {
             printf(
                 "USAGE:\n"
-                "  %s package [profile] [build options] [--layout=install|prebuilt]\n\n"
-                "Build and stage the current project. The default install layout contains headers, libraries, executables, assets, and dependency runtime exports under package/<target>/<profile>; a source-free kind=lib project packages its public headers without inventing binary artifacts. The prebuilt layout promotes only generated manifest.dh, libs/, and optional deps/ into prebuilt/<target>/<profile>.\n",
+                "  %s package [profile] [build options] [--layout=install|prebuilt|self-prebuilt]\n"
+                "  %s package [profile] --layout=self-prebuilt [--self-profiles=<csv>] [build options]\n\n"
+                "Build and stage the current project. The default install layout contains headers, libraries, executables, assets, and dependency runtime exports under package/<target>/<profile>; a source-free kind=lib project packages its public headers without inventing binary artifacts. The prebuilt layout promotes generated library manifest.dh, libs/, and optional deps/ into prebuilt/<target>/<profile>. The self-prebuilt layout is valid for the dh-c executable project and creates a portable SDK root under self-prebuilt/<target>/<dh-c-profile> with bin/dh-c, DH headers, sdk.dh, and source-free DH prebuilt profiles. --self-profiles defaults to dev,fast,test,stable,release.\n",
+                dal_c_tool_name,
                 dal_c_tool_name
             );
         } else if (str_eql(topic, "install")) {
@@ -1571,7 +2059,7 @@ static int dal_c__printUsage(const char* topic) {
     printf("    %-14s %s\n", "toolchain", "Inspect compiler-driver runtime and default link inputs");
     printf("    %-14s %s\n", "compile-db", "Write compile_commands.json without building");
     printf("  CODE QUALITY\n");
-    printf("    %-14s %s\n", "syntax", "Run compiler syntax checks");
+    printf("    %-14s %s\n", "syntax", "Run dependency-aware cached compiler syntax checks");
     printf("    %-14s %s\n", "tidy", "Run clang-tidy with dh-c's compile database");
     printf("    %-14s %s\n\n", "format", "Run clang-format on selected sources");
 
@@ -1670,6 +2158,7 @@ static int dal_c__printUsage(const char* topic) {
     printf("  Explicit `file.c` inputs build that file directly, even outside a project.\n");
     printf("  Explicit paths under `[target-root ...]` use the declared target-root definition.\n");
     printf("  `--sample`, `--example`, and `--test` select the built-in target families.\n");
+    printf("  Bare `--sample` or `--example` is a batch: each root source and each immediate source subdirectory becomes one executable.\n");
     printf("  `.` is a compatibility alias for `--all`.\n");
     printf("  `build --self` and `clean --self` operate on the " dal_c_tool_name " self boundary only.\n\n");
 
@@ -1700,6 +2189,7 @@ static int dal_c__printUsage(const char* topic) {
     printf("PCH RULES:\n");
     printf("  `pch=auto` uses the detected DH bundle when available; `pch=deps` uses generated `lib/deps.h`; `pch=off` disables PCH.\n");
     printf("  PCH files are generated inside the active profile/flag cache plan and are rebuilt when their headers or compile settings change.\n");
+    printf("  Disabled, unavailable, unused, and already-fresh PCH paths are reported with `[SKIP] PCH ...`; unused PCH rules are not emitted.\n");
     printf("  `lib/deps.h` is generated only when a dependency prelude is needed; it includes top-level headers under `lib/deps/`.\n\n");
 
     printf("CONFIGURATION FILES:\n");
@@ -1710,7 +2200,9 @@ static int dal_c__printUsage(const char* topic) {
     printf("  `build/` stores materialized artifacts, object files, and generated plan makefiles.\n");
     printf("  Workspace `.dh-c/cache/` or the project-local cache stores reusable build-cache entries.\n");
     printf("  Project `.dh-c/deps/` or an ad-hoc unit state root stores fetched sources, provider builds, staged packages, and last-use stamps.\n");
-    printf("  `lib/deps/` and `lib/deps.h` store generated dependency exports consumed by project builds.\n");
+    printf("  Dependency state, `lib/deps/`, and `lib/deps.h` are created lazily; dependency-free work does not create them.\n");
+    printf("  Project build locks live in the global cache; obsolete `.dh-c/build.lock` state is removed when safe.\n");
+    printf("  `lib/deps/`, `lib/deps.h`, and `.dh-exports` store generated dependency exports consumed by project builds.\n");
     printf("  `lock.dh` sits beside project.dh; `<source>.lock.dh` sits beside an ad-hoc primary source companion. Cleanup never rewrites either.\n");
     printf("  Use `clean --cache --older-than=30d` or `clean --deps --unused --dry-run` for maintenance.\n");
     printf("  Do not place durable source assets, checked-in resources, or manual files under generated state.\n\n");

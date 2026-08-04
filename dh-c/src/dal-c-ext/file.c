@@ -222,6 +222,14 @@ bool file_copy(const char* src, const char* dst) {
     }
     (void)fclose(src_fp);
     (void)fclose(dst_fp);
+#ifndef _WIN32
+    if (success) {
+        struct stat src_stat;
+        if (stat(src, &src_stat) != 0 || chmod(dst, src_stat.st_mode & 07777) != 0) {
+            success = false;
+        }
+    }
+#endif
     return success;
 }
 

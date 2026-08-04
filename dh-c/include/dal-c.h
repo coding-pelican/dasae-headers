@@ -1633,7 +1633,7 @@ static const dal_c_HelpOption dal_c_help_build_options[] = {
     { dal_c_opt_prefix_long dal_c_opt_disasm_line_numbers dal_c_opt_value_sep "<auto|on|off>", "Control line numbers for emitted disassembly" },
     { dal_c_opt_prefix_long dal_c_opt_disasm_symbolize_operands dal_c_opt_value_sep "<auto|on|off>", "Control operand symbolization for emitted disassembly" },
     { dal_c_opt_prefix_long dal_c_opt_disasm_raw_insn dal_c_opt_value_sep "<auto|on|off>", "Control raw instruction bytes for emitted disassembly" },
-    { dal_c_opt_prefix_long dal_c_opt_disasm_section_contents dal_c_opt_value_sep "<auto|on|off>", "Include section contents in emitted disassembly (`llvm-objdump -s` when on)" },
+    { dal_c_opt_prefix_long dal_c_opt_disasm_section_contents dal_c_opt_value_sep "<auto|on|off>", "Include data/section contents such as `.rodata` or `.rdata` in emitted disassembly (`llvm-objdump -s`; auto is on)" },
     { dal_c_opt_prefix_long dal_c_opt_save_temps dal_c_opt_value_sep "<off|cwd|obj>", "Ask Clang to preserve intermediate compilation files" },
     { dal_c_opt_prefix_long dal_c_opt_print_link_gc, "Ask the linker to print removed sections when supported" },
     { dal_c_opt_prefix_long dal_c_opt_analysis_artifacts, "Emit the standard linked analysis artifact bundle" },

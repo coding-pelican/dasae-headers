@@ -358,8 +358,21 @@ assert_contains "$LAST_OUTPUT" "RULES:" "Command help did not show rules"
 assert_contains "$LAST_OUTPUT" "--output-ext" "Build help did not describe explicit output extension"
 
 invoke_external "0" "$repo_root" "$cli_exe" help package
-assert_contains "$LAST_OUTPUT" "--layout=install|prebuilt" "Package help did not expose prebuilt promotion"
+assert_contains "$LAST_OUTPUT" "--layout=install|prebuilt|self-prebuilt" "Package help did not expose self-prebuilt SDK packaging"
 assert_contains "$LAST_OUTPUT" "prebuilt/<target>/<profile>" "Package help did not describe prebuilt output"
+assert_contains "$LAST_OUTPUT" "--self-profiles" "Package help did not describe self-prebuilt profile selection"
+
+invoke_external "1" "$repo_root" "$cli_exe" package --self-profiles=dev
+assert_contains "$LAST_OUTPUT" "valid only with --layout=self-prebuilt" "self profile selection was accepted outside self-prebuilt layout"
+
+invoke_external "1" "$repo_root/dh-c" "$cli_exe" package --layout=self-prebuilt --self-profiles=
+assert_contains "$LAST_OUTPUT" "requires at least one DH profile" "Empty self-prebuilt profile selection did not fail clearly"
+
+invoke_external "1" "$repo_root/dh-c" "$cli_exe" package --layout=self-prebuilt --self-profiles=dev,dev
+assert_contains "$LAST_OUTPUT" "Duplicate self-prebuilt profile" "Duplicate self-prebuilt profile selection was accepted"
+
+invoke_external "1" "$repo_root/dh-c" "$cli_exe" package --layout=self-prebuilt --self-profiles=unknown
+assert_contains "$LAST_OUTPUT" "Invalid self-prebuilt profile" "Unknown self-prebuilt profile selection was accepted"
 
 invoke_external "0" "$repo_root" "$cli_exe" help clean
 assert_contains "$LAST_OUTPUT" "Do not store durable source assets" "Clean help did not describe cleanup-owned generated paths"
@@ -821,11 +834,37 @@ EOF
     invoke_external "0" "$plain_project" "$cli_exe" build
     assert_contains "$LAST_OUTPUT" "Build successful!" "Plain project build did not succeed"
     assert_build_artifacts_exist "$plain_project" "plain-project$exe_ext"
+    [ ! -e "$plain_project/lib" ]
+    assert_true $? "Dependency-free build created lib/"
+    [ ! -e "$plain_project/.dh-c" ]
+    assert_true $? "Dependency-free build created .dh-c/"
     invoke_external "0" "$plain_project" "$cli_exe" package
     if ! "$find_bin" "$plain_project/package" -path "*/dev/bin/plain-project$exe_ext" -type f | "$grep_bin" . >/dev/null 2>&1; then
         printf 'Executable package did not stage its primary output under bin/\n' >&2
         exit 1
     fi
+    [ ! -e "$plain_project/.dh-c" ]
+    assert_true $? "Dependency-free package created .dh-c/deps state"
+
+    mkdir -p "$plain_project/lib/deps/runtime"
+    printf 'runtime-dll-fixture\n' >"$plain_project/lib/deps/runtime/fixture-runtime.dll"
+    invoke_external "0" "$plain_project" "$cli_exe" package
+    if ! "$find_bin" "$plain_project/package" -path '*/dev/bin/fixture-runtime.dll' -type f | "$grep_bin" . >/dev/null 2>&1; then
+        printf 'Package did not copy a staged dependency DLL beside the executable\n' >&2
+        exit 1
+    fi
+    install_prefix="$temp_root/plain-install-prefix"
+    install_prefix_native=$(native_path "$install_prefix")
+    invoke_external "0" "$plain_project" "$cli_exe" install --prefix="$install_prefix_native"
+    [ -f "$install_prefix/bin/fixture-runtime.dll" ]
+    assert_true $? "Install did not preserve packaged dependency DLLs"
+    [ -f "$install_prefix/bin/plain-project$exe_ext" ]
+    assert_true $? "Install did not preserve the primary executable"
+    if "$find_bin" "$plain_project/package" -type f -name '*.rsp' | "$grep_bin" . >/dev/null 2>&1; then
+        printf 'Package leaked an internal linker response file\n' >&2
+        exit 1
+    fi
+
     [ -d "$plain_project/build/native" ]
     assert_true $? "Host build did not create build/native"
     case "$(uname -s)" in
@@ -964,16 +1003,95 @@ EOF
     invoke_external "0" "$target_root_contract" "$cli_exe" clean
 
     target_root_compat=$(copy_scenario_project "dh-c/lab/target-root-compat")
+    cat >"$target_root_compat/samples/sample-second.c" <<'EOF'
+#include "target-root-compat.h"
+int main(void) { return trcompat_value() == 7 ? 0 : 1; }
+EOF
+    mkdir -p "$target_root_compat/samples/grouped" "$target_root_compat/samples/empty"
+    printf 'batch roots ignore non-source files\n' >"$target_root_compat/samples/README.txt"
+    cat >"$target_root_compat/samples/grouped/main.c" <<'EOF'
+#include "target-root-compat.h"
+int grouped_helper(void);
+int main(void) { return grouped_helper() == trcompat_value() ? 0 : 1; }
+EOF
+    cat >"$target_root_compat/samples/grouped/helper.c" <<'EOF'
+#include "target-root-compat.h"
+int grouped_helper(void);
+int grouped_helper(void) { return trcompat_value(); }
+EOF
+
     invoke_external "0" "$target_root_compat" "$cli_exe" build --sample --link-dsl=off
-    assert_contains "$LAST_OUTPUT" "Build successful!" "Sample target build did not succeed"
+    assert_contains "$LAST_OUTPUT" "Batch samples successful: 3 executable(s)" "Sample root was not built as separate batch units"
+    assert_build_artifacts_exist "$target_root_compat" "sample-usage$exe_ext" "sample-second$exe_ext" "grouped$exe_ext"
 
     invoke_external "0" "$target_root_compat" "$cli_exe" build --example --link-dsl=off
-    assert_contains "$LAST_OUTPUT" "Build successful!" "Example target build did not succeed"
+    assert_contains "$LAST_OUTPUT" "Batch examples successful: 1 executable(s)" "Example root was not built as a separate batch unit"
+    assert_build_artifacts_exist "$target_root_compat" "example-usage$exe_ext"
+
+    invoke_external "0" "$target_root_compat" "$cli_exe" syntax --sample --link-dsl=off
+    assert_contains "$LAST_OUTPUT" "SYNTAX" "Initial syntax check did not execute the compiler"
+    invoke_external "0" "$target_root_compat" "$cli_exe" syntax --sample --link-dsl=off
+    assert_contains "$LAST_OUTPUT" "SKIP syntax" "Second syntax check did not use the dependency-aware cache"
+    sleep 1
+    touch "$target_root_compat/include/target-root-compat.h"
+    invoke_external "0" "$target_root_compat" "$cli_exe" syntax --sample --link-dsl=off
+    assert_contains "$LAST_OUTPUT" "SYNTAX" "Header change did not invalidate syntax cache"
 
     invoke_external "0" "$target_root_compat" "$cli_exe" test --example example-usage.c --link-dsl=off
     assert_contains "$LAST_OUTPUT" "status: PASS" "Selected example test did not succeed"
 
     invoke_external "0" "$target_root_compat" "$cli_exe" clean
+
+    dependency_export_root="$temp_root/dependency-export"
+    dependency_export_lib="$dependency_export_root/dep"
+    dependency_export_app="$dependency_export_root/app"
+    mkdir -p "$dependency_export_lib/include" "$dependency_export_lib/src" "$dependency_export_app/src"
+    cat >"$dependency_export_lib/project.dh" <<'EOF'
+output=dep
+kind=static-lib
+link-dsl=off
+version-namespace=dep_api
+version-core=2.3.4
+EOF
+    cat >"$dependency_export_lib/include/dep.h" <<'EOF'
+#pragma once
+#ifndef dep_api__NUM__VER_CORE_MAJOR
+#error dependency version macro was not exported
+#endif
+#if dep_api__NUM__VER_CORE_MAJOR != 2
+#error dependency version macro has the wrong value
+#endif
+int dep_value(void);
+EOF
+    cat >"$dependency_export_lib/src/dep.c" <<'EOF'
+#include "dep.h"
+int dep_value(void) { return dep_api__NUM__VER_CORE_MAJOR; }
+EOF
+    dependency_export_lib_native=$(native_path "$dependency_export_lib")
+    cat >"$dependency_export_app/project.dh" <<EOF
+output=dependency-export-app
+link-dsl=off
+
+[dep]
+path=$dependency_export_lib_native
+linking=static
+link=dep
+EOF
+    cat >"$dependency_export_app/src/main.c" <<'EOF'
+#include "dep.h"
+int main(void) { return dep_value() == 2 ? 0 : 1; }
+EOF
+    invoke_external "0" "$dependency_export_app" "$cli_exe" build dev --link-dsl=off
+    [ -f "$dependency_export_app/lib/deps/.dep.dh-exports" ]
+    assert_true $? "Dependency compile-export metadata was not staged"
+    assert_contains "$(cat "$dependency_export_app/lib/deps/.dep.dh-exports")" "-Ddep_api__NUM__VER_CORE_MAJOR=2" "Dependency version macro was not exported"
+    dependency_export_exe=$("$find_bin" "$dependency_export_app/build" -type f -name "dependency-export-app$exe_ext" | head -n 1)
+    [ -n "$dependency_export_exe" ]
+    assert_true $? "Dependency export consumer executable was not built"
+    invoke_external "0" "$dependency_export_app" "$dependency_export_exe"
+    invoke_external "0" "$dependency_export_app" "$cli_exe" syntax dev --link-dsl=off
+    invoke_external "0" "$dependency_export_app" "$cli_exe" compile-db dev --link-dsl=off
+    assert_contains "$(cat "$dependency_export_app/compile_commands.json")" "dep_api__NUM__VER_CORE_MAJOR=2" "Compile database omitted dependency-exported constants"
 
     recursive_dsl_project=$(copy_scenario_project "dh-c/tests/fixture/recursive-dsl-project")
     invoke_external "0" "$recursive_dsl_project" "$cli_exe" test --recur
@@ -1060,6 +1178,82 @@ EOF
         printf 'Prebuilt package included producer response files\n' >&2
         exit 1
     fi
+
+    self_sdk_project="$temp_root/self-prebuilt-sdk"
+    mkdir -p \
+        "$self_sdk_project/src" \
+        "$self_sdk_project/dh/include/dh" \
+        "$self_sdk_project/dh/src/dh"
+    cat >"$self_sdk_project/project.dh" <<'EOF'
+kind=executable
+output=dh-c
+link-dsl=off
+version-namespace=dal_c
+version-core=1.2.3
+EOF
+    cat >"$self_sdk_project/src/main.c" <<'EOF'
+#include <stdio.h>
+int main(void) { puts("self-prebuilt fixture"); return 0; }
+EOF
+    cat >"$self_sdk_project/dh/project.dh" <<'EOF'
+kind=lib
+pch=off
+version-namespace=dh
+version-core=4.5.6
+EOF
+    cat >"$self_sdk_project/dh/include/dh.h" <<'EOF'
+#pragma once
+EOF
+    cat >"$self_sdk_project/dh/include/dh-main.h" <<'EOF'
+#pragma once
+EOF
+    cat >"$self_sdk_project/dh/include/dh/demo.h" <<'EOF'
+#pragma once
+#define DH_SELF_PREBUILT_FIXTURE 1
+EOF
+    cat >"$self_sdk_project/dh/src/dh/core.c" <<'EOF'
+int dh_self_prebuilt_fixture(void);
+int dh_self_prebuilt_fixture(void) { return 1; }
+EOF
+
+    invoke_external "0" "$self_sdk_project" "$cli_exe" package dev --layout=self-prebuilt --self-profiles=dev
+    assert_contains "$LAST_OUTPUT" "[SELF-PREBUILT]" "Self-prebuilt packaging did not report its SDK root"
+    self_sdk_metadata=$("$find_bin" "$self_sdk_project/self-prebuilt" -path '*/dev/sdk.dh' -type f | head -n 1)
+    [ -n "$self_sdk_metadata" ]
+    assert_true $? "Self-prebuilt package did not create sdk.dh"
+    self_sdk_root=$(dirname "$self_sdk_metadata")
+    [ -f "$self_sdk_root/bin/dh-c$exe_ext" ]
+    assert_true $? "Self-prebuilt package did not stage dh-c"
+    [ -f "$self_sdk_root/include/dh.h" ]
+    assert_true $? "Self-prebuilt package did not stage DH public headers"
+    [ -f "$self_sdk_root/include/dh/demo.h" ]
+    assert_true $? "Self-prebuilt package did not preserve nested DH headers"
+    if ! "$find_bin" "$self_sdk_root/prebuilt" -path '*/dev/manifest.dh' -type f | "$grep_bin" . >/dev/null 2>&1; then
+        printf 'Self-prebuilt package did not stage the selected DH manifest\n' >&2
+        exit 1
+    fi
+    if ! "$find_bin" "$self_sdk_root/prebuilt" -path '*/dev/libs/*' -type f | "$grep_bin" . >/dev/null 2>&1; then
+        printf 'Self-prebuilt package did not stage the selected DH libraries\n' >&2
+        exit 1
+    fi
+    assert_contains "$(cat "$self_sdk_metadata")" "layout=self-prebuilt" "sdk.dh did not identify the self-prebuilt layout"
+    assert_contains "$(cat "$self_sdk_metadata")" "dh-version=4.5.6" "sdk.dh did not record the DH version"
+    assert_contains "$(cat "$self_sdk_metadata")" "dh-c-version=1.2.3" "sdk.dh did not record the dh-c version"
+    assert_contains "$(cat "$self_sdk_metadata")" "profiles=dev" "sdk.dh did not record packaged DH profiles"
+
+    case "$(uname -s)" in
+        MINGW*|MSYS*|CYGWIN*) ;;
+        *)
+            [ -x "$self_sdk_root/bin/dh-c$exe_ext" ]
+            assert_true $? "Self-prebuilt package did not preserve the dh-c executable bit"
+            ;;
+    esac
+
+    cp "$cli_exe" "$self_sdk_root/bin/dh-c$exe_ext"
+    portable_cwd=$(mktemp -d "${TMPDIR:-/tmp}/dh-c-self-prebuilt.XXXXXX")
+    invoke_external "0" "$portable_cwd" env DH_HOME= "$self_sdk_root/bin/dh-c$exe_ext" --version
+    assert_contains "$LAST_OUTPUT" "dasae-headers path: $self_sdk_root" "Packaged dh-c did not discover its executable-relative SDK root"
+    remove_recur "$portable_cwd"
 
     header_only_project=$(copy_scenario_project "dh-c/tests/fixture/header-only-project")
     invoke_external "0" "$header_only_project" "$cli_exe" build fast

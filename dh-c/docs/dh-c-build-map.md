@@ -117,6 +117,9 @@ Rules:
 - generated unity/test-runner sources are rewritten only when content changes
 - object paths are keyed by a compile-settings hash, not by the active plan file
 - plan files do not own object freshness; source dependencies do
+- normal build execution always delegates source/header freshness to Make
+- only read-only `plan`/`explain rebuild` paths parse existing `.d` files before Make
+- `syntax` owns a separate argument-hash cache whose Clang `.d` file tracks included headers
 
 Compile-settings hash inputs:
 - profile
@@ -130,6 +133,20 @@ Compile-settings hash inputs:
 Why:
 - switching between `sample`, `example`, `test`, `run`, or dependency builds preserves unrelated objects
 - repeated `run` reaches `make: Nothing to be done for 'all'.`
+- dh-c does not duplicate Make's dependency parsing and repeated filesystem metadata checks
+- repeated `syntax` skips unchanged translation units while still observing header changes
+
+## Batch Target Roots
+
+Owner:
+- `dh-c/src/dal-c/Cmd.c`
+
+Rules:
+- bare `--sample` or `--example` selects the complete built-in root as a batch
+- every source file directly under that root is one executable
+- every immediate child directory is one recursively collected executable
+- empty directories and non-source files are skipped
+- entries are sorted before execution so batch order is stable
 
 ## Self Reuse
 Owner:
@@ -159,7 +176,7 @@ Rules:
 - a static-library build always emits a native non-LTO archive
 - when effective LTO is enabled, the same build also emits a `.lto` archive using that LTO mode
 - a shared-library build emits one native DLL/SO after applying the effective profile LTO internally
-- Windows shared outputs use `<name>.dll.lib` as the import-library name
+- Windows shared outputs use `<name>.dll.lib` as the MSVC-style import-library name; GNU `.dll.a` and static `.a` artifacts are also recognized when consumed
 - `kind=lib` composes the static variants and shared output rather than creating a new profile
 - final links select `.lto` archives only when their own effective LTO is enabled
 - dependency staging preserves both static variants and shared/import artifacts
@@ -185,6 +202,8 @@ Owner:
 Rules:
 - packaged artifacts live under `<project>/prebuilt/<normalized-target>/<profile>/`, never under the mutable `build/` cache
 - `libs/` contains the project artifact and `deps/` may contain its transitive staged dependencies
+- dependency `.dh-exports` metadata propagates exported compile constants through transitive staging
+- staged dependency DLLs are copied into install-layout `bin/`; internal linker response files are not packaged
 - `prebuilt=auto` prefers a complete package and falls back to source
 - `prebuilt=off` forces source traversal
 - `prebuilt=required` fails when the matching package is absent
@@ -194,6 +213,12 @@ Rules:
 - `dh`, self/static artifacts, and normal dependency links use the same native-versus-LTO selection rule
 - PCH files are not consumed from SDK prebuilt packages
 - `manifest.dh` inventories every artifact in the profile `libs/` directory; test/sample/example executables never overwrite it
+- `package --layout=prebuilt` packages one library target/profile and requires its generated `manifest.dh`
+- `package --layout=self-prebuilt` is reserved for the `dh-c` executable project and assembles a relocatable SDK root containing `bin/dh-c`, DH public headers, `sdk.dh`, and selected source-free DH prebuilt profiles
+- the package command profile selects the `dh-c` executable profile; `--self-profiles` selects the independently consumable DH profiles and defaults to `dev,fast,test,stable,release`
+- the self-prebuilt producer always builds DH from source (`prebuilt=off`) before promoting those profile packages, so an already installed SDK cannot be accidentally repackaged as a new producer SDK
+- `bin/dh-c` discovers the bundled root relative to its executable after explicit `--dh`, current-directory discovery, and `DH_HOME`; the complete directory may therefore be relocated without rewriting absolute source paths
+- copied executables preserve POSIX mode bits, and normal package runtime DLL staging is reused for the bundled tool
 - target, profile, selected artifact role/path, compiled ABI identity, LTO toolchain identity, and Windows import-library pairing are validated before use
 
 Why:
@@ -214,6 +239,8 @@ Rules:
 - `pch-exclude=<header>` declares headers that force no-PCH translation units when included by a source
 - projects that only use `dh` through DSL use the detected `dh/include/dh-bundle.h` as PCH
 - `lib/deps.h` is generated only when dependency headers exist or `pch=deps` explicitly requests it
+- no PCH path or Make rule is emitted when the selected sources do not require PCH
+- disabled, unavailable, unused, and already-fresh PCH states are reported as `[SKIP] PCH ...`
 - generated `lib/deps.h` includes only top-level headers under `lib/deps`
 - `dh/project.dh` declares:
   - `pch=dh.h`
@@ -232,6 +259,15 @@ Rules:
 - `dal_c__ensureLibDH()` detects the real `dh` project instead of constructing ad hoc temporary settings
 - self-build uses the same plan-scoped makefile generation
 - self-build uses the same object cache and PCH policy as normal builds
+
+## State, Target, And Process Lifetime
+
+Rules:
+- `lib/`, `lib/deps/`, and `.dh-c/deps/` are created lazily only for work that needs them
+- the build lock lives under the global cache; an obsolete `.dh-c/build.lock` is removed and an empty `.dh-c/` is cleaned up
+- explicit target triples, not the host OS, decide `.a`/`.so` versus `.lib`/`.dll`, PIC, import-library, and linker behavior
+- Linux GNU and Windows GNU/MSVC aliases are normalized to stable package/toolchain directory names
+- POSIX child process groups and Windows kill-on-close Job Objects are owned by dh-c and are terminated when dh-c exits or receives a termination signal
 
 ## Command Surface Matrix
 Owner:

@@ -42,6 +42,32 @@ static char* proc__buildCommandLine(const char** argv) {
     }
     return cmd_line;
 }
+
+static HANDLE proc__createKillOnCloseJob(void) {
+    HANDLE job = CreateJobObjectA(NULL, NULL);
+    if (!job) { return NULL; }
+    JOBOBJECT_EXTENDED_LIMIT_INFORMATION info;
+    memset(&info, 0, sizeof(info));
+    info.BasicLimitInformation.LimitFlags = JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
+    if (!SetInformationJobObject(job, JobObjectExtendedLimitInformation, &info, sizeof(info))) {
+        CloseHandle(job);
+        return NULL;
+    }
+    return job;
+}
+
+static bool proc__assignJobAndResume(HANDLE job, PROCESS_INFORMATION* process) {
+    if (!job || !process) { return false; }
+    if (!AssignProcessToJobObject(job, process->hProcess)) {
+        TerminateProcess(process->hProcess, 1);
+        return false;
+    }
+    if (ResumeThread(process->hThread) == (DWORD)-1) {
+        TerminateProcess(process->hProcess, 1);
+        return false;
+    }
+    return true;
+}
 #endif
 #ifndef _WIN32
 static int proc__statusToExitCode(int status) {
@@ -50,14 +76,83 @@ static int proc__statusToExitCode(int status) {
     return -1;
 }
 
-static volatile sig_atomic_t proc__pending_signal = 0;
-static volatile sig_atomic_t proc__active_child_pgid = 0;
+enum { proc__max_active_children = 1024 };
+static volatile sig_atomic_t proc__cleanup_installed = 0;
+static volatile sig_atomic_t proc__active_child_count = 0;
+static pid_t proc__active_child_pgids[proc__max_active_children];
+
+static void proc__signalMask(int how, sigset_t* old_mask) {
+    sigset_t mask;
+    sigemptyset(&mask);
+    sigaddset(&mask, SIGINT);
+    sigaddset(&mask, SIGTERM);
+    sigaddset(&mask, SIGHUP);
+    (void)sigprocmask(how, &mask, old_mask);
+}
+
+static void proc__terminateAll(int sig) {
+    const sig_atomic_t count = proc__active_child_count;
+    for (sig_atomic_t i = 0; i < count; ++i) {
+        const pid_t pgid = proc__active_child_pgids[i];
+        if (pgid > 0) { (void)kill(-pgid, sig); }
+    }
+}
+
+static void proc__cleanupAll(void) {
+    sigset_t old_mask;
+    proc__signalMask(SIG_BLOCK, &old_mask);
+    proc__terminateAll(SIGTERM);
+    proc__terminateAll(SIGKILL);
+    const sig_atomic_t count = proc__active_child_count;
+    for (sig_atomic_t i = 0; i < count; ++i) {
+        if (proc__active_child_pgids[i] > 0) {
+            (void)waitpid(proc__active_child_pgids[i], NULL, WNOHANG);
+        }
+    }
+    proc__active_child_count = 0;
+    (void)sigprocmask(SIG_SETMASK, &old_mask, NULL);
+}
 
 static void proc__handleSignal(int sig) {
-    proc__pending_signal = sig;
-    if (proc__active_child_pgid > 0) {
-        (void)kill(-(pid_t)proc__active_child_pgid, sig);
+    proc__terminateAll(sig);
+    _exit(128 + sig);
+}
+
+static void proc__installCleanup(void) {
+    if (proc__cleanup_installed) { return; }
+    proc__cleanup_installed = 1;
+    (void)atexit(proc__cleanupAll);
+    struct sigaction action;
+    memset(&action, 0, sizeof(action));
+    action.sa_handler = proc__handleSignal;
+    sigemptyset(&action.sa_mask);
+    (void)sigaction(SIGINT, &action, NULL);
+    (void)sigaction(SIGTERM, &action, NULL);
+    (void)sigaction(SIGHUP, &action, NULL);
+}
+
+static bool proc__registerChild(pid_t pgid) {
+    proc__installCleanup();
+    sigset_t old_mask;
+    proc__signalMask(SIG_BLOCK, &old_mask);
+    const bool ok = proc__active_child_count < proc__max_active_children;
+    if (ok) { proc__active_child_pgids[proc__active_child_count++] = pgid; }
+    (void)sigprocmask(SIG_SETMASK, &old_mask, NULL);
+    return ok;
+}
+
+static void proc__unregisterChild(pid_t pgid) {
+    sigset_t old_mask;
+    proc__signalMask(SIG_BLOCK, &old_mask);
+    for (sig_atomic_t i = 0; i < proc__active_child_count; ++i) {
+        if (proc__active_child_pgids[i] == pgid) {
+            --proc__active_child_count;
+            proc__active_child_pgids[i] = proc__active_child_pgids[proc__active_child_count];
+            proc__active_child_pgids[proc__active_child_count] = 0;
+            break;
+        }
     }
+    (void)sigprocmask(SIG_SETMASK, &old_mask, NULL);
 }
 
 static void proc__freeMutableArgv(char** argv) {
@@ -106,15 +201,10 @@ proc_Child* proc_spawn(const char** argv, bool show_output) {
         si.hStdOutput = GetStdHandle(STD_OUTPUT_HANDLE);
         si.hStdError = GetStdHandle(STD_ERROR_HANDLE);
     }
-    HANDLE job = CreateJobObjectA(NULL, NULL);
-    if (job) {
-        JOBOBJECT_EXTENDED_LIMIT_INFORMATION info;
-        memset(&info, 0, sizeof(info));
-        info.BasicLimitInformation.LimitFlags = JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
-        if (!SetInformationJobObject(job, JobObjectExtendedLimitInformation, &info, sizeof(info))) {
-            CloseHandle(job);
-            job = NULL;
-        }
+    HANDLE job = proc__createKillOnCloseJob();
+    if (!job) {
+        free(cmd_line);
+        return NULL;
     }
 
     const BOOL success = CreateProcessA(
@@ -123,7 +213,7 @@ proc_Child* proc_spawn(const char** argv, bool show_output) {
         NULL,
         NULL,
         !show_output,
-        CREATE_NEW_PROCESS_GROUP,
+        CREATE_NEW_PROCESS_GROUP | CREATE_SUSPENDED,
         NULL,
         NULL,
         &si,
@@ -134,8 +224,11 @@ proc_Child* proc_spawn(const char** argv, bool show_output) {
         if (job) { CloseHandle(job); }
         return NULL;
     }
-    if (job) {
-        (void)AssignProcessToJobObject(job, pi.hProcess);
+    if (!proc__assignJobAndResume(job, &pi)) {
+        CloseHandle(pi.hProcess);
+        CloseHandle(pi.hThread);
+        CloseHandle(job);
+        return NULL;
     }
 
     proc_Child* child = (proc_Child*)malloc(sizeof(*child));
@@ -171,10 +264,16 @@ proc_Child* proc_spawn(const char** argv, bool show_output) {
     }
 
     (void)setpgid(pid, pid);
+    if (!proc__registerChild(pid)) {
+        (void)kill(-pid, SIGTERM);
+        (void)waitpid(pid, NULL, 0);
+        return NULL;
+    }
     proc_Child* child = (proc_Child*)malloc(sizeof(*child));
     if (!child) {
         (void)kill(-pid, SIGTERM);
         (void)waitpid(pid, NULL, 0);
+        proc__unregisterChild(pid);
         return NULL;
     }
     child->pid = pid;
@@ -201,11 +300,13 @@ int proc_wait(proc_Child** child) {
         pid_t waited = waitpid(value->pid, &status, 0);
         if (waited == value->pid) { break; }
         if (waited == -1 && errno == EINTR) { continue; }
+        proc__unregisterChild(value->pid);
         free(value);
         *child = NULL;
         return -1;
     }
     int code = proc__statusToExitCode(status);
+    proc__unregisterChild(value->pid);
     free(value);
     *child = NULL;
     return code;
@@ -237,6 +338,7 @@ int proc_waitAny(proc_Child** children, int count, int* index_out) {
         for (int i = 0; i < count; ++i) {
             if (children[i] && children[i]->pid == waited) {
                 int code = proc__statusToExitCode(status);
+                proc__unregisterChild(children[i]->pid);
                 free(children[i]);
                 children[i] = NULL;
                 *index_out = i;
@@ -249,125 +351,8 @@ int proc_waitAny(proc_Child** children, int count, int* index_out) {
 
 int proc_run(const char** argv, bool show_output) {
     if (!argv || !argv[0]) { return -1; }
-#ifdef _WIN32
-    char* const cmd_line = proc__buildCommandLine(argv);
-    if (!cmd_line) { return -1; }
-
-    STARTUPINFOA si = { 0 };
-    PROCESS_INFORMATION pi = { 0 };
-    si.cb = sizeof(si);
-    if (!show_output) {
-        si.dwFlags |= STARTF_USESTDHANDLES;
-        si.hStdInput = GetStdHandle(STD_INPUT_HANDLE);
-        si.hStdOutput = GetStdHandle(STD_OUTPUT_HANDLE);
-        si.hStdError = GetStdHandle(STD_ERROR_HANDLE);
-    }
-    HANDLE job = CreateJobObjectA(NULL, NULL);
-    if (job) {
-        JOBOBJECT_EXTENDED_LIMIT_INFORMATION info;
-        memset(&info, 0, sizeof(info));
-        info.BasicLimitInformation.LimitFlags = JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
-        if (!SetInformationJobObject(job, JobObjectExtendedLimitInformation, &info, sizeof(info))) {
-            CloseHandle(job);
-            job = NULL;
-        }
-    }
-
-    const BOOL success = CreateProcessA(
-        NULL,
-        cmd_line,
-        NULL,
-        NULL,
-        !show_output,
-        CREATE_NEW_PROCESS_GROUP,
-        NULL,
-        NULL,
-        &si,
-        &pi
-    );
-    free(cmd_line);
-    if (!success) {
-        if (job) { CloseHandle(job); }
-        return -1;
-    }
-    if (job) {
-        (void)AssignProcessToJobObject(job, pi.hProcess);
-    }
-    WaitForSingleObject(pi.hProcess, INFINITE);
-    DWORD exit_code = 0;
-    GetExitCodeProcess(pi.hProcess, &exit_code);
-    CloseHandle(pi.hProcess);
-    CloseHandle(pi.hThread);
-    if (job) { CloseHandle(job); }
-    return (int)exit_code;
-#else
-    const pid_t pid = fork();
-    if (pid == -1) { return -1; }
-    if (pid == 0) {
-        // Child process. Use a process group so dh-c can terminate the whole
-        // build subtree (make + compiler workers) when dh-c is interrupted.
-        (void)setpgid(0, 0);
-#ifdef __linux__
-        // If dh-c is killed by an outer supervisor before it can forward a signal,
-        // terminate the direct child (usually make) instead of leaving a build tree
-        // behind. make normally forwards/cleans up its compiler workers.
-        (void)prctl(PR_SET_PDEATHSIG, SIGTERM);
-        if (getppid() == 1) { _exit(128 + SIGTERM); }
-#endif
-        if (!show_output) {
-            // Redirect output to /dev/null
-            freopen("/dev/null", "w", stdout);
-            freopen("/dev/null", "w", stderr);
-        }
-        char** const exec_argv = proc__makeMutableArgv(argv);
-        if (!exec_argv) { exit(1); }
-        execvp(exec_argv[0], exec_argv);
-        proc__freeMutableArgv(exec_argv);
-        exit(1); // execvp failed
-    } else {
-        // Parent process
-        (void)setpgid(pid, pid);
-
-        struct sigaction old_int = { 0 };
-        struct sigaction old_term = { 0 };
-        struct sigaction action = { 0 };
-        action.sa_handler = proc__handleSignal;
-        sigemptyset(&action.sa_mask);
-        action.sa_flags = 0;
-        proc__pending_signal = 0;
-        proc__active_child_pgid = (sig_atomic_t)pid;
-        (void)sigaction(SIGINT, &action, &old_int);
-        (void)sigaction(SIGTERM, &action, &old_term);
-
-        int status = 0;
-        for (;;) {
-            pid_t waited = waitpid(pid, &status, 0);
-            if (waited == pid) { break; }
-            if (waited == -1 && errno == EINTR && proc__pending_signal != 0) {
-                const int sig = (int)proc__pending_signal;
-                (void)kill(-pid, sig);
-                (void)waitpid(pid, &status, 0);
-                proc__active_child_pgid = 0;
-                (void)sigaction(SIGINT, &old_int, NULL);
-                (void)sigaction(SIGTERM, &old_term, NULL);
-                return 128 + sig;
-            }
-            if (waited == -1 && errno != EINTR) {
-                proc__active_child_pgid = 0;
-                (void)sigaction(SIGINT, &old_int, NULL);
-                (void)sigaction(SIGTERM, &old_term, NULL);
-                return -1;
-            }
-        }
-
-        proc__active_child_pgid = 0;
-        (void)sigaction(SIGINT, &old_int, NULL);
-        (void)sigaction(SIGTERM, &old_term, NULL);
-        if (WIFEXITED(status)) { return WEXITSTATUS(status); }
-        if (WIFSIGNALED(status)) { return 128 + WTERMSIG(status); }
-        return -1;
-    }
-#endif
+    proc_Child* child = proc_spawn(argv, show_output);
+    return child ? proc_wait(&child) : -1;
 }
 
 int proc_runMergedOutput(const char** argv, bool show_output) {
@@ -398,15 +383,12 @@ int proc_runMergedOutput(const char** argv, bool show_output) {
     si.hStdOutput = hWrite;
     si.hStdError = hWrite;
 
-    HANDLE job = CreateJobObjectA(NULL, NULL);
-    if (job) {
-        JOBOBJECT_EXTENDED_LIMIT_INFORMATION info;
-        memset(&info, 0, sizeof(info));
-        info.BasicLimitInformation.LimitFlags = JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
-        if (!SetInformationJobObject(job, JobObjectExtendedLimitInformation, &info, sizeof(info))) {
-            CloseHandle(job);
-            job = NULL;
-        }
+    HANDLE job = proc__createKillOnCloseJob();
+    if (!job) {
+        free(cmd_line);
+        CloseHandle(hRead);
+        CloseHandle(hWrite);
+        return -1;
     }
 
     const BOOL success = CreateProcessA(
@@ -415,22 +397,28 @@ int proc_runMergedOutput(const char** argv, bool show_output) {
         NULL,
         NULL,
         TRUE,
-        CREATE_NEW_PROCESS_GROUP,
+        CREATE_NEW_PROCESS_GROUP | CREATE_SUSPENDED,
         NULL,
         NULL,
         &si,
         &pi
     );
     free(cmd_line);
-    CloseHandle(hWrite);
     if (!success) {
+        CloseHandle(hWrite);
         CloseHandle(hRead);
-        if (job) { CloseHandle(job); }
+        CloseHandle(job);
         return -1;
     }
-    if (job) {
-        (void)AssignProcessToJobObject(job, pi.hProcess);
+    if (!proc__assignJobAndResume(job, &pi)) {
+        CloseHandle(hWrite);
+        CloseHandle(hRead);
+        CloseHandle(pi.hProcess);
+        CloseHandle(pi.hThread);
+        CloseHandle(job);
+        return -1;
     }
+    CloseHandle(hWrite);
 
     char buffer[2048];
     DWORD bytes_read = 0;
@@ -474,21 +462,40 @@ char* proc_output(const char** argv) {
         CloseHandle(hWrite);
         return NULL;
     }
+    HANDLE job = proc__createKillOnCloseJob();
+    if (!job) {
+        free(cmd_line);
+        CloseHandle(hRead);
+        CloseHandle(hWrite);
+        return NULL;
+    }
     const BOOL success = CreateProcessA(
         NULL,
         cmd_line,
         NULL,
         NULL,
         TRUE,
-        0,
+        CREATE_NEW_PROCESS_GROUP | CREATE_SUSPENDED,
         NULL,
         NULL,
         &si,
         &pi
     );
     free(cmd_line);
+    if (!success) {
+        CloseHandle(hWrite);
+        CloseHandle(job);
+        return CloseHandle(hRead), NULL;
+    }
+    if (!proc__assignJobAndResume(job, &pi)) {
+        CloseHandle(hWrite);
+        CloseHandle(hRead);
+        CloseHandle(pi.hProcess);
+        CloseHandle(pi.hThread);
+        CloseHandle(job);
+        return NULL;
+    }
     CloseHandle(hWrite);
-    if (!success) { return CloseHandle(hRead), NULL; }
     // Read output
     char buffer[2048] = {};
     size_t total_size = 0;
@@ -502,6 +509,7 @@ char* proc_output(const char** argv) {
             CloseHandle(hRead);
             CloseHandle(pi.hProcess);
             CloseHandle(pi.hThread);
+            if (job) { CloseHandle(job); }
             return NULL;
         }
         output = temp;
@@ -512,6 +520,7 @@ char* proc_output(const char** argv) {
     WaitForSingleObject(pi.hProcess, INFINITE);
     CloseHandle(pi.hProcess);
     CloseHandle(pi.hThread);
+    if (job) { CloseHandle(job); }
     CloseHandle(hRead);
     return output;
 #else
@@ -526,6 +535,11 @@ char* proc_output(const char** argv) {
     }
     if (pid == 0) {
         // Child process
+        (void)setpgid(0, 0);
+#ifdef __linux__
+        (void)prctl(PR_SET_PDEATHSIG, SIGTERM);
+        if (getppid() == 1) { _exit(128 + SIGTERM); }
+#endif
         close(pipefd[0]);
         dup2(pipefd[1], STDOUT_FILENO);
         dup2(pipefd[1], STDERR_FILENO);
@@ -537,6 +551,14 @@ char* proc_output(const char** argv) {
         exit(1);
     } else {
         // Parent process
+        (void)setpgid(pid, pid);
+        if (!proc__registerChild(pid)) {
+            (void)kill(-pid, SIGTERM);
+            (void)waitpid(pid, NULL, 0);
+            close(pipefd[0]);
+            close(pipefd[1]);
+            return NULL;
+        }
         close(pipefd[1]);
         char buffer[2048] = {};
         size_t total_size = 0;
@@ -550,6 +572,7 @@ char* proc_output(const char** argv) {
                 free(output);
                 close(pipefd[0]);
                 waitpid(pid, NULL, 0);
+                proc__unregisterChild(pid);
                 return NULL;
             }
             output = temp;
@@ -559,6 +582,7 @@ char* proc_output(const char** argv) {
         if (output) { output[total_size] = '\0'; }
         close(pipefd[0]);
         waitpid(pid, NULL, 0);
+        proc__unregisterChild(pid);
         return output;
     }
 #endif
