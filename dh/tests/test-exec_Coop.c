@@ -55,16 +55,9 @@ $static fn_((test_exec_Coop__countFn(
     test_exec_Coop__push(sys.log, base + 9);
     return base + 9;
 };
-fn_use_Clsr_((test_exec_Coop__countFn)(
-    test_exec_Coop_SysLogged, usize, time_Dur, test_exec_Coop_Event
-)(test_exec_Coop_Event));
+fn_use_Clsr_((test_exec_Coop__countFn)(test_exec_Coop_SysLogged, usize, time_Dur, test_exec_Coop_Event)(test_exec_Coop_Event));
 
-$static co_fn_(test_exec_Coop__countCo, (
-    test_exec_Coop_SysLogged sys;
-    usize n;
-    time_Dur interval;
-    test_exec_Coop_Event base
-), test_exec_Coop_Event);
+$static co_fn_(test_exec_Coop__countCo, (test_exec_Coop_SysLogged sys; usize n; time_Dur interval; test_exec_Coop_Event base), test_exec_Coop_Event);
 co_fn_frame_scope(
     test_exec_Coop__countCo,
     co_locals_({}),
@@ -89,9 +82,7 @@ co_fn_scope(test_exec_Coop__countCo) {
     test_exec_Coop__push($co_arg(sys).log, $co_arg(base) + 9);
     co_return_($co_arg(base) + 9);
 } $unscoped(co_fn);
-co_use_Clsr_((test_exec_Coop__countCo)(
-    test_exec_Coop_SysLogged, usize, time_Dur, test_exec_Coop_Event
-)(test_exec_Coop_Event));
+co_use_Clsr_((test_exec_Coop__countCo)(test_exec_Coop_SysLogged, usize, time_Dur, test_exec_Coop_Event)(test_exec_Coop_Event));
 
 T_use$((u32)(Co_Ctx, Co_Rtn, Co_Frame));
 T_use$((u32)(Clsr_Ctx, Clsr_Rtn, Clsr));
@@ -142,9 +133,9 @@ $static fn_((test_exec_Coop_Clock__now(P$raw ctx))(time_Awake_Inst)) {
     return (time_Awake_Inst){ .raw = self->now };
 };
 
-$static fn_((test_exec_Coop_Clock__resolution(
+$static fn_((test_exec_Coop_Clock__resoln(
     P$raw ctx
-))(time_ResolutionE$time_Resolution) $scope) {
+))(time_ResolnE$time_Resoln) $scope) {
     let_ignore = ensureNonnull(ctx);
     return_ok(time_Dur_fromNanos(1));
 } $unscoped(fn);
@@ -160,7 +151,7 @@ $static fn_((test_exec_Coop_Clock__sleep(
 $static fn_((test_exec_Coop_Clock_awake(test_exec_Coop_Clock* self))(time_Awake)) {
     $static let_(vtbl, time_Awake_VTbl) = {
         .nowFn = test_exec_Coop_Clock__now,
-        .resolutionFn = test_exec_Coop_Clock__resolution,
+        .resolnFn = test_exec_Coop_Clock__resoln,
         .sleepFn = test_exec_Coop_Clock__sleep,
     };
     return time_Awake_ensureValid((time_Awake){
@@ -183,10 +174,11 @@ TEST_fn_("exec/Coop: run drives timed task while current-task scope remains boun
 
     try_(TEST_expect(isNone(exec_Coop_task(&coop))));
     var future = Sched_async$u32(sched, clsr_((test_exec_Coop__sleepAndProbe)((test_exec_Coop_Probe){
-        .coop = &coop,
-        .time = time_Awake_evented(&coop),
-        .observed_running_task = &observed_running_task,
-    })).as_base);
+                                                  .coop = &coop,
+                                                  .time = time_Awake_evented(&coop),
+                                                  .observed_running_task = &observed_running_task,
+                                              }))
+                                           .as_base);
     let task = ptrAlignCast$((exec_Task*)(unwrap_(future.any_future)));
     try_(TEST_expect(task->state == exec_Task_State_ready));
 

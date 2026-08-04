@@ -72,7 +72,7 @@ static void test_clean_prefers_local_build_dir(void);
 static void test_clean_profile_removes_dependency_exports(void);
 static void test_clean_cache_scope(void);
 static void test_clean_unused_dependencies(void);
-static void test_target_request_resolution(void);
+static void test_target_request_resoln(void);
 static void test_linux_gnu_target_vendor_is_canonical(void);
 static void test_output_override_generates_target_extensions(void);
 static void test_output_ext_does_not_rewrite_dependency_artifacts(void);
@@ -130,7 +130,7 @@ int main(void) {
     RUN_TEST(test_clean_profile_removes_dependency_exports);
     RUN_TEST(test_clean_cache_scope);
     RUN_TEST(test_clean_unused_dependencies);
-    RUN_TEST(test_target_request_resolution);
+    RUN_TEST(test_target_request_resoln);
     RUN_TEST(test_linux_gnu_target_vendor_is_canonical);
     RUN_TEST(test_output_override_generates_target_extensions);
     RUN_TEST(test_output_ext_does_not_rewrite_dependency_artifacts);
@@ -1589,7 +1589,8 @@ static void test_makefile_mode_contracts(void) {
         TEST_ASSERT(
             dal_c__generateMakefile(
                 cmd, proj, profile, sources, target_path, object_dir, dal_c_Target_static_lib
-            ) == 0
+            )
+            == 0
         );
         char* makefile_text = file_read(makefile_path);
         TEST_ASSERT(makefile_text != NULL);
@@ -2566,9 +2567,7 @@ static void test_makefile_mode_contracts(void) {
             proj, first_cmd, profile_dir, "runtime-contract", dal_c_Target_static_lib
         );
         TEST_ASSERT(static_target_path != NULL);
-        TEST_ASSERT(dal_c__generateMakefile(
-            first_cmd, proj, profile, sources, static_target_path, object_dir, dal_c_Target_static_lib
-        ) == 0);
+        TEST_ASSERT(dal_c__generateMakefile(first_cmd, proj, profile, sources, static_target_path, object_dir, dal_c_Target_static_lib) == 0);
         char* static_makefile_path = dal_c__makePlanFilePath(
             proj, profile, first_cmd, static_target_path, dal_c_Target_static_lib
         );
@@ -3114,11 +3113,10 @@ static void test_adhoc_dependency_scope(void) {
     TEST_ASSERT(file_write(workspace_dh, "std=c17\n"));
     TEST_ASSERT(file_write(source_path, "#include <dep.h>\nint main(void) { return DEP_VALUE; }\n"));
     TEST_ASSERT(file_write(dep_header, "#define DEP_VALUE 0\n"));
-    TEST_ASSERT(file_write(unit_dh,
-        "link-dsl=off\n"
-        "[dep]\n"
-        "path=vendor/dep.h\n"
-        "provider=dh\n"));
+    TEST_ASSERT(file_write(unit_dh, "link-dsl=off\n"
+                                    "[dep]\n"
+                                    "path=vendor/dep.h\n"
+                                    "provider=dh\n"));
     TEST_ASSERT(env_setCWD(unit_root));
 
     const char* argv[] = { dal_c_tool_name, dal_c_cmd_action_build, "main.c", NULL };
@@ -3179,16 +3177,15 @@ static void test_dh_file_contract(void) {
     char* section_path = path_join(temp_root, "section.dh");
     char* invalid_value_path = path_join(temp_root, "invalid-value.dh");
     TEST_ASSERT(dir_createRecur(temp_root));
-    TEST_ASSERT(file_write(valid_path,
-        "output=module\n"
-        "kind=shared-lib\n"
-        "comp-args=-fvisibility=hidden\n"
-        "comp-args=-fno-common\n"
-        "link-args=-Wl,--as-needed\n"
-        "output-ext=.pyd\n"
-        "link-script=layout.ld\n"
-        "objcopy=llvm-objcopy\n"
-        "objcopy-format=binary\n"));
+    TEST_ASSERT(file_write(valid_path, "output=module\n"
+                                       "kind=shared-lib\n"
+                                       "comp-args=-fvisibility=hidden\n"
+                                       "comp-args=-fno-common\n"
+                                       "link-args=-Wl,--as-needed\n"
+                                       "output-ext=.pyd\n"
+                                       "link-script=layout.ld\n"
+                                       "objcopy=llvm-objcopy\n"
+                                       "objcopy-format=binary\n"));
     TEST_ASSERT(file_write(unknown_path, "not-a-build-key=value\n"));
     TEST_ASSERT(file_write(section_path, "[dependency]\npath=dep\n"));
     TEST_ASSERT(file_write(invalid_value_path, "output-ext=not-an-extension\n"));
@@ -3232,10 +3229,9 @@ static void test_dh_file_generated_contract(void) {
     TEST_ASSERT(file_write(project_dh, "output=contract-app\nlink-dsl=off\n"));
     TEST_ASSERT(file_write(source, "int main(void) { return 0; }\n"));
     TEST_ASSERT(file_write(linker_script, "SECTIONS { .text : { *(.text*) } }\n"));
-    TEST_ASSERT(file_write(companion,
-        "comp-args=-DCONFIGURED_COMPILER_ARG=1\n"
-        "link-args=-Wl,--configured-link-arg\n"
-        "link-script=layout.ld\n"));
+    TEST_ASSERT(file_write(companion, "comp-args=-DCONFIGURED_COMPILER_ARG=1\n"
+                                      "link-args=-Wl,--configured-link-arg\n"
+                                      "link-script=layout.ld\n"));
 
     dal_c_Project* proj = dal_c_Project_detectAt(project_root, NULL);
     TEST_ASSERT(proj != NULL);
@@ -3266,9 +3262,7 @@ static void test_dh_file_generated_contract(void) {
         proj, profile, cmd, target_path, dal_c_Target_executable
     );
     TEST_ASSERT(makefile_path != NULL);
-    TEST_ASSERT(dal_c__generateMakefile(
-        cmd, proj, profile, sources, target_path, object_dir, dal_c_Target_executable
-    ) == dal_c_generateMakefile_success);
+    TEST_ASSERT(dal_c__generateMakefile(cmd, proj, profile, sources, target_path, object_dir, dal_c_Target_executable) == dal_c_generateMakefile_success);
     char* first_makefile = file_read(makefile_path);
     TEST_ASSERT(first_makefile != NULL);
     TEST_ASSERT(strstr(first_makefile, "-DCONFIGURED_COMPILER_ARG=1") != NULL);
@@ -3287,9 +3281,7 @@ static void test_dh_file_generated_contract(void) {
     cmd->opts.compiler_args = strdup("-DCONFIGURED_COMPILER_ARG=2");
     free(cmd->opts.link_args);
     cmd->opts.link_args = strdup("-Wl,--different-link-arg");
-    TEST_ASSERT(dal_c__generateMakefile(
-        cmd, proj, profile, sources, target_path, object_dir, dal_c_Target_executable
-    ) == dal_c_generateMakefile_success);
+    TEST_ASSERT(dal_c__generateMakefile(cmd, proj, profile, sources, target_path, object_dir, dal_c_Target_executable) == dal_c_generateMakefile_success);
     char* second_makefile = file_read(makefile_path);
     TEST_ASSERT(second_makefile != NULL);
     char* second_objs = test_makefile_var_first_value(second_makefile, "OBJS");
@@ -3337,18 +3329,15 @@ static void test_workspace_configuration_precedence(void) {
     char* project_dh = path_join(project_root, "project.dh");
     char* source_dh = path_join(project_root, "main.dh");
     TEST_ASSERT(dir_createRecur(project_root));
-    TEST_ASSERT(file_write(workspace_dh,
-        "std=c11\n"
-        "output=workspace-output\n"
-        "define=FROM_WORKSPACE\n"));
-    TEST_ASSERT(file_write(project_dh,
-        "std=c17\n"
-        "output=project-output\n"
-        "define=FROM_PROJECT\n"));
-    TEST_ASSERT(file_write(source_dh,
-        "std=c23\n"
-        "output=source-output\n"
-        "define=FROM_SOURCE\n"));
+    TEST_ASSERT(file_write(workspace_dh, "std=c11\n"
+                                         "output=workspace-output\n"
+                                         "define=FROM_WORKSPACE\n"));
+    TEST_ASSERT(file_write(project_dh, "std=c17\n"
+                                       "output=project-output\n"
+                                       "define=FROM_PROJECT\n"));
+    TEST_ASSERT(file_write(source_dh, "std=c23\n"
+                                      "output=source-output\n"
+                                      "define=FROM_SOURCE\n"));
 
     dal_c_Project* project = dal_c_Project_detectAt(project_root, NULL);
     TEST_ASSERT(project != NULL);
@@ -3490,17 +3479,15 @@ static void test_dependency_lock_contract(void) {
     char* project_dh = path_join(project_root, "project.dh");
     char* lock_path = path_join(project_root, "lock.dh");
     TEST_ASSERT(dir_createRecur(project_root));
-    TEST_ASSERT(file_write(project_dh,
-        "[dep]\n"
-        "source=https://example.invalid/dep.git\n"
-        "revision=main\n"
-        "provider=dh\n"));
-    TEST_ASSERT(file_write(lock_path,
-        "# Generated by dh-c fetch/update. Do not edit by hand.\n"
-        "[dep]\n"
-        "provider=dh\n"
-        "source=https://example.invalid/dep.git\n"
-        "revision=0123456789abcdef\n"));
+    TEST_ASSERT(file_write(project_dh, "[dep]\n"
+                                       "source=https://example.invalid/dep.git\n"
+                                       "revision=main\n"
+                                       "provider=dh\n"));
+    TEST_ASSERT(file_write(lock_path, "# Generated by dh-c fetch/update. Do not edit by hand.\n"
+                                      "[dep]\n"
+                                      "provider=dh\n"
+                                      "source=https://example.invalid/dep.git\n"
+                                      "revision=0123456789abcdef\n"));
 
     dal_c_Project* project = dal_c_Project_detectAt(project_root, NULL);
     TEST_ASSERT(project != NULL);
@@ -3928,11 +3915,10 @@ static void test_clean_unused_dependencies(void) {
 
     TEST_ASSERT(original_cwd != NULL);
     TEST_ASSERT(dir_createRecur(project_root));
-    TEST_ASSERT(file_write(project_dh,
-        "output=clean-unused-deps-project\n"
-        "[used]\n"
-        "source=https://example.invalid/used.git\n"
-        "provider=cmake\n"));
+    TEST_ASSERT(file_write(project_dh, "output=clean-unused-deps-project\n"
+                                       "[used]\n"
+                                       "source=https://example.invalid/used.git\n"
+                                       "provider=cmake\n"));
     TEST_ASSERT(file_write(lock_dh, "[unused]\nrevision=deadbeef\n"));
     TEST_ASSERT(dir_createRecur(used_src));
     TEST_ASSERT(dir_createRecur(unused_src));
@@ -4023,7 +4009,7 @@ static void test_linux_gnu_target_vendor_is_canonical(void) {
     free(target);
 }
 
-static void test_target_request_resolution(void) {
+static void test_target_request_resoln(void) {
     char* root_path = test_repo_path(dal_c_tool_name "/lab/target-root-contract");
     dal_c_Project* proj = dal_c_Project_detectAt(root_path, NULL);
     TEST_ASSERT(proj != NULL);

@@ -65,7 +65,7 @@ pp_if_(plat_is_windows)(pp_then_(
         );
     };
 
-    fn_((time__windows_qpcResolution(void))(time_Resolution)) {
+    fn_((time__windows_qpcResoln(void))(time_Resoln)) {
         let freq = time__windows_qpcFreq();
         let nanos = time_nanos_per_sec / freq
                   + (time_nanos_per_sec % freq != 0 ? 1 : 0);

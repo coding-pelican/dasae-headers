@@ -1354,7 +1354,7 @@ Process management utilities for cross-platform code.
   `time_Dur_fromSecs`, `time_Dur_fromMillis`, `time_Dur_fromNanos`,
   `time_Dur_add`, `time_Dur_sub`
 - **Clock and instant:**
-  `time_Clock_now`, `time_Clock_resolution`, `time_Clock_Inst_elapsed`, and
+  `time_Clock_now`, `time_Clock_resoln`, `time_Clock_Inst_elapsed`, and
   `time_Clock_Inst_durSince`
 - **Sleep:**
   `time_Clock_sleep` and its seconds, milliseconds, microseconds, and

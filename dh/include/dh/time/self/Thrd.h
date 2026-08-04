@@ -48,7 +48,7 @@ $static fn_((time_Thrd_ensureValid(time_Thrd self))(time_Thrd));
 $extern fn_((time_Thrd_now(time_Thrd self))(time_Thrd_Inst));
 /// Return the thread CPU clock resolution.
 $attr($must_check)
-$extern fn_((time_Thrd_resolution(time_Thrd self))(time_ResolutionE$time_Resolution));
+$extern fn_((time_Thrd_resoln(time_Thrd self))(time_ResolnE$time_Resoln));
 /// Return the platform direct thread CPU clock.
 $attr($must_check)
 $extern fn_((time_Thrd_direct(void))(time_direct_E$time_Thrd));
@@ -99,12 +99,12 @@ $extern cmp_fn_neqCtx$((time_Thrd_Inst)(lhs, rhs, ctx));
 struct time_Thrd_VTbl {
     fn_(((*nowFn)(P$raw ctx))(time_Thrd_Inst));
     $attr($must_check)
-    fn_(((*resolutionFn)(P$raw ctx))(time_ResolutionE$time_Resolution));
+    fn_(((*resolnFn)(P$raw ctx))(time_ResolnE$time_Resoln));
 };
 $extern fn_((time_Thrd_VTbl_noNow(P$raw ctx))(time_Thrd_Inst));
 $extern fn_((time_Thrd_VTbl_unreachableNow(P$raw ctx))(time_Thrd_Inst));
 $attr($must_check)
-$extern fn_((time_Thrd_VTbl_failingResolution(P$raw ctx))(time_ResolutionE$time_Resolution));
+$extern fn_((time_Thrd_VTbl_failingResoln(P$raw ctx))(time_ResolnE$time_Resoln));
 
 /*========== Macros and Definitions =========================================*/
 
@@ -113,13 +113,13 @@ fn_((time_Thrd_isValid(time_Thrd self))(bool)) {
     return isNonnull(self.ctx)
         && isNonnull(self.vtbl)
         && isNonnull(self.vtbl->nowFn)
-        && isNonnull(self.vtbl->resolutionFn);
+        && isNonnull(self.vtbl->resolnFn);
 };
 fn_((time_Thrd_assertValid(P$raw ctx, P_const$$(time_Thrd_VTbl) vtbl))(void)) {
     claim_assert_nonnull(ctx);
     claim_assert_nonnull(vtbl);
     claim_assert_nonnull(vtbl->nowFn);
-    claim_assert_nonnull(vtbl->resolutionFn);
+    claim_assert_nonnull(vtbl->resolnFn);
 };
 fn_((time_Thrd_ensureValid(time_Thrd self))(time_Thrd)) {
     return time_Thrd_assertValid(self.ctx, self.vtbl), self;

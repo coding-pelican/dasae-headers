@@ -24,7 +24,7 @@ T_impl_O$(time_Clock);
 $extern fn_((time_Clock_now(time_Clock clock))(time_Clock_Inst));
 /// Return the clock resolution.
 $attr($must_check)
-$extern fn_((time_Clock_resolution(time_Clock clock))(time_ResolutionE$time_Resolution));
+$extern fn_((time_Clock_resoln(time_Clock clock))(time_ResolnE$time_Resoln));
 /// Sleep on the clock for a duration.
 $attr($must_check)
 $extern fn_((time_Clock_sleep(time_Clock self, time_Dur dur))(Sched_Cancelable$void));

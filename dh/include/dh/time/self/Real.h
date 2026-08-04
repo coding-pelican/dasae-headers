@@ -48,7 +48,7 @@ $static fn_((time_Real_ensureValid(time_Real self))(time_Real));
 $extern fn_((time_Real_now(time_Real self))(time_Real_Inst));
 /// Return the real-clock resolution.
 $attr($must_check)
-$extern fn_((time_Real_resolution(time_Real self))(time_ResolutionE$time_Resolution));
+$extern fn_((time_Real_resoln(time_Real self))(time_ResolnE$time_Resoln));
 /// Return the platform direct real clock.
 $attr($must_check)
 $extern fn_((time_Real_direct(void))(time_direct_E$time_Real));
@@ -106,12 +106,12 @@ $extern fn_((time_Real_Inst_durSinceUnixEpoch(time_Real_Inst self))(time_Dur));
 T_alias$((time_Real_VTbl)(struct time_Real_VTbl {
     fn_(((*nowFn)(P$raw ctx))(time_Real_Inst));
     $attr($must_check)
-    fn_(((*resolutionFn)(P$raw ctx))(time_ResolutionE$time_Resolution));
+    fn_(((*resolnFn)(P$raw ctx))(time_ResolnE$time_Resoln));
 }));
 $extern fn_((time_Real_VTbl_noNow(P$raw ctx))(time_Real_Inst));
 $extern fn_((time_Real_VTbl_unreachableNow(P$raw ctx))(time_Real_Inst));
 $attr($must_check)
-$extern fn_((time_Real_VTbl_failingResolution(P$raw ctx))(time_ResolutionE$time_Resolution));
+$extern fn_((time_Real_VTbl_failingResoln(P$raw ctx))(time_ResolnE$time_Resoln));
 
 /*========== Macros and Definitions =========================================*/
 
@@ -120,13 +120,13 @@ fn_((time_Real_isValid(time_Real self))(bool)) {
     return isNonnull(self.ctx)
         && isNonnull(self.vtbl)
         && isNonnull(self.vtbl->nowFn)
-        && isNonnull(self.vtbl->resolutionFn);
+        && isNonnull(self.vtbl->resolnFn);
 };
 fn_((time_Real_assertValid(P$raw ctx, P_const$$(time_Real_VTbl) vtbl))(void)) {
     claim_assert_nonnull(ctx);
     claim_assert_nonnull(vtbl);
     claim_assert_nonnull(vtbl->nowFn);
-    claim_assert_nonnull(vtbl->resolutionFn);
+    claim_assert_nonnull(vtbl->resolnFn);
 };
 fn_((time_Real_ensureValid(time_Real self))(time_Real)) {
     return time_Real_assertValid(self.ctx, self.vtbl), self;

@@ -6,17 +6,17 @@
 $attr($maybe_unused)
 $static fn_((time_Boot_direct__unsupported_now(P$raw ctx))(time_Boot_Inst));
 $attr($maybe_unused $must_check)
-$static fn_((time_Boot_direct__unsupported_resolution(P$raw ctx))(time_ResolutionE$time_Resolution));
+$static fn_((time_Boot_direct__unsupported_resoln(P$raw ctx))(time_ResolnE$time_Resoln));
 pp_if_(plat_is_windows)(pp_then_(
     $static fn_((time_Boot_direct__windows_now(P$raw ctx))(time_Boot_Inst));
     $attr($must_check)
-    $static fn_((time_Boot_direct__windows_resolution(P$raw ctx))(time_ResolutionE$time_Resolution));
+    $static fn_((time_Boot_direct__windows_resoln(P$raw ctx))(time_ResolnE$time_Resoln));
 ));
 pp_if_(plat_based_unix)(pp_then_(
     $static fn_((time_Boot_direct__unix__clockId(void))(sys_posix_clockid_t));
     $static fn_((time_Boot_direct__unix_now(P$raw ctx))(time_Boot_Inst));
     $attr($must_check)
-    $static fn_((time_Boot_direct__unix_resolution(P$raw ctx))(time_ResolutionE$time_Resolution));
+    $static fn_((time_Boot_direct__unix_resoln(P$raw ctx))(time_ResolnE$time_Resoln));
 ));
 $attr($must_check)
 $static fn_((time_Boot_direct__sleep(P$raw ctx, time_Dur dur))(Sched_Cancelable$void));
@@ -27,24 +27,24 @@ $static let time_Boot_direct__now = pp_if_(plat_is_windows)(
         pp_then_(time_Boot_direct__unix_now),
         pp_else_(time_Boot_direct__unsupported_now)
     )));
-$static let time_Boot_direct__resolution = pp_if_(plat_is_windows)(
-    pp_then_(time_Boot_direct__windows_resolution),
+$static let time_Boot_direct__resoln = pp_if_(plat_is_windows)(
+    pp_then_(time_Boot_direct__windows_resoln),
     pp_else_(pp_if_(plat_based_unix)(
-        pp_then_(time_Boot_direct__unix_resolution),
-        pp_else_(time_Boot_direct__unsupported_resolution)
+        pp_then_(time_Boot_direct__unix_resoln),
+        pp_else_(time_Boot_direct__unsupported_resoln)
     )));
 
 /*========== External Definitions ===========================================*/
 
 let_(time_Boot_VTbl_noop, time_Boot_VTbl) = {
     .nowFn = time_Boot_VTbl_noNow,
-    .resolutionFn = time_Boot_VTbl_failingResolution,
+    .resolnFn = time_Boot_VTbl_failingResoln,
     .sleepFn = time_Boot_VTbl_failingSleep,
 };
 
 let_(time_Boot_VTbl_failing, time_Boot_VTbl) = {
     .nowFn = time_Boot_VTbl_unreachableNow,
-    .resolutionFn = time_Boot_VTbl_failingResolution,
+    .resolnFn = time_Boot_VTbl_failingResoln,
     .sleepFn = time_Boot_VTbl_failingSleep,
 };
 
@@ -66,7 +66,7 @@ fn_((time_Boot_direct(void))(time_direct_E$time_Boot) $scope) {
             $static var_(ctx, Void) $like_ref = cleared();
             $static let_(vtbl, time_Boot_VTbl) $like_ref = { {
                 .nowFn = time_Boot_direct__now,
-                .resolutionFn = time_Boot_direct__resolution,
+                .resolnFn = time_Boot_direct__resoln,
                 .sleepFn = time_Boot_direct__sleep,
             } };
             return_ok(time_Boot_ensureValid((time_Boot){
@@ -85,9 +85,9 @@ fn_((time_Boot_now(time_Boot self))(time_Boot_Inst)) {
     return self.vtbl->nowFn(self.ctx);
 };
 
-fn_((time_Boot_resolution(time_Boot self))(time_ResolutionE$time_Resolution)) {
+fn_((time_Boot_resoln(time_Boot self))(time_ResolnE$time_Resoln)) {
     self = time_Boot_ensureValid(self);
-    return self.vtbl->resolutionFn(self.ctx);
+    return self.vtbl->resolnFn(self.ctx);
 };
 
 fn_((time_Boot_sleep(time_Boot self, time_Dur dur))(Sched_Cancelable$void)) {
@@ -186,7 +186,7 @@ fn_((time_Boot_VTbl_unreachableNow(P$raw ctx))(time_Boot_Inst)) {
     claim_unreachable_msg("Boot time source is unavailable");
 };
 
-fn_((time_Boot_VTbl_failingResolution(P$raw ctx))(time_ResolutionE$time_Resolution) $scope) {
+fn_((time_Boot_VTbl_failingResoln(P$raw ctx))(time_ResolnE$time_Resoln) $scope) {
     let_ignore = ctx;
     return_err(E_cause$time_direct_Unsupported());
 } $unscoped(fn);
@@ -204,7 +204,7 @@ fn_((time_Boot_direct__unsupported_now(P$raw ctx))(time_Boot_Inst)) {
     claim_unreachable_msg("Boot direct time source is unavailable on this platform");
 };
 
-fn_((time_Boot_direct__unsupported_resolution(P$raw ctx))(time_ResolutionE$time_Resolution) $scope) {
+fn_((time_Boot_direct__unsupported_resoln(P$raw ctx))(time_ResolnE$time_Resoln) $scope) {
     let_ignore = ctx;
     return_err(E_cause$time_direct_Unsupported());
 } $unscoped(fn);
@@ -215,9 +215,9 @@ pp_if_(plat_is_windows)(pp_then_(
         return l$((time_Boot_Inst){ .raw = time__windows_qpcNow() });
     };
 
-    fn_((time_Boot_direct__windows_resolution(P$raw ctx))(time_ResolutionE$time_Resolution) $scope) {
+    fn_((time_Boot_direct__windows_resoln(P$raw ctx))(time_ResolnE$time_Resoln) $scope) {
         let_ignore = ctx;
-        return_ok(time__windows_qpcResolution());
+        return_ok(time__windows_qpcResoln());
     } $unscoped(fn);
 ));
 
@@ -233,7 +233,7 @@ fn_((time_Boot_direct__unix_now(P$raw ctx))(time_Boot_Inst)) {
     return l$((time_Boot_Inst){ .raw = time__posix_fromTimespec(now) });
 };
 
-fn_((time_Boot_direct__unix_resolution(P$raw ctx))(time_ResolutionE$time_Resolution) $scope) {
+fn_((time_Boot_direct__unix_resoln(P$raw ctx))(time_ResolnE$time_Resoln) $scope) {
     var_(res, sys_posix_timespec) = cleared();
     let_ignore = ctx;
     let_ignore = sys_posix_clock_getres(time_Boot_direct__unix__clockId(), &res);

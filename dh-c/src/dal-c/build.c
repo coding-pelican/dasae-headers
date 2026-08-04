@@ -203,16 +203,16 @@ static char* dal_c__canonicalTargetDirName(const char* target) {
     return canonical;
 }
 
-typedef struct dal_c__TargetResolutionCacheEntry {
+typedef struct dal_c__TargetResolnCacheEntry {
     char* compiler;
     char* cwd;
     char* path_env;
     char* target;
-} dal_c__TargetResolutionCacheEntry;
+} dal_c__TargetResolnCacheEntry;
 
-#define dal_c__target_resolution_cache_capacity 16
-static dal_c__TargetResolutionCacheEntry dal_c__target_resolution_cache[dal_c__target_resolution_cache_capacity];
-static int dal_c__target_resolution_cache_count = 0;
+#define dal_c__target_resoln_cache_capacity 16
+static dal_c__TargetResolnCacheEntry dal_c__target_resoln_cache[dal_c__target_resoln_cache_capacity];
+static int dal_c__target_resoln_cache_count = 0;
 
 char* dal_c__resolveTargetDirName(const dal_c_CompilerOpts* opts) {
     if (opts && opts->arch_target && opts->arch_target[0]) {
@@ -221,11 +221,11 @@ char* dal_c__resolveTargetDirName(const dal_c_CompilerOpts* opts) {
     const char* compiler = (opts && opts->compiler && opts->compiler[0]) ? opts->compiler : dal_c_default_compiler;
     char* cwd = env_getCWD();
     const char* path_env = getenv("PATH");
-    for (int i = 0; i < dal_c__target_resolution_cache_count; ++i) {
-        if (str_eql(dal_c__target_resolution_cache[i].compiler, compiler)
-            && str_eql(dal_c__target_resolution_cache[i].cwd, cwd)
-            && str_eql(dal_c__target_resolution_cache[i].path_env, path_env)) {
-            char* cached = strdup(dal_c__target_resolution_cache[i].target);
+    for (int i = 0; i < dal_c__target_resoln_cache_count; ++i) {
+        if (str_eql(dal_c__target_resoln_cache[i].compiler, compiler)
+            && str_eql(dal_c__target_resoln_cache[i].cwd, cwd)
+            && str_eql(dal_c__target_resoln_cache[i].path_env, path_env)) {
+            char* cached = strdup(dal_c__target_resoln_cache[i].target);
             free(cwd);
             return cached;
         }
@@ -262,8 +262,8 @@ char* dal_c__resolveTargetDirName(const dal_c_CompilerOpts* opts) {
     }
     char* result = dal_c__canonicalTargetDirName(output);
     free(output);
-    if (result && dal_c__target_resolution_cache_count < dal_c__target_resolution_cache_capacity) {
-        dal_c__TargetResolutionCacheEntry* entry = &dal_c__target_resolution_cache[dal_c__target_resolution_cache_count++];
+    if (result && dal_c__target_resoln_cache_count < dal_c__target_resoln_cache_capacity) {
+        dal_c__TargetResolnCacheEntry* entry = &dal_c__target_resoln_cache[dal_c__target_resoln_cache_count++];
         entry->compiler = strdup(compiler);
         entry->cwd = cwd;
         cwd = NULL;
@@ -278,7 +278,7 @@ char* dal_c__resolveTargetDirName(const dal_c_CompilerOpts* opts) {
             entry->path_env = NULL;
             entry->cwd = NULL;
             entry->compiler = NULL;
-            dal_c__target_resolution_cache_count--;
+            dal_c__target_resoln_cache_count--;
         }
     }
     free(cwd);

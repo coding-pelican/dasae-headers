@@ -2,7 +2,7 @@
 #include "dh/time/self/Awake.h"
 
 TEST_fn_("time/self/Awake: noop source has zero time and explicit failures" $scope) {
-    let resolution_failed = eval_(bool $scope)(catch_((time_Awake_resolution(
+    let resolution_failed = eval_(bool $scope)(catch_((time_Awake_resoln(
         time_Awake_noop
     ))(err, {
         try_(TEST_expect(E_tag(err.as_any) == E_Tag$time_direct_Unsupported));
@@ -42,6 +42,6 @@ TEST_fn_("time/self/Awake: direct resolution is non-zero when supported" $scope)
         try_(TEST_expect(E_tag(err.as_any) == E_Tag$time_direct_Unsupported));
         return_ok_void();
     }));
-    let resolution = try_(time_Awake_resolution(clock));
+    let resolution = try_(time_Awake_resoln(clock));
     try_(TEST_expect(!time_Dur_isZero(resolution)));
 } $unscoped(TEST_fn);

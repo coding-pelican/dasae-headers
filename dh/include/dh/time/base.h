@@ -22,9 +22,9 @@ errset_((time_direct_E)(time_direct_Unsupported));
 T_decl_E$($set(time_direct_E)(time_Dur));
 
 /*--- Resolution Types ---*/
-T_alias$((time_Resolution)(time_Dur));
-T_alias$((time_direct_E$time_Resolution)(time_direct_E$time_Dur));
-T_alias$((time_ResolutionE$time_Resolution)(time_direct_E$time_Resolution));
+T_alias$((time_Resoln)(time_Dur));
+T_alias$((time_direct_E$time_Resoln)(time_direct_E$time_Dur));
+T_alias$((time_ResolnE$time_Resoln)(time_direct_E$time_Resoln));
 
 /*--- Self Types ---*/
 T_alias$((time_Real)(struct time_Real));

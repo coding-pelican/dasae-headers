@@ -30,7 +30,7 @@ $extern fn_((time__windows_fromUnixFileTime(FILETIME ft))(time_Inst));
 $extern fn_((time__windows_fromFileTime(FILETIME ft))(time_Inst));
 $extern fn_((time__windows_qpcFreq(void))(u64));
 $extern fn_((time__windows_qpcNow(void))(time_Inst));
-$extern fn_((time__windows_qpcResolution(void))(time_Resolution));
+$extern fn_((time__windows_qpcResoln(void))(time_Resoln));
 #endif /* plat_is_windows */
 
 #if plat_is_posix

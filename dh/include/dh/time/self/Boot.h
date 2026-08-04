@@ -49,7 +49,7 @@ $static fn_((time_Boot_ensureValid(time_Boot self))(time_Boot));
 $extern fn_((time_Boot_now(time_Boot self))(time_Boot_Inst));
 /// Return the boot-clock resolution.
 $attr($must_check)
-$extern fn_((time_Boot_resolution(time_Boot self))(time_ResolutionE$time_Resolution));
+$extern fn_((time_Boot_resoln(time_Boot self))(time_ResolnE$time_Resoln));
 /// Sleep on the boot clock for a duration.
 $attr($must_check)
 $extern fn_((time_Boot_sleep(time_Boot self, time_Dur dur))(Sched_Cancelable$void));
@@ -116,14 +116,14 @@ $extern cmp_fn_neqCtx$((time_Boot_Inst)(lhs, rhs, ctx));
 struct time_Boot_VTbl {
     fn_(((*nowFn)(P$raw ctx))(time_Boot_Inst));
     $attr($must_check)
-    fn_(((*resolutionFn)(P$raw ctx))(time_ResolutionE$time_Resolution));
+    fn_(((*resolnFn)(P$raw ctx))(time_ResolnE$time_Resoln));
     $attr($must_check)
     fn_(((*sleepFn)(P$raw ctx, time_Dur dur))(Sched_Cancelable$void));
 };
 $extern fn_((time_Boot_VTbl_noNow(P$raw ctx))(time_Boot_Inst));
 $extern fn_((time_Boot_VTbl_unreachableNow(P$raw ctx))(time_Boot_Inst));
 $attr($must_check)
-$extern fn_((time_Boot_VTbl_failingResolution(P$raw ctx))(time_ResolutionE$time_Resolution));
+$extern fn_((time_Boot_VTbl_failingResoln(P$raw ctx))(time_ResolnE$time_Resoln));
 $attr($must_check)
 $extern fn_((time_Boot_VTbl_failingSleep(P$raw ctx, time_Dur dur))(Sched_Cancelable$void));
 
@@ -134,14 +134,14 @@ fn_((time_Boot_isValid(time_Boot self))(bool)) {
     return isNonnull(self.ctx)
         && isNonnull(self.vtbl)
         && isNonnull(self.vtbl->nowFn)
-        && isNonnull(self.vtbl->resolutionFn)
+        && isNonnull(self.vtbl->resolnFn)
         && isNonnull(self.vtbl->sleepFn);
 };
 fn_((time_Boot_assertValid(P$raw ctx, P_const$$(time_Boot_VTbl) vtbl))(void)) {
     claim_assert_nonnull(ctx);
     claim_assert_nonnull(vtbl);
     claim_assert_nonnull(vtbl->nowFn);
-    claim_assert_nonnull(vtbl->resolutionFn);
+    claim_assert_nonnull(vtbl->resolnFn);
     claim_assert_nonnull(vtbl->sleepFn);
 };
 fn_((time_Boot_ensureValid(time_Boot self))(time_Boot)) {

@@ -9,13 +9,13 @@ fn_((time_Clock_now(time_Clock clock))(time_Clock_Inst) $scope) {
     patt_((time_Clock_thrd)(time)) return_(union_of((time_Clock_thrd)(time_Thrd_now(time)))) $end(patt);
     } $end(match);
 } $unscoped(fn);
-fn_((time_Clock_resolution(time_Clock clock))(time_ResolutionE$time_Resolution)) {
+fn_((time_Clock_resoln(time_Clock clock))(time_ResolnE$time_Resoln)) {
     match_(clock) {
-    patt_((time_Clock_real)(time)) return time_Real_resolution(time) $end(patt);
-    patt_((time_Clock_awake)(time)) return time_Awake_resolution(time) $end(patt);
-    patt_((time_Clock_boot)(time)) return time_Boot_resolution(time) $end(patt);
-    patt_((time_Clock_proc)(time)) return time_Proc_resolution(time) $end(patt);
-    patt_((time_Clock_thrd)(time)) return time_Thrd_resolution(time) $end(patt);
+    patt_((time_Clock_real)(time)) return time_Real_resoln(time) $end(patt);
+    patt_((time_Clock_awake)(time)) return time_Awake_resoln(time) $end(patt);
+    patt_((time_Clock_boot)(time)) return time_Boot_resoln(time) $end(patt);
+    patt_((time_Clock_proc)(time)) return time_Proc_resoln(time) $end(patt);
+    patt_((time_Clock_thrd)(time)) return time_Thrd_resoln(time) $end(patt);
     } $end(match);
 };
 fn_((time_Clock_sleep(time_Clock self, time_Dur dur))(Sched_Cancelable$void) $scope) {

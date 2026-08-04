@@ -2,7 +2,7 @@
 #include "dh/time/self/Thrd.h"
 
 TEST_fn_("time/self/Thrd: noop source has zero time and explicit resolution failure" $scope) {
-    let resolution_failed = eval_(bool $scope)(catch_((time_Thrd_resolution(
+    let resolution_failed = eval_(bool $scope)(catch_((time_Thrd_resoln(
         time_Thrd_noop
     ))(err, {
         try_(TEST_expect(E_tag(err.as_any) == E_Tag$time_direct_Unsupported));

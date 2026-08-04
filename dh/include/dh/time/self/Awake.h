@@ -50,7 +50,7 @@ $static fn_((time_Awake_ensureValid(time_Awake self))(time_Awake));
 $extern fn_((time_Awake_now(time_Awake self))(time_Awake_Inst));
 /// Return the awake-clock resolution.
 $attr($must_check)
-$extern fn_((time_Awake_resolution(time_Awake self))(time_ResolutionE$time_Resolution));
+$extern fn_((time_Awake_resoln(time_Awake self))(time_ResolnE$time_Resoln));
 /// Sleep on the awake clock for a duration.
 $attr($must_check)
 $extern fn_((time_Awake_sleep(time_Awake self, time_Dur dur))(Sched_Cancelable$void));
@@ -119,14 +119,14 @@ $extern cmp_fn_neqCtx$((time_Awake_Inst)(lhs, rhs, ctx));
 struct time_Awake_VTbl {
     fn_(((*nowFn)(P$raw ctx))(time_Awake_Inst));
     $attr($must_check)
-    fn_(((*resolutionFn)(P$raw ctx))(time_ResolutionE$time_Resolution));
+    fn_(((*resolnFn)(P$raw ctx))(time_ResolnE$time_Resoln));
     $attr($must_check)
     fn_(((*sleepFn)(P$raw ctx, time_Dur dur))(Sched_Cancelable$void));
 };
 $extern fn_((time_Awake_VTbl_noNow(P$raw ctx))(time_Awake_Inst));
 $extern fn_((time_Awake_VTbl_unreachableNow(P$raw ctx))(time_Awake_Inst));
 $attr($must_check)
-$extern fn_((time_Awake_VTbl_failingResolution(P$raw ctx))(time_ResolutionE$time_Resolution));
+$extern fn_((time_Awake_VTbl_failingResoln(P$raw ctx))(time_ResolnE$time_Resoln));
 $attr($must_check)
 $extern fn_((time_Awake_VTbl_failingSleep(P$raw ctx, time_Dur dur))(Sched_Cancelable$void));
 
@@ -137,14 +137,14 @@ fn_((time_Awake_isValid(time_Awake self))(bool)) {
     return isNonnull(self.ctx)
         && isNonnull(self.vtbl)
         && isNonnull(self.vtbl->nowFn)
-        && isNonnull(self.vtbl->resolutionFn)
+        && isNonnull(self.vtbl->resolnFn)
         && isNonnull(self.vtbl->sleepFn);
 };
 fn_((time_Awake_assertValid(P$raw ctx, P_const$$(time_Awake_VTbl) vtbl))(void)) {
     claim_assert_nonnull(ctx);
     claim_assert_nonnull(vtbl);
     claim_assert_nonnull(vtbl->nowFn);
-    claim_assert_nonnull(vtbl->resolutionFn);
+    claim_assert_nonnull(vtbl->resolnFn);
     claim_assert_nonnull(vtbl->sleepFn);
 };
 fn_((time_Awake_ensureValid(time_Awake self))(time_Awake)) {
