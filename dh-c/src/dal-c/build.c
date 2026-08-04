@@ -113,8 +113,8 @@ static char* dal_c__contractLookup(const char* content, const char* key) {
 }
 
 static char* dal_c__contractDiff(const char* previous, const char* current) {
-    if (!previous || !previous[0]) { return strdup("  - no previous structured contract was recorded\n"); }
-    if (!strchr(previous, '=')) { return strdup("  - previous contract used the legacy hash-only format\n"); }
+    if (!previous || !previous[0]) { return strdup("  - no previous structured build state was recorded\n"); }
+    if (!strchr(previous, '=')) { return strdup("  - previous build state used the legacy hash-only format\n"); }
     char* diff = NULL;
     const char* line = current;
     while (line && *line) {
@@ -138,7 +138,7 @@ static char* dal_c__contractDiff(const char* previous, const char* current) {
         if (!end) { break; }
         line = end + 1;
     }
-    return diff ? diff : strdup("  - contract content changed, but no key-level difference was found\n");
+    return diff ? diff : strdup("  - build state changed, but no key-level difference was found\n");
 }
 
 static void dal_c__recordContractDiff(const char* label, const char* previous, const char* current) {
@@ -491,7 +491,7 @@ static bool dal_c__manifestArtifactParse(
         toolchain_ok = dal_c__manifestHashValueValid(parts[4]);
     }
     if (!role_ok || !path_ok || !abi_ok || !link_ok || !toolchain_ok) {
-        if (reason_out) { *reason_out = str_format("invalid artifact contract: %s", value); }
+        if (reason_out) { *reason_out = str_format("invalid artifact metadata: %s", value); }
         free(copy);
         return false;
     }
@@ -507,7 +507,7 @@ static bool dal_c__manifestArtifactParse(
     free(copy);
     if (!copied) {
         dal_c__manifestArtifactPartsCleanup(role_out, path_out, abi_out, link_out, toolchain_out);
-        if (reason_out) { *reason_out = strdup("out of memory while copying artifact contract"); }
+        if (reason_out) { *reason_out = strdup("out of memory while copying artifact metadata"); }
         return false;
     }
     return true;
@@ -793,7 +793,7 @@ bool dal_c__prebuiltManifestCompatible(
         if (reason_out) { *reason_out = str_format("manifest does not provide requested artifact: %s|%s", artifact_role ? artifact_role : dal_c_Target_format(target_type), selected_relative ? selected_relative : "(unknown)"); }
     } else if (!actual_abi || !expected_abi || !str_eql(actual_abi, expected_abi)) {
         ok = false;
-        if (reason_out) { *reason_out = str_format("ABI contract mismatch: package=%s requested=%s", actual_abi ? actual_abi : "(missing)", expected_abi ? expected_abi : "(unknown)"); }
+        if (reason_out) { *reason_out = str_format("ABI mismatch: package=%s requested=%s", actual_abi ? actual_abi : "(missing)", expected_abi ? expected_abi : "(unknown)"); }
     } else if (!actual_toolchain || !expected_toolchain || !str_eql(actual_toolchain, expected_toolchain)) {
         ok = false;
         if (reason_out) { *reason_out = str_format("LTO toolchain mismatch: package=%s requested=%s", actual_toolchain ? actual_toolchain : "(missing)", expected_toolchain ? expected_toolchain : "(unknown)"); }
@@ -818,7 +818,7 @@ bool dal_c__prebuiltManifestCompatible(
                       && str_eql(import_toolchain, actual_toolchain);
         if (!import_ok) {
             ok = false;
-            if (reason_out) { *reason_out = strdup("shared artifact is missing its matching Windows import library contract"); }
+            if (reason_out) { *reason_out = strdup("shared artifact is missing its matching Windows import-library metadata"); }
         }
         free(import_toolchain);
         free(import_link);
@@ -3225,7 +3225,7 @@ dal_c__noinline dal_c__optnone int dal_c__generateMakefile(
     if (target_type == dal_c_Target_executable || target_type == dal_c_Target_shared_lib || target_type == dal_c_Target_image) {
         link_contract_path = dal_c__makeLinkContractPath(build_dir, target_path);
         if (!dal_c__writeLinkContractFile(link_contract_path, target_path, cmd, profile, target_type)) {
-            (void)fprintf(stderr, "Error: Failed to write link contract: %s\n", link_contract_path);
+            (void)fprintf(stderr, "Error: Failed to write link metadata: %s\n", link_contract_path);
             free(link_contract_path);
             free(makefile_dir);
             free(makefile_path);

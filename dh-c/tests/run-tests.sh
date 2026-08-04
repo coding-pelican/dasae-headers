@@ -354,7 +354,7 @@ assert_contains "$LAST_OUTPUT" "analysis/emit" "Invocation-only help did not des
 
 invoke_external "0" "$repo_root" "$cli_exe" help build
 assert_contains "$LAST_OUTPUT" "USAGE:" "Command help did not show usage"
-assert_contains "$LAST_OUTPUT" "CONTRACT:" "Command help did not show contract"
+assert_contains "$LAST_OUTPUT" "RULES:" "Command help did not show rules"
 assert_contains "$LAST_OUTPUT" "--output-ext" "Build help did not describe explicit output extension"
 
 invoke_external "0" "$repo_root" "$cli_exe" help package
@@ -370,7 +370,7 @@ assert_contains "$LAST_OUTPUT" "--older-than" "Clean help did not describe age-b
 assert_contains "$LAST_OUTPUT" "--dry-run" "Clean help did not describe preview mode"
 
 invoke_external "0" "$repo_root" "$cli_exe" syntax --help
-assert_contains "$LAST_OUTPUT" "never links" "Syntax help did not describe non-linking contract"
+assert_contains "$LAST_OUTPUT" "never links" "Syntax help did not describe non-linking behavior"
 assert_contains "$LAST_OUTPUT" "not accepted" "Syntax help did not describe unavailable options"
 
 invoke_external "1" "$repo_root" "$cli_exe" help no-such-command
@@ -411,7 +411,7 @@ if [ -e "$no_project_clean/build/dev" ]; then
 fi
 rm -rf "$no_project_clean"
 
-# Dependency resolution contract: fetch preserves lock.dh, update deliberately
+# Dependency resolution behavior: fetch preserves lock.dh, update deliberately
 # re-resolves it, and status rejects an unlocked checkout.
 lock_contract_root=$(mktemp -d "${TMPDIR:-/tmp}/dh-c-lock-contract.XXXXXX")
 lock_origin="$lock_contract_root/origin"
@@ -470,7 +470,7 @@ invoke_external "0" "$lock_project" "$cli_exe" clean --deps --older-than=0s --fo
 assert_true $? "forced dependency cleanup did not remove the dirty checkout"
 rm -rf "$lock_contract_root"
 
-# Archive dependency contract: fetch locks exact archive bytes, fetch preserves the
+# Archive dependency behavior: fetch locks exact archive bytes, fetch preserves the
 # lock, update deliberately accepts new bytes, and provider=prebuilt materializes
 # the extracted package through the normal private package/staging path.
 archive_contract_root=$(mktemp -d "${TMPDIR:-/tmp}/dh-c-archive-contract.XXXXXX")
@@ -891,31 +891,31 @@ __attribute__((noreturn)) void dh_entry(void) { for (;;) {} }
 EOF
 
     invoke_external "0" "$link_contract_root/custom-entry" "$cli_exe" build --link-start-files=off --entry=dh_entry
-    assert_contains "$LAST_OUTPUT" "Build successful!" "No-start-files executable contract did not build"
+    assert_contains "$LAST_OUTPUT" "Build successful!" "No-start-files executable did not build"
     invoke_external "0" "$link_contract_root/custom-entry" "$cli_exe" clean
 
     invoke_external "0" "$link_contract_root/custom-entry" "$cli_exe" build --link-crt=off --entry=dh_entry
-    assert_contains "$LAST_OUTPUT" "Build successful!" "No-CRT alias contract did not build"
+    assert_contains "$LAST_OUTPUT" "Build successful!" "No-CRT alias did not build"
     invoke_external "0" "$link_contract_root/custom-entry" "$cli_exe" clean
 
     invoke_external "0" "$link_contract_root/custom-entry" "$cli_exe" build --link-stdlib=off --entry=dh_entry
-    assert_contains "$LAST_OUTPUT" "Build successful!" "No-stdlib executable contract did not build"
+    assert_contains "$LAST_OUTPUT" "Build successful!" "No-stdlib executable did not build"
     invoke_external "0" "$link_contract_root/custom-entry" "$cli_exe" clean
 
     invoke_external "0" "$link_contract_root/custom-entry" "$cli_exe" build --link-default-libs=off --link-start-files=off --entry=dh_entry
-    assert_contains "$LAST_OUTPUT" "Build successful!" "Independent default-library/start-file contract did not build"
+    assert_contains "$LAST_OUTPUT" "Build successful!" "Independent default-library/start-file settings did not build"
     invoke_external "0" "$link_contract_root/custom-entry" "$cli_exe" clean
 
     case "$(uname -s)" in
         MINGW*|MSYS*|CYGWIN*)
             invoke_external "1" "$link_contract_root/custom-entry" "$cli_exe" build --link-libc=off --link-start-files=off --entry=dh_entry
-            assert_contains "$LAST_OUTPUT" "cannot be represented" "Windows no-libc contract did not fail explicitly"
+            assert_contains "$LAST_OUTPUT" "cannot be represented" "Windows no-libc configuration did not fail explicitly"
             invoke_external "0" "$link_contract_root/custom-entry" "$cli_exe" build --link-libc=off --link-default-libs=off --link-start-files=off --entry=dh_entry
-            assert_contains "$LAST_OUTPUT" "Build successful!" "Windows no-libc/no-default-libs contract did not build"
+            assert_contains "$LAST_OUTPUT" "Build successful!" "Windows no-libc/no-default-libs configuration did not build"
             ;;
         *)
             invoke_external "0" "$link_contract_root/custom-entry" "$cli_exe" build --link-libc=off --link-start-files=off --entry=dh_entry
-            assert_contains "$LAST_OUTPUT" "Build successful!" "No-libc executable contract did not build"
+            assert_contains "$LAST_OUTPUT" "Build successful!" "No-libc executable did not build"
             ;;
     esac
 
@@ -928,7 +928,7 @@ EOF
             invoke_external "0" "$link_contract_root/custom-entry" "$cli_exe" lib --shared --link-default-libs=off
             ;;
     esac
-    assert_contains "$LAST_OUTPUT" "Build successful!" "No-default-libraries shared-library contract did not build"
+    assert_contains "$LAST_OUTPUT" "Build successful!" "No-default-libraries shared library did not build"
 
     invoke_external "0" "$link_contract_root/custom-entry" "$cli_exe" clean
     case "$(uname -s)" in
@@ -939,14 +939,14 @@ EOF
             invoke_external "0" "$link_contract_root/custom-entry" "$cli_exe" lib --shared --link-stdlib=off
             ;;
     esac
-    assert_contains "$LAST_OUTPUT" "Build successful!" "No-stdlib shared-library contract did not build"
+    assert_contains "$LAST_OUTPUT" "Build successful!" "No-stdlib shared library did not build"
 
     case "$(uname -s)" in
         MINGW*|MSYS*|CYGWIN*) ;;
         *)
             invoke_external "0" "$link_contract_root/custom-entry" "$cli_exe" clean
             invoke_external "0" "$link_contract_root/custom-entry" "$cli_exe" lib --shared --link-libc=off
-            assert_contains "$LAST_OUTPUT" "Build successful!" "No-libc shared-library contract did not build"
+            assert_contains "$LAST_OUTPUT" "Build successful!" "No-libc shared library did not build"
             ;;
     esac
 

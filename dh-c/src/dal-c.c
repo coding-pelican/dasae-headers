@@ -31,7 +31,7 @@ static int dal_c__printProjectGraph(const dal_c_Cmd* cmd, const dal_c_Project* p
 static const char* const dal_c_help_topic_files_lines[] = {
     "User-authored files are layered build input; generated files are never edited by hand.",
     "workspace.dh: workspace-wide flat defaults and the project-discovery/cache boundary.",
-    "project.dh: complete named-project contract, including dependencies and target roots.",
+    "project.dh: complete named-project configuration, including dependencies and target roots.",
     "target.dh: flat defaults for one resolved directory target.",
     "<source>.dh: source companion; the primary companion may also own dependency sections for an ad-hoc unit.",
     "--dh-file=<path>: explicit reusable flat overlay loaded after companions.",
@@ -81,7 +81,7 @@ static const char* const dal_c_help_topic_workspace_examples[] = {
 static const char* const dal_c_help_topic_target_lines[] = {
     "target.dh is discovered only for the resolved directory target.",
     "It is a strict flat overlay and supports the same keys as source companions/--dh-file.",
-    "Use it for a target-local output name, kind, compiler, include/link contract, or profile policy.",
+    "Use it for a target-local output name, kind, compiler, include/link settings, or profile policy.",
     "Sections are forbidden; target-root declarations and dependencies remain in root project.dh.",
     "target.dh replaces the ambiguous historical use of nested project.dh as a flat overlay.",
 };
@@ -135,9 +135,9 @@ static const char* const dal_c_help_topic_lock_lines[] = {
 };
 static const char* const dal_c_help_topic_manifest_lines[] = {
     "manifest.dh is generated for library/prebuilt artifacts; users do not hand-author it.",
-    "It inventories all libraries in one target/profile and records ABI, producer-link provenance, and LTO toolchain contracts.",
+    "It inventories all libraries in one target/profile and records ABI, producer-link provenance, and LTO toolchain identity.",
     "test/sample/example executables do not replace the library manifest.",
-    "Native non-LTO C artifacts compare ABI contracts; LTO artifacts additionally require matching toolchains.",
+    "Native non-LTO C artifacts compare ABI identity; LTO artifacts additionally require matching toolchains.",
     "Old or structurally invalid manifests are rejected; dh-c does not preserve unnecessary manifest-schema compatibility.",
 };
 static const char* const dal_c_help_topic_precedence_lines[] = {
@@ -153,13 +153,13 @@ static const char* const dal_c_help_topic_precedence_lines[] = {
 };
 static const char* const dal_c_help_topic_profiles_lines[] = {
     "Profiles select optimization/debug defaults; explicit file/project/CLI policy may override individual fields.",
-    "dev is the default. stable/release add LTO-oriented library artifacts according to their profile contract.",
+    "dev is the default. stable/release add LTO-oriented library artifacts according to their profile settings.",
     "Use `dh-c help --all` for the complete profile table.",
 };
 static const char* const dal_c_help_topic_invocation_lines[] = {
-    "Authored .dh files store reproducible build contract, not one invocation's control flow or presentation.",
+    "Authored .dh files store reproducible build settings, not one invocation's control flow or presentation.",
     "Keep jobs, verbose/progress/commands, elapsed precision, run arguments, dry-run, recursion, and cleanup selectors on the command line.",
-    "Source/test/sample/example selection and analysis/emit requests are invocation-only because they select work rather than define the produced target's reusable contract.",
+    "Source/test/sample/example selection and analysis/emit requests are invocation-only because they select work rather than define the produced target's reusable settings.",
     "Use target.dh, source companions, or --dh-file for persistent compiler, linker, runtime, target, output, optimization, and version properties.",
     "If a stable target requires the same invocation selector repeatedly, declare a [target-root <name>] in project.dh instead of hiding selection in an overlay.",
 };
@@ -170,7 +170,7 @@ static const char* const dal_c_help_topic_invocation_examples[] = {
 };
 
 static const char* const dal_c_help_topic_tools_lines[] = {
-    "Compiler selection remains part of the build contract through compiler= or --compiler=.",
+    "Compiler selection remains part of the build settings through compiler= or --compiler=.",
     "Machine-local helper tools are injected through environment variables rather than committed .dh files.",
     "Precedence is DH_C_<TOOL>, then the conventional variable where one exists, then dh-c's default executable name.",
     "Core build: DH_C_MAKE/MAKE, DH_C_AR/AR, DH_C_DEBUGGER/DEBUGGER.",
@@ -774,7 +774,7 @@ static void dal_c__printProjectStatus(const dal_c_Cmd* cmd, const dal_c_Project*
         char* lock_path = dal_c_Project_getDependencyLockPath(proj);
         printf("\nBuild unit:\n");
         printf("  source=%s\n", proj->unit_source ? proj->unit_source : "(unknown)");
-        printf("  contract=%s\n", proj->unit_dh ? proj->unit_dh : "(missing)");
+        printf("  config=%s\n", proj->unit_dh ? proj->unit_dh : "(missing)");
         printf("  lock=%s (%s)\n", lock_path ? lock_path : "(unavailable)",
             lock_path && path_isFile(lock_path) ? "present" : "missing");
         printf("Generated state:\n  root=%s\n", state_root ? state_root : "(unavailable)");
@@ -1509,7 +1509,7 @@ static int dal_c__printUsage(const char* topic) {
         } else if (str_eql(topic, "plan")) {
             printf("USAGE:\n  %s plan [profile] [path] [build options]\n\nResolve and print the requested build plan without writing build files, caches, locks, or artifacts.\n", dal_c_tool_name);
         } else if (str_eql(topic, "explain")) {
-            printf("USAGE:\n  %s explain rebuild [profile] [path] [build options]\n\nRead existing contracts and explain why work is required without building dependencies or mutating build state.\n", dal_c_tool_name);
+            printf("USAGE:\n  %s explain rebuild [profile] [path] [build options]\n\nRead existing build state and explain why work is required without building dependencies or mutating it.\n", dal_c_tool_name);
         } else if (str_eql(topic, "target")) {
             printf("USAGE:\n  %s target show [profile] [build options]\n\nShow the requested and normalized target, compiler, profile, target-scoped build directory, and host `build/native` alias policy without creating it.\n", dal_c_tool_name);
         } else {
@@ -1542,7 +1542,7 @@ static int dal_c__printUsage(const char* topic) {
     printf("  %-28s %s\n", "dh-c build main.c", "Build one source file; main.dh is loaded automatically when present");
     printf("  %-28s %s\n", "dh-c update main.c", "Resolve dependencies declared by a projectless primary main.dh");
     printf("  %-28s %s\n", "dh-c build", "Build the detected project.dh project with the dev profile");
-    printf("  %-28s %s\n", "dh-c test", "Build the project library contract and run its tests");
+    printf("  %-28s %s\n", "dh-c test", "Build the project library and run its tests");
     printf("  %-28s %s\n", "dh-c plan", "Inspect the resolved target and configuration without writing state");
     printf("  %-28s %s\n\n", "dh-c help files", "Choose between workspace.dh, project.dh, target.dh, and source companions");
 
@@ -1577,11 +1577,11 @@ static int dal_c__printUsage(const char* topic) {
 
     printf("CONFIGURATION:\n");
     printf("  %-18s %s\n", "files", "Which .dh file should I write?");
-    printf("  %-18s %s\n", "project-dh", "Full named-project, dependency, and target-root contract");
+    printf("  %-18s %s\n", "project-dh", "Full named-project, dependency, and target-root configuration");
     printf("  %-18s %s\n", "workspace-dh", "Workspace defaults and shared cache boundary");
     printf("  %-18s %s\n", "target-dh", "One directory target's flat defaults");
     printf("  %-18s %s\n", "dh-file", "Source companion and explicit overlay keys");
-    printf("  %-18s %s\n", "dependencies", "Dependency section and provider contract");
+    printf("  %-18s %s\n", "dependencies", "Dependency section and provider inputs");
     printf("  %-18s %s\n", "precedence", "Exact configuration merge order");
     printf("  %-18s %s\n", "lock-dh", "Generated durable dependency resolution");
     printf("  %-18s %s\n", "manifest-dh", "Generated prebuilt compatibility metadata");
@@ -1612,7 +1612,7 @@ static int dal_c__printUsage(const char* topic) {
         printf("    %s\n\n", cmd->description);
 
         if (cmd->note_count > 0) {
-            printf("    Contract:\n");
+            printf("    Configuration:\n");
             for (int j = 0; j < cmd->note_count; ++j) {
                 printf("      - %s\n", cmd->notes[j]);
             }
@@ -1668,18 +1668,18 @@ static int dal_c__printUsage(const char* topic) {
     printf("TARGET RESOLUTION:\n");
     printf("  `" dal_c_tool_name " build` with no explicit path builds the project default output.\n");
     printf("  Explicit `file.c` inputs build that file directly, even outside a project.\n");
-    printf("  Explicit paths under `[target-root ...]` use the declared target-root contract.\n");
+    printf("  Explicit paths under `[target-root ...]` use the declared target-root definition.\n");
     printf("  `--sample`, `--example`, and `--test` select the built-in target families.\n");
     printf("  `.` is a compatibility alias for `--all`.\n");
     printf("  `build --self` and `clean --self` operate on the " dal_c_tool_name " self boundary only.\n\n");
 
-    printf("OUTPUT CONTRACT:\n");
+    printf("OUTPUT RULES:\n");
     printf("  Default output names come from `project.dh` `output`, target-root `output`, or the source file stem.\n");
     printf("  `--output <path>` means an existing directory or an output stem; dh-c generates `.exe`, `.a`, `.lib`, `.so`, or `.dll` as needed.\n");
     printf("  `--output-ext <.ext>` selects an explicit extension for one artifact, such as `.pyd`; it is invalid for two-output `kind=lib` auto builds.\n");
     printf("  `compile-db --output <path>` is different: it names the JSON file path exactly.\n\n");
 
-    printf("LINK INPUT CONTRACT:\n");
+    printf("LINK INPUT RULES:\n");
     printf("  `--link-dir <dir>` / `-L<dir>` adds a library search directory and becomes a linker `-L` flag.\n");
     printf("  `--link <name>` / `-l<name>` adds a logical library name and becomes a linker `-l` flag.\n");
     printf("  `--link-args \"...\"` is a raw escape hatch for linker flags that do not have structured options.\n");
@@ -1690,16 +1690,16 @@ static int dal_c__printUsage(const char* topic) {
     printf("  `--link-libc=off` removes libc while retaining other default libraries where the compiler driver supports `-nolibc`.\n");
     printf("  Targets that cannot represent no-libc with default libraries enabled fail explicitly instead of silently linking libc.\n");
     printf("  `--link-default-libs=off` maps to `-nodefaultlibs`; compiler-rt remains separately controlled and is restored by default.\n");
-    printf("  `--link-start-files=off` maps to `-nostartfiles`; executable builds must provide a usable entry/startup contract.\n");
+    printf("  `--link-start-files=off` maps to `-nostartfiles`; executable builds must provide usable entry/startup code.\n");
     printf("  `--link-stdlib=off` disables both default libraries and startup files, mapping to `-nostdlib`.\n");
     printf("  Explicit `--link=<name>`, `--link-dir`, and `--link-args` remain active after defaults are disabled, so custom runtimes are supported.\n");
     printf("  Use explicit `COMP_HAS_*` / `COMP_NO_*` defines when a manually linked runtime changes compile-time capability facts.\n");
     printf("  `--link-crt=off` is an exact alias of `--link-start-files=off`, not a separate runtime-library switch.\n");
-    printf("  dh-c guarantees deterministic flag mapping and tested host contracts; a runnable freestanding executable still requires target startup/runtime code.\n\n");
+    printf("  dh-c guarantees deterministic flag mapping and tested host behavior; a runnable freestanding executable still requires target startup/runtime code.\n\n");
 
-    printf("PCH CONTRACT:\n");
+    printf("PCH RULES:\n");
     printf("  `pch=auto` uses the detected DH bundle when available; `pch=deps` uses generated `lib/deps.h`; `pch=off` disables PCH.\n");
-    printf("  PCH files are generated inside the active profile/flag cache plan and are rebuilt when their headers or compile contract change.\n");
+    printf("  PCH files are generated inside the active profile/flag cache plan and are rebuilt when their headers or compile settings change.\n");
     printf("  `lib/deps.h` is generated only when a dependency prelude is needed; it includes top-level headers under `lib/deps/`.\n\n");
 
     printf("CONFIGURATION FILES:\n");
@@ -1774,7 +1774,7 @@ static void dal_c__printHelpCmd(const dal_c_HelpCmd* cmd) {
     printf("  %s\n\n", cmd->description);
 
     if (cmd->implemented) {
-        printf("CONTRACT:\n");
+        printf("RULES:\n");
         if (cmd->note_count > 0) {
             for (int i = 0; i < cmd->note_count; ++i) {
                 printf("  %s\n", cmd->notes[i]);
@@ -1797,7 +1797,7 @@ static void dal_c__printHelpCmd(const dal_c_HelpCmd* cmd) {
             printf("  %-*s %s\n", dal_c_help_opt_width, cmd->options[i].name, cmd->options[i].description);
         }
         if (cmd->extends_build_options) {
-            printf("  [build options]%-*s See `%s help build` for the build option contract\n", dal_c_help_opt_width - 15, "", dal_c_tool_name);
+            printf("  [build options]%-*s See `%s help build` for the build options\n", dal_c_help_opt_width - 15, "", dal_c_tool_name);
         }
         printf("\n");
     }

@@ -92,7 +92,7 @@ TEST_fn_("mem/Alctr: noop allocator accepts empty allocation but reports exhaust
     } $end(for);
 } $unguarded(TEST_fn);
 
-TEST_fn_("mem/Alctr: failing allocator preserves allocation error contract" $guard) {
+TEST_fn_("mem/Alctr: failing allocator returns allocation errors" $guard) {
     try_(TEST_expect(mem_Alctr_isValid(mem_Alctr_failing)));
 
     let empty = try_(mem_Alctr_allocBytes($trace mem_Alctr_failing, 0));

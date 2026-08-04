@@ -67,7 +67,7 @@ $extern fn_((daterm_Term_waitTimed(daterm_Term self, time_Dur timeout))(daterm_T
 /// Requires terminal to be in raw mode
 $extern fn_((daterm_Term_waitProtcd(daterm_Term self))(daterm_Event));
 
-/*--- IO Contracts ---*/
+/*--- IO operations ---*/
 
 $extern fn_((daterm_Term_reader(daterm_Term self))(io_Reader));
 $extern fn_((daterm_Term_writer(daterm_Term self))(io_Writer));

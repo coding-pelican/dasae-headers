@@ -2217,7 +2217,7 @@ static bool dal_c_Project__parseProjectDH(const char* path, dal_c_Project* proj)
                     const dal_c_TargetRoot* existing = &proj->target_roots[j];
                     if ((existing->name && str_eql(existing->name, current_target_root->name))
                         || (existing->path && current_target_root->path && str_eql(existing->path, current_target_root->path))) {
-                        (void)fprintf(stderr, "Error: Duplicate target-root contract `%s`\n", current_target_root->name);
+                        (void)fprintf(stderr, "Error: Duplicate target-root definition `%s`\n", current_target_root->name);
                         free(current_target_root->name);
                         free(current_target_root->path);
                         free(current_target_root);
@@ -2376,7 +2376,7 @@ static bool dal_c_Project__parseProjectDH(const char* path, dal_c_Project* proj)
             const dal_c_TargetRoot* existing = &proj->target_roots[i];
             if ((existing->name && str_eql(existing->name, current_target_root->name))
                 || (existing->path && current_target_root->path && str_eql(existing->path, current_target_root->path))) {
-                (void)fprintf(stderr, "Error: Duplicate target-root contract `%s`\n", current_target_root->name);
+                (void)fprintf(stderr, "Error: Duplicate target-root definition `%s`\n", current_target_root->name);
                 free(current_target_root->name);
                 free(current_target_root->path);
                 free(current_target_root);

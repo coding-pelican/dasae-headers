@@ -4859,7 +4859,7 @@ static int dal_c_Cmd__rejectExcludedPath(const char* path, const ArrStr* exclude
     }
     (void)fprintf(
         stderr,
-        "Error: Explicit input conflicts with exclude contract: %s (excluded by %s)\n",
+        "Error: Explicit input conflicts with exclusion rules: %s (excluded by %s)\n",
         path,
         matched_exclude
     );
@@ -4907,7 +4907,7 @@ static int dal_c_Cmd__applyExcludeContract(ArrStr** sources, const ArrStr* exclu
             ArrStr_fini(&filtered);
             (void)fprintf(
                 stderr,
-                "Error: Explicit input conflicts with exclude contract: %s (excluded by %s)\n",
+                "Error: Explicit input conflicts with exclusion rules: %s (excluded by %s)\n",
                 src,
                 matched_exclude
             );
@@ -5035,7 +5035,7 @@ static bool dal_c_Cmd__mergeBuildProperties(dal_c_CompilerOpts* opts, dal_c_Buil
     dal_c_Cmd__collectCompanionDHFiles(dh_files, sources);
     for (int i = 0; i < ArrStr_len(dh_files); ++i) {
         const char* dh_file = ArrStr_at(dh_files, i);
-        /* The primary ad-hoc unit contract is parsed during project detection so
+        /* The primary ad-hoc unit configuration is parsed during project detection so
            its dependency sections can establish lock/state scope. Its flat
            properties already occupy the primary companion position here. */
         if (proj && proj->is_adhoc && proj->unit_dh) {
@@ -5805,7 +5805,7 @@ static int dal_c_Cmd__buildOneFromSources(
         printf("  state: %s\n", plan_result == dal_c_generateMakefile_upToDate ? "up-to-date" : "rebuild-required");
         if (self->explain_rebuild) {
             if (plan_result == dal_c_generateMakefile_upToDate) {
-                printf("REBUILD EXPLANATION:\n  The generated build contract and Makefile already match the requested build.\n");
+                printf("REBUILD EXPLANATION:\n  The generated build state and Makefile already match the requested build.\n");
             } else {
                 printf("REBUILD EXPLANATION:\n");
                 if (!target_existed_before_plan) {
@@ -5818,7 +5818,7 @@ static int dal_c_Cmd__buildOneFromSources(
                 }
                 char* contract_diff = dal_c__takeLastContractDiff();
                 if (contract_diff) {
-                    printf("  Structured contract changes:\n%s", contract_diff);
+                    printf("  Structured build changes:\n%s", contract_diff);
                     free(contract_diff);
                 } else {
                     printf("  - source, dependency, PCH, or generated-plan timestamp changed\n");

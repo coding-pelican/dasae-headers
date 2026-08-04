@@ -8,7 +8,7 @@ $static fn_((test_Sched__identity(u32 value))(u32)) {
 };
 fn_use_Clsr_((test_Sched__identity)(u32)(u32));
 
-TEST_fn_("Sched/self: failing scheduler preserves unavailable and canceled contracts" $scope) {
+TEST_fn_("Sched/self: failing scheduler returns unavailable and canceled results" $scope) {
     try_(TEST_expect(Sched_isValid(Sched_noop)));
     try_(TEST_expect(Sched_isValid(Sched_failing)));
 

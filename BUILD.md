@@ -2,9 +2,9 @@
 
 `dh-c` is a direct-source and project build tool for dasae-headers. Its usage
 model combines direct compiler-style input with optional workspace/project
-contracts:
+configuration files:
 
-```sh
+```bash
 dh-c build main.c
 dh-c build main.c util.c
 dh-c build
@@ -20,7 +20,7 @@ The command line and selected sources always remain first-class build input.
 Create a minimal named project or a workspace boundary without hand-writing the
 first file:
 
-```sh
+```bash
 dh-c project app
 dh-c workspace .
 ```
@@ -28,7 +28,7 @@ dh-c workspace .
 Both commands refuse to overwrite an existing `project.dh` or `workspace.dh`.
 The generated project is immediately buildable.
 
-```sh
+```bash
 dh-c --help
 dh-c help files
 dh-c help build
@@ -38,12 +38,12 @@ dh-c help precedence
 dh-c help invocation-only
 ```
 
-The canonical file contract is
-[`dh-c/docs/dh-files.md`](./dh-c/docs/dh-files.md).
+The canonical file format is
+[`dh-c/docs/dh-c-configuration-files.md`](./dh-c/docs/dh-c-configuration-files.md).
 
 ## 1. Direct builds
 
-```sh
+```bash
 dh-c build main.c
 dh-c build main.c util.c
 dh-c run main.c
@@ -52,7 +52,7 @@ dh-c test test-main.c
 
 For each selected source, `dh-c` automatically loads a same-stem companion:
 
-```text
+```txt
 main.c -> main.dh
 util.c -> util.dh
 ```
@@ -63,7 +63,7 @@ Its companion may declare dependencies and `dh-c update main.c` generates
 
 An explicit reusable overlay may be added with:
 
-```sh
+```bash
 dh-c build main.c --dh-file=windows-runtime.dh
 ```
 
@@ -71,7 +71,7 @@ dh-c build main.c --dh-file=windows-runtime.dh
 
 ## 2. Named projects
 
-```text
+```txt
 my-project/
 ├── project.dh
 ├── src/
@@ -89,7 +89,7 @@ kind=executable
 std=c17
 ```
 
-```sh
+```bash
 dh-c build
 dh-c run
 dh-c test
@@ -100,19 +100,19 @@ dh-c test
 
 ## 3. Configuration files
 
-| File | Role |
-| --- | --- |
-| `workspace.dh` | shared flat defaults and workspace cache/discovery boundary |
-| `project.dh` | complete project, target-root, and dependency contract |
-| `target.dh` | one resolved directory target's flat defaults |
-| `<source>.dh` | one selected source's companion; the primary projectless companion may also own dependencies |
-| `--dh-file` input | explicit reusable flat overlay |
-| `lock.dh` / `<source>.lock.dh` | generated exact dependency resolution |
-| `manifest.dh` | generated prebuilt compatibility contract |
+| File                           | Role                                                                                         |
+| ------------------------------ | -------------------------------------------------------------------------------------------- |
+| `workspace.dh`                 | shared flat defaults and workspace cache/discovery boundary                                  |
+| `project.dh`                   | complete project, target-root, and dependency configuration                                  |
+| `target.dh`                    | one resolved directory target's flat defaults                                                |
+| `<source>.dh`                  | one selected source's companion; the primary projectless companion may also own dependencies |
+| `--dh-file` input              | explicit reusable flat overlay                                                               |
+| `lock.dh` / `<source>.lock.dh` | generated exact dependency resolution                                                        |
+| `manifest.dh`                  | generated prebuilt compatibility metadata                                                    |
 
 Merge order:
 
-```text
+```txt
 built-in/profile
 -> workspace.dh
 -> project.dh
@@ -127,11 +127,11 @@ Authored `.dh` files are strict. Unknown keys and illegal sections fail.
 ## Configuration versus invocation controls
 
 The `.dh` files store reusable compiler, linker, runtime, target, output,
-optimization, dependency, and version contracts. Scheduling and one-off command
+optimization, dependency, and version settings. Scheduling and one-off command
 selection stay on the command line: jobs, progress/verbosity, run arguments,
 dry-run/clean scopes, sample/test selection, and analysis/emit requests.
 
-```sh
+```bash
 dh-c help invocation-only
 ```
 
@@ -139,13 +139,13 @@ dh-c help invocation-only
 
 ### Build
 
-```sh
+```bash
 dh-c build [profile] [path] [options]
 ```
 
 Common forms:
 
-```sh
+```bash
 dh-c build
 dh-c build release
 dh-c build main.c util.c
@@ -156,19 +156,19 @@ dh-c build --image firmware.c --link-script=layout.ld
 
 ### Run
 
-```sh
+```bash
 dh-c run [profile] [path] [options]
 ```
 
 ### Test
 
-```sh
+```bash
 dh-c test [profile] [path] [options]
 ```
 
 Test output separates result and timing:
 
-```text
+```txt
 [TEST]
   status: PASS
   exit: 0
@@ -184,7 +184,7 @@ Finished `test` in 1.21s
 
 ### Clean and prune
 
-```sh
+```bash
 dh-c clean
 dh-c clean --cache --older-than=30d --dry-run
 dh-c clean --deps --unused --dry-run
@@ -199,7 +199,7 @@ by dependency cleanup.
 
 ## 5. Inspection commands
 
-```sh
+```bash
 dh-c plan [profile] [path]
 dh-c explain rebuild [profile] [path]
 dh-c target show
@@ -212,22 +212,22 @@ dh-c format
 ```
 
 `plan` and `explain rebuild` are read-only. They do not build dependencies,
-write caches/contracts, acquire project build-state paths, or create
+write caches or build descriptions, acquire project build-state paths, or create
 `build/native`.
 
 ## 6. Profiles
 
-| Profile | Intended use |
-| --- | --- |
-| `dev` | debug iteration; default |
-| `fast` | fastest compile path |
-| `test` | test-focused optimization/debug balance |
-| `profile` | profiling build |
-| `stable` | stable optimized build with ThinLTO policy |
-| `release` | release optimization and reduced unwind/exception policy |
-| `optimize` | maximum native optimization |
-| `compact` | size optimization |
-| `micro` | extreme size optimization |
+| Profile    | Intended use                                             |
+| ---------- | -------------------------------------------------------- |
+| `dev`      | debug iteration; default                                 |
+| `fast`     | fastest compile path                                     |
+| `test`     | test-focused optimization/debug balance                  |
+| `profile`  | profiling build                                          |
+| `stable`   | stable optimized build with ThinLTO policy               |
+| `release`  | release optimization and reduced unwind/exception policy |
+| `optimize` | maximum native optimization                              |
+| `compact`  | size optimization                                        |
+| `micro`    | extreme size optimization                                |
 
 Use `dh-c help profiles` or `dh-c help --all` for the current exact flags.
 
@@ -258,12 +258,12 @@ define=COMP_HAS_LIBC
 define=COMP_HAS_STDLIB
 ```
 
-This supports compiler/platform runtimes, glibc or musl target contracts,
+This supports compiler/platform runtimes, glibc or musl target settings,
 custom runtimes, and fully user-authored startup/runtime code. Cache keys record
-the effective compile and link command contracts. Prebuilt manifests compare
+the effective compile and link commands. Prebuilt manifests compare
 public ABI facts rather than requiring every consumer to repeat a producer's
 private top-level link list. LTO artifacts additionally require a compatible
-compiler toolchain contract.
+compiler toolchain identity.
 
 ## 8. Library and prebuilt behavior
 
@@ -283,7 +283,7 @@ library artifacts. Test/sample/example executables do not overwrite it.
 
 Host builds also provide:
 
-```text
+```txt
 build/native -> build/<normalized-host-target>
 ```
 
@@ -292,8 +292,8 @@ builds do not move the native alias.
 
 See:
 
-- [`dh-c/docs/artifact-manifest.md`](./dh-c/docs/artifact-manifest.md)
-- [`dh-c/docs/prebuilt-packages.md`](./dh-c/docs/prebuilt-packages.md)
+- [`dh-c/docs/dh-c-prebuilt-manifest.md`](./dh-c/docs/dh-c-prebuilt-manifest.md)
+- [`dh-c/docs/dh-c-prebuilt-package-format.md`](./dh-c/docs/dh-c-prebuilt-package-format.md)
 
 ## 9. Dependencies
 
@@ -312,7 +312,7 @@ runtime-file=bin/SDL3.dll
 
 Named-project commands:
 
-```sh
+```bash
 dh-c fetch
 dh-c update
 dh-c status
@@ -321,7 +321,7 @@ dh-c deps
 
 Projectless source-unit commands:
 
-```sh
+```bash
 dh-c update main.c
 dh-c fetch main.c
 dh-c status main.c
@@ -335,7 +335,7 @@ projectless source. `fetch` preserves an existing resolution and `update`
 intentionally changes it. `graph` supports both scopes; `package` and `install`
 remain named-project operations.
 
-Provider cross-target contracts include compiler, archiver, target, sysroot,
+Provider cross-target inputs include compiler, archiver, target, sysroot,
 and provider-specific toolchain variables where applicable.
 
 See [`dh-c/docs/external-dependencies.md`](./dh-c/docs/external-dependencies.md).
@@ -344,7 +344,7 @@ See [`dh-c/docs/external-dependencies.md`](./dh-c/docs/external-dependencies.md)
 
 Normally tracked:
 
-```text
+```txt
 workspace.dh
 project.dh
 target.dh
@@ -356,7 +356,7 @@ source and public assets
 
 Normally ignored:
 
-```text
+```txt
 build/
 .dh-c/
 prebuilt/   # unless deliberately vendored as source input
@@ -385,9 +385,10 @@ sequenceDiagram
 
 ## 12. Complete references
 
-- [`dh-c/docs/dh-files.md`](./dh-c/docs/dh-files.md)
-- [`dh-c/docs/project-dh-contract.md`](./dh-c/docs/project-dh-contract.md)
+- [`dh-c/docs/dh-c-configuration-files.md`](./dh-c/docs/dh-c-configuration-files.md)
+- [`dh-c/docs/dh-c-build-map.md`](./dh-c/docs/dh-c-build-map.md)
 - [`dh-c/docs/external-dependencies.md`](./dh-c/docs/external-dependencies.md)
-- [`dh-c/docs/artifact-manifest.md`](./dh-c/docs/artifact-manifest.md)
-- [`dh-c/docs/prebuilt-packages.md`](./dh-c/docs/prebuilt-packages.md)
+- [`dh-c/docs/external-tool-paths.md`](./dh-c/docs/external-tool-paths.md)
+- [`dh-c/docs/dh-c-prebuilt-manifest.md`](./dh-c/docs/dh-c-prebuilt-manifest.md)
+- [`dh-c/docs/dh-c-prebuilt-package-format.md`](./dh-c/docs/dh-c-prebuilt-package-format.md)
 - `dh-c help --all`

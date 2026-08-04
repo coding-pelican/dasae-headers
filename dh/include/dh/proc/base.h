@@ -28,7 +28,7 @@ T_alias$((proc_Mem)(struct proc_Mem));
 /*--- Cross-cutting process errors -----------------------------------------*/
 
 /* These singleton sets are retained only because they are genuinely shared
- * building blocks of multiple independently precise process contracts. */
+ * building blocks of multiple independently precise process interfaces. */
 errset_((proc_AccessDeniedE)(proc_AccessDenied));
 errset_((proc_ResrcLimitReachedE)(proc_ResrcLimitReached));
 errset_((proc_SysResrcsE)(proc_SysResrcs));

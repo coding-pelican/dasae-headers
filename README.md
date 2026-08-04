@@ -10,7 +10,10 @@ dasae-headers: Modern, Better safety and productivity to C
 - modern-c
 - safe-c
 - generic
+- c11
 - c17
+- c23-compat
+- gnu-c
 - c-extension
 - error-handling
 - type-safety
@@ -40,8 +43,9 @@ dasae-headers: Modern, Better safety and productivity to C
   </div>
 
   <div style="margin-top: 8px;">
-    <a href="https://en.wikipedia.org/wiki/C17_(C_standard_revision)">
-      <img src="https://img.shields.io/badge/language-C17-blue?style=flat-square" alt="Language: C17">
+    <a href="./dh/include/dh/builtin/cfg/lang.h">
+      <img src="https://img.shields.io/badge/language-C11--C17%20%7C%20C23%20compat-blue?style=flat-square"
+           alt="Language: C11-C17 with C23 compatibility">
     </a>
     <a href="./dh/include/dh/builtin/cfg/plat.h">
       <img src="https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-brightgreen?style=flat-square"
@@ -126,6 +130,7 @@ dasae-headers: Modern, Better safety and productivity to C
       - [`TEST` — Testing Framework](#test--testing-framework)
       - [`start` / `main` — Entry Points](#start--main--entry-points)
   - [Meta System](#meta-system)
+  - [Language Baseline](#language-baseline)
   - [Platform Support](#platform-support)
   - [Code Samples](#code-samples)
     - [Optional Values](#optional-values)
@@ -165,14 +170,14 @@ dasae-headers: Modern, Better safety and productivity to C
 
 #### Step 1: Clone the Repository
 
-```sh
+```bash
 git clone https://github.com/coding-pelican/dasae-headers
 cd dasae-headers
 ```
 
 #### Step 2: Build the `dh-c` Tool
 
-```sh
+```bash
 cd dh-c
 sh gen-makefile.sh
 make PROFILE=release
@@ -194,7 +199,7 @@ working inside this repository because `dh-c` discovers a current or ancestor
 
 **Linux/macOS (bash/zsh):**
 
-```sh
+```bash
 # Add to ~/.bashrc or ~/.zshrc
 export DH_HOME="/path/to/dasae-headers/dh"
 export PATH="/path/to/dasae-headers/dh-c/build/release:$PATH"
@@ -202,13 +207,13 @@ export PATH="/path/to/dasae-headers/dh-c/build/release:$PATH"
 
 Then reload your shell configuration:
 
-```sh
+```bash
 source ~/.bashrc  # or source ~/.zshrc
 ```
 
 **Windows (MSYS2/MinGW):**
 
-```sh
+```bash
 # Add to ~/.bashrc
 export DH_HOME="/c/path/to/dasae-headers/dh"
 export PATH="/c/path/to/dasae-headers/dh-c/build/release:$PATH"
@@ -224,7 +229,7 @@ $env:PATH = "C:\path\to\dasae-headers\dh-c\build\release;$env:PATH"
 
 #### Step 4: Verify Installation
 
-```sh
+```bash
 dh-c --version
 dh-c --help
 ```
@@ -252,7 +257,7 @@ Direct-source builds still require no project file.
 
 The command line and selected source files are first-class build input:
 
-```sh
+```bash
 dh-c build main.c
 dh-c build main.c util.c
 ```
@@ -264,7 +269,7 @@ owner: its companion may declare dependencies and `dh-c update main.c` creates
 instead add a root `project.dh`; a `workspace.dh` may provide shared defaults and
 the preferred workspace cache.
 
-```sh
+```bash
 dh-c help files
 dh-c help project-dh
 dh-c help dh-file
@@ -273,19 +278,17 @@ dh-c help lock-dh
 ```
 
 See [BUILD.md](./BUILD.md) and
-[`dh-c/docs/dh-files.md`](./dh-c/docs/dh-files.md).
+[`dh-c/docs/dh-c-configuration-files.md`](./dh-c/docs/dh-c-configuration-files.md).
 
 #### Hello, world!
 
 ```c
 #include "dh-main.h"
-#include "dh/io/self.h"
-#include "dh/fs/File/self.h"
+#include "dh/io/std.h"
 #include "dh/io/Writer.h"
 
-fn_((main(S$S_const$u8 args))(E$void) $scope) {
-    let_ignore = args;
-    let out = fs_File_writer(io_handleStdOut());
+fn_((main(proc_Entry entry))(E$void) $scope) {
+    let out = io_std_out(entry.std);
     let_(msg, O$S_const$u8) = some(u8_l("world"));
     try_(io_Writer_print(out, u8_l("Hello, {:?s}!\n"), msg));
     return_ok({});
@@ -294,7 +297,7 @@ fn_((main(S$S_const$u8 args))(E$void) $scope) {
 
 ### 🔨 Build and Run
 
-```sh
+```bash
 # Run directly
 dh-c run
 
@@ -377,7 +380,7 @@ of standard C into a single interface.
 | --------------------------- | ---------------------------------------------------- | ---------------------------------------------------------------------------- |
 | **Variables and Functions** | Explicit type declarations and repetitive signatures | `let` (constant), `var` (mutable) inference and `fn_` function syntax        |
 | **Closures**                | Compiler-specific closure extensions                 | Typed function and stackless-coroutine adapters through `Clsr`               |
-| **Platform Support**        | Fragmented branching with `#ifdef`                   | Unified detection in `builtin/cfg` and system contracts under `sys`          |
+| **Platform Support**        | Fragmented branching with `#ifdef`                   | Unified detection in `builtin/cfg` and system APIs under `sys`               |
 | **Preprocessor Branching**  | Separate `#ifdef` definitions even for simple values | One definition with expression-style branching via `pp_if_` and `pp_switch_` |
 
 #### 2. Memory & Argument Patterns
@@ -438,7 +441,7 @@ the same runtime cost as the underlying primitive operations.
 #### 6. Ecosystem & Infrastructure
 
 Manages project-local build and test workflows with built-in tools
-and a `project.dh` contract.
+and a `project.dh` configuration.
 When errors occur, preserves call stack information beyond simple return values
 to immediately pinpoint the cause.
 
@@ -734,7 +737,7 @@ and safe arithmetic.
     `$typing`, and `$typed` retain source and type metadata only in debug builds.
   - `debug_StackTrace_setupCrashHandler` installs platform crash handling;
     `debug_StackTrace_print` emits the current symbolized stack trace.
-- **Comparison contracts:**
+- **Comparison rules:**
   - **Mathematical sign (`cmp_Sgn`):**
     `cmp_Sgn_neg` (−1), `cmp_Sgn_zero` (0), and `cmp_Sgn_pos` (1) represent
     negative, zero, and positive signs independently of any ordered type.
@@ -750,10 +753,10 @@ and safe arithmetic.
     less-than relation.
   - **Ordering domain:**
     The three states directly represent a total order or strict-weak-order
-    equivalence classes. A partial order can use the same contract only when
+    equivalence classes. A partial order can use the same representation only when
     incomparable pairs are intentionally represented by `cmp_Ord_eq`, because
     `cmp_Ord` has no separate unordered state.
-  - **Equality-only contract (`eql` / `neq`):**
+  - **Equality-only operations (`eql` / `neq`):**
     `cmp_eql$(_T)` defines an equivalence relation without requiring an order;
     `cmp_neq$(_T)` is its negation. The expected equality laws are reflexivity,
     symmetry, and transitivity. Implement either operation and derive the other
@@ -781,8 +784,8 @@ and safe arithmetic.
     `eql` / `neq` and `eq` / `ne` coincide only when the order is total and
     consistent with equality. Use the primitive equality interface for types
     that define equivalence without order; use order-derived equality when an
-    ordering contract is present. Content equality for a slice is one case
-    where an equality contract can exist without defining an ordering.
+    ordering is present. Content equality for a slice is one case where
+    equality can exist without defining an ordering.
   - **Predicates on `cmp_Ord`:**
     `cmp_Ord_isEq`, `cmp_Ord_isNe`, `cmp_Ord_isLt`, `cmp_Ord_isGt`,
     `cmp_Ord_isLe`, `cmp_Ord_isGe`, `cmp_Ord_inv`
@@ -886,7 +889,7 @@ hashes. (Safe arithmetic lives in `core/pri.h`.)
   `u_cast$` / `u_castP$` / `u_castV$` / `u_castS$` / `u_castA$` /
   `u_castO$` / `u_castE$`, and `union_cast$` adapt pointer, slice, SIMD,
   meta-value, optional/result, and variant representations without conflating
-  their contracts.
+  their semantics.
 - **SIMD primitive operations:**
   - **Construction:**
     `simd_V_init$`, `simd_V_splat$`, `simd_V_from$`, `simd_V_fromA$`,
@@ -976,7 +979,7 @@ Typed operations over the common `Clsr$(_T)` representation supplied by
 #### `cmp` — Comparison Utilities
 
 Runtime comparison over meta values, pointers, and slices. The primitive
-`cmp_Ord` type and compile-time type contracts belong to `core/cmp.h`; this
+`cmp_Ord` and its compile-time type rules belong to `core/cmp.h`; this
 module supplies runtime comparator selection and type-erased dispatch.
 
 - **Equality:**
@@ -993,7 +996,7 @@ module supplies runtime comparator selection and type-erased dispatch.
 
 - **Current modules:** `m-math`, `m-math-linalg`
 - **Planned modules:** `m-math-geom`, `m-math-interp`, `m-math-ease`
-  currently expose no public implementation contract.
+  currently expose no public API.
 - **Common (prefix `math_`):**
   `math_abs`, `math_min`, `math_max`, `math_clamp`, `math_sign`, `math_wrap`,
   `math_floor`, `math_ceil`, `math_round`, `math_trunc`, `math_sqrt`, `math_pow`, `math_rsqrt`,
@@ -1012,7 +1015,7 @@ module supplies runtime comparator selection and type-erased dispatch.
 #### `mem` — Memory Utilities
 
 Typed memory representation, sequence algorithms, growth helpers, and
-allocator contracts. Compiler primitives remain in `builtin/mem.h`;
+allocator interfaces. Compiler primitives remain in `builtin/mem.h`;
 `core/pri.h` and `prl/u-meta.h` build the `pri_mem*` and `u_mem*` layers, and
 `mem` adds checked byte, pointer, meta-type, and generated typed surfaces.
 
@@ -1021,6 +1024,8 @@ allocator contracts. Compiler primitives remain in `builtin/mem.h`;
 - **Sizes, bits, and byte order:**
   - `mem_byte_size`, `mem_kb_size`, `mem_kib_size`, `mem_mb_size`,
     `mem_mib_size`, `mem_gb_size`, `mem_gib_size`, and `mem_page_size`
+  - `mem_Endian_big`, `mem_Endian_little`, `mem_Endian_native`, and
+    `mem_Endian_foreign` describe explicit, native, and opposite byte order
   - `mem_trailingZeros*`, `mem_leadingZeros*`, and `mem_swapBytes*` for
     `8`, `16`, `32`, `Long`, `64`, and `Size` forms where applicable
   - `mem_littleToNative*`, `mem_bigToNative*`, `mem_nativeToLittle*`, and
@@ -1184,7 +1189,7 @@ Optimal stable and unstable sorting functions isolated by auxiliary memory const
 #### Bit Sets *(planned)*
 
 `BitSet` is included by `dh.h`, but its public header currently contains only
-the planned-module marker and exposes no contract.
+the planned-module marker and exposes no API.
 
 #### Array-Based Containers
 
@@ -1199,7 +1204,7 @@ the planned-module marker and exposes no contract.
 
 #### Hash-Based Containers
 
-`HashMap` and `HashSet` use the comparison and hashing contracts documented in
+`HashMap` and `HashSet` use the comparison and hashing rules documented in
 [`hash` — Hash Utilities](#hash--hash-utilities).
 
 | Module           | Description                                             | Key Functions                                                                      |
@@ -1254,6 +1259,9 @@ OS thread management and synchronization primitives.
   `thrd_spawn`, `thrd_join`, `thrd_detach`, `thrd_currId`, `thrd_yield`
 - **Channels and coordination:**
   `SPSC`, `MPSC`, `SPMC`, `MPMC`, `Select`, `Batch`, `Latch`, `Group`
+  - `thrd_Select_Arm_into$T` and `thrd_Batch_Done_into$T` receive a value and
+    copy its result without modifying the source; the corresponding `take$T`
+    functions receive a pointer and clear the source result after extraction.
 - **Typed closure integration:**
   `T_use_thrd_spawn$(_T)` and `T_use_thrd_join$(_T)` expose typed thread
   boundaries over `Clsr$(_T)` without requiring callers to inspect a concrete
@@ -1282,7 +1290,7 @@ stackless `Co` frame primitives and typed `Clsr` representation belong to
   Typed result storage with `Future_await$T`, `Future_cancel$T`,
   `Future_result$T`, and `Future_resultMut$T`.
 - **`Sched`:**
-  Type-erased scheduler contract for `async`, fallible `spawn`, cancellation,
+  Type-erased scheduler interface for `async`, fallible `spawn`, cancellation,
   and cooperative idle points. `Sched_seq`, `Sched_coop`, `Sched_preem`, and
   `Sched_para` adapt concrete executors.
 - **`exec`:**
@@ -1295,7 +1303,7 @@ stackless `Co` frame primitives and typed `Clsr` representation belong to
 layer. It currently contains `Waker`, `Waiter`, `Mtx`, `Cond`, `Sem`, `RWLock`,
 `Once`, `OnceLock`, `LazeLock`, `OnceEvt`, `ResetEvt`, `Latch`, `Group`,
 channels, `Select`, queues, and `Batch`. The module is still in preparation:
-these interfaces are experimental rather than stable public contracts.
+these interfaces are experimental rather than stable public APIs.
 
 </details>
 
@@ -1336,15 +1344,16 @@ these interfaces are experimental rather than stable public contracts.
 - **Common surfaces:**
   `sys.h`, `sys/posix.h`, `sys/win32.h`, `sys/wasi.h`
 - **POSIX compatibility:**
-  `sys/posix.h` provides the POSIX-facing contract used by cross-platform
+  `sys/posix.h` provides the POSIX-facing API used by cross-platform
   system code.
 - **Windows API layer:**
   `sys/api/windows` contains handle, file, I/O, process, thread, synchronization,
-  console, NLS, networking, and other Windows contracts.
+  console, NLS, networking, and other Windows APIs.
 
 #### `proc` — Process Management
 
-Process management utilities for cross-platform code.
+`proc_Entry` carries process arguments, environment, preopens, and an injected
+`io_std_Self` so standard I/O does not depend on module-load initialization.
 
 #### `time` — Time & Duration
 
@@ -1359,7 +1368,7 @@ Process management utilities for cross-platform code.
 - **Sleep:**
   `time_Clock_sleep` and its seconds, milliseconds, microseconds, and
   nanoseconds variants return `Sched_Cancelable$void`, making cancellation an
-  explicit part of the clock contract
+  explicit part of clock behavior
 
 </details>
 
@@ -1368,21 +1377,33 @@ Process management utilities for cross-platform code.
 
 #### `io` — Input/Output
 
-- **Submodules:** `common`, `stream`, `Reader`, `Writer`, `Fixed`, `Buf`
+- **Other surfaces:** `common`, `std`, `TTY`, `PTY`, and `Evtd`;
+  `Hashed` and `Bit` are reserved and currently expose no API.
 - **Stream:**
   `io_stream_print`, `io_stream_println`, `io_stream_eprint`, `io_stream_eprintln`, `io_stream_nl`
 - **Reader:**
-  `io_Reader_read`, `io_Reader_readExact`, `io_Reader_readByte`, `io_Reader_skip`
+  `io_Reader_read`, `io_Reader_readAtLeast`, `io_Reader_readExact`,
+  `io_Reader_readByte`, `io_Reader_skip*`, and `io_Reader_copy*`;
+  `io_Reader_readInt$T` reads integer values in a selected `mem_Endian`.
 - **Writer:**
-  `io_Writer_write`, `io_Writer_writeBytes`, `io_Writer_writeByte`,
-  `io_Writer_print`, `io_Writer_println`, `io_Writer_nl`
+  `io_Writer_write`, `io_Writer_writeBytes*`, `io_Writer_writeByte*`,
+  `io_Writer_writeInt$T`, `io_Writer_print`, `io_Writer_println`,
+  `io_Writer_lf`, `io_Writer_crlf`, and `io_Writer_nl`.
 - **Fixed (in-memory fixed buffer):**
   `io_Fixed_reading`, `io_Fixed_writing`, `io_Fixed_written`, `io_Fixed_reset`,
   `io_Fixed_Reader_init`, `io_Fixed_reader`, `io_Fixed_Writer_init`, `io_Fixed_writer`
 - **Buf (buffered Reader/Writer):**
-  `io_Buf_Reader_init`, `io_Buf_Reader_fill`, `io_Buf_Reader_peekByte`, `io_Buf_Reader_readUntilByte`,
-  `io_Buf_Reader_skipUntilByte`, `io_Buf_Reader_skip`, `io_Buf_reader`,
-  `io_Buf_Writer_init`, `io_Buf_Writer_flush`, `io_Buf_writer`
+  `io_Buf_Reader_from`, `io_Buf_Reader_fill`, `io_Buf_Reader_require`, cursor
+  operations, and byte/sequence/any-of delimiter read, stream, and skip forms;
+  `io_Buf_Writer_from`, pending/unused cursor operations,
+  `io_Buf_Writer_flush`, `io_Buf_reader`, and `io_Buf_writer`.
+- **Limited and Count:**
+  `io_Limited_Reader` bounds a borrowed reader by remaining bytes;
+  `io_Count_Reader` and `io_Count_Writer` count transferred bytes.
+- **Locked:**
+  `io_Locked_Reader_adopt` and `io_Locked_Writer_adopt` consume a lock token.
+  Their borrowed reader or writer remains valid only until the lease is
+  consumed by `io_Locked_Reader_unlock` or `io_Locked_Writer_unlock`.
 
 #### `fmt` — Formatting
 
@@ -1418,7 +1439,7 @@ String formatting and parsing with a spec system (prefix `fmt_`).
   `Ver_gcc`, and `Ver_gnu` expose current build/compiler versions; comparison
   follows the packed total order.
 - **`SemVer`:**
-  Semantic Versioning 2.0 value and precedence contract with `u64`
+  Semantic Versioning 2.0 value and precedence rules with `u64`
   major/minor/patch values plus prerelease and build identifier slices.
   `SemVer` comparison retains build metadata but excludes it from precedence.
   This is currently a value/comparison layer, not a text parser or formatter.
@@ -1446,7 +1467,7 @@ Networking utilities for cross-platform code.
 #### `http` — HTTP *(planned)*
 
 `http` is included by `dh.h`, but its public header currently contains only
-the planned-module marker and exposes no client/server contract.
+the planned-module marker and exposes no client/server API.
 
 </details>
 
@@ -1456,7 +1477,7 @@ the planned-module marker and exposes no client/server contract.
 #### Planned Module Bundles
 
 These remaining names are direct `dh.h` bundles, but do not yet expose a
-current public implementation contract. Their top-level headers contain only
+current public API. Their top-level headers contain only
 a planned marker, or only include subheaders that do.
 
 - **Foundation:** `crypt` (`tls`, `ssl`), `cmprs`
@@ -1483,11 +1504,8 @@ a planned marker, or only include subheaders that do.
 #### `start` / `main` — Entry Points
 
 - `start.h` provides process startup and exit support.
-- `dh-main.h` provides the error-result program entry surface and is included
-  directly when needed.
-- **Main form:**
-  `fn_((main(S$S_const$u8 args))(E$void) $scope)`
-  — Standard entry point with argument parsing and error handling
+- `dh-main.h` exposes the standard error-result entry form
+  `fn_((main(proc_Entry entry))(E$void) $scope)`.
 
 </details>
 <!-- markdownlint-enable MD001 -->
@@ -1655,6 +1673,21 @@ Both rely on `TypeInfo` from `core`/`type_info.h`
 
 ---
 
+## Language Baseline
+
+`dh` targets C11 through C17 compilation modes on Clang and GCC. Its selective
+C23 compatibility surface makes normalized modern spellings, type operations,
+feature queries, and declaration or expression forms available without requiring
+the compiler to run in that mode.
+
+This is modern GNU C rather than strict ISO C. The implementation deliberately
+uses established Clang/GCC extensions such as statement expressions, `typeof`
+facilities, attributes, builtins, and vector extensions where they provide the
+language machinery that C11-C17 lacks. It does not claim complete conformance to
+that language revision or its standard library.
+
+---
+
 ## Platform Support
 
 | Category         | Support Range                                                     |
@@ -1798,7 +1831,7 @@ $static fn_((example(void))(void) $scope) {
 
 Threads run typed closures. A closure can wrap a normal function or a coroutine
 frame, so `thrd_spawn` can execute either shape through the same typed closure
-contract. `thrd_join$i32` returns the common typed `Clsr$i32*` surface, so the
+interface. `thrd_join$i32` returns the common typed `Clsr$i32*` surface, so the
 result is read from that returned closure instead of reopening the original
 function-specific or coroutine-specific storage.
 
@@ -1856,16 +1889,36 @@ fn_((example(void))(E$void) $guard) {
 Provides type-safe and intuitive API for load, store, CAS operations
 by wrapping C11 Atomics.
 
-> *TODO: document*
-<!-- TODO: document -->
+```c
+$static fn_((example(void))(void) $scope) {
+    var_(counter, atom_V$$(u32)) = atom_V_init(0u);
+
+    atom_V_store(&counter, 10u, atom_MemOrd_release);
+    let previous = atom_V_pri_fetchAdd(&counter, 5u, atom_MemOrd_acq_rel);
+    let current = atom_V_load(&counter, atom_MemOrd_acquire);
+
+    claim_assert(previous == 10u);
+    claim_assert(current == 15u);
+} $unscoped(fn);
+```
 
 ### SIMD Vectors
 
 Provides vector parallel operation acceleration through a unified interface
 independent of CPU architectures (AVX, NEON, etc.).
 
-> *TODO: document*
-<!-- TODO: document -->
+```c
+T_use_simd_V$(4, u32);
+
+$static fn_((example(void))(void) $scope) {
+    let values = l$((simd_V$(4, u32)){ .val = { 10, 20, 30, 40 } });
+    let reversed = simd_reverseOrder(values);
+    let matches = simd_V_int_eq(values, simd_V_splat(values, 20));
+
+    claim_assert(*simd_V_at((reversed)[0]) == 40);
+    claim_assert(simd_bool_count(matches) == 1);
+} $unscoped(fn);
+```
 
 ### Meta System
 
@@ -1873,16 +1926,47 @@ Provides a generic data structure processing and serialization foundation
 by leveraging compile-time type information (`typeInfo$`) and reflection.
 See [Meta System](#meta-system) for more details.
 
-> *TODO: document*
-<!-- TODO: document -->
+```c
+$static fn_((example(void))(void) $scope) {
+    let fields = typeInfos$(u8, u32, u64);
+    let record_type = u_typeInfoRecord(fields);
+    let offsets = u_offsets(
+        fields,
+        A_ref$((S$usize)l0$((A$$(3, usize))))
+    );
+
+    claim_assert(record_type.size >= sizeOf$(u8) + sizeOf$(u32) + sizeOf$(u64));
+    claim_assert(*S_at((offsets)[0]) == 0);
+    claim_assert(*S_at((offsets)[1]) < *S_at((offsets)[2]));
+} $unscoped(fn);
+```
 
 ### Data Structures & Algorithms
 
-Designs all data structures and functions to be dynamically allocated,
-accepting allocators or memory buffers to fully control memory layout.
+Provides caller-buffer and allocator-backed containers so storage ownership and
+memory layout remain explicit. Fixed variants perform no implicit allocation.
 
-> *TODO: document*
-<!-- TODO: document -->
+```c
+T_use$((u32)(
+    ArrList,
+    ArrList_fixed,
+    ArrList_appendFixed,
+    ArrList_items
+));
+
+$static fn_((example(void))(E$void) $guard) {
+    var storage = A_from$((u32){ 0, 0, 0, 0 });
+    var values = ArrList_fixed$u32(A_ref$((S$u32)(storage)));
+
+    try_(ArrList_appendFixed$u32(&values, 10));
+    try_(ArrList_appendFixed$u32(&values, 20));
+
+    let items = ArrList_items$u32(values);
+    claim_assert(items.len == 2);
+    claim_assert(*S_at((items)[1]) == 20);
+    return_ok({});
+} $unguarded(fn);
+```
 
 </details>
 
@@ -1926,17 +2010,17 @@ TEST_fn_("Basic Math Operations Test" $scope) {
 
 Public project documents:
 
-| Document                                                                     | Purpose                                                                                   |
-| ---------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| [`README.md`](./README.md)                                                   | Project overview and entry point.                                                         |
-| [`BUILD.md`](./BUILD.md)                                                     | Public build guide for direct-source, workspace, project, dependency, and prebuilt flows. |
-| [`dh-c/docs/dh-files.md`](./dh-c/docs/dh-files.md)                           | Canonical authored and generated `.dh` file contracts.                                    |
-| [`dh-c/docs/project-dh-contract.md`](./dh-c/docs/project-dh-contract.md)     | Named project and target-root contract.                                                   |
-| [`dh-c/docs/external-dependencies.md`](./dh-c/docs/external-dependencies.md) | Dependency providers, locks, fetch, and update behavior.                                  |
-| [`dh-c/docs/external-tools.md`](./dh-c/docs/external-tools.md)               | Helper tool resolution and environment overrides.                                         |
-| [`dh-c/docs/artifact-manifest.md`](./dh-c/docs/artifact-manifest.md)         | Generated library artifact inventory.                                                     |
-| [`dh-c/docs/prebuilt-packages.md`](./dh-c/docs/prebuilt-packages.md)         | Prebuilt package layout and consumption.                                                  |
-| [`LICENSE`](./LICENSE)                                                       | MIT license.                                                                              |
+| Document                                                                                   | Purpose                                                                                   |
+| ------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------- |
+| [`README.md`](./README.md)                                                                 | Project overview and entry point.                                                         |
+| [`BUILD.md`](./BUILD.md)                                                                   | Public build guide for direct-source, workspace, project, dependency, and prebuilt flows. |
+| [`dh-c/docs/dh-c-build-map.md`](./dh-c/docs/dh-c-build-map.md)                             | Internal build ownership, artifact, cache, and command flow.                              |
+| [`dh-c/docs/dh-c-configuration-files.md`](./dh-c/docs/dh-c-configuration-files.md)         | Canonical authored and generated `.dh` file rules.                                        |
+| [`dh-c/docs/external-dependencies.md`](./dh-c/docs/external-dependencies.md)               | Dependency providers, locks, fetch, and update behavior.                                  |
+| [`dh-c/docs/external-tool-paths.md`](./dh-c/docs/external-tool-paths.md)                   | Helper tool resolution and environment overrides.                                         |
+| [`dh-c/docs/dh-c-prebuilt-manifest.md`](./dh-c/docs/dh-c-prebuilt-manifest.md)             | Generated library artifact inventory.                                                     |
+| [`dh-c/docs/dh-c-prebuilt-package-format.md`](./dh-c/docs/dh-c-prebuilt-package-format.md) | Prebuilt package layout and consumption.                                                  |
+| [`LICENSE`](./LICENSE)                                                                     | MIT license.                                                                              |
 
 For API details, use the public headers under `dh/include/dh/` and the checked
 examples and tests in this repository.

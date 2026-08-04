@@ -9,7 +9,7 @@
  * @ingroup dasae-headers(dh)
  * @prefix  Ver
  *
- * @brief   dh ecosystem version and ABI value contract.
+ * @brief   dh ecosystem version and ABI value.
  * @details Exposes dh's compact, totally ordered version semantics used by
  *          dh itself and projects sharing the same release/ABI convention.
  */

@@ -161,7 +161,7 @@ errset_((proc_SetCurrDir_E)() $union_errset_(
 $attr($must_check)
 $extern fn_((proc_setCurrDir(proc_Self self, mem_Alctr gpa, fs_Dir dir))(proc_SetCurrDir_E$void));
 
-/*--- Replace contract -----------------------------------------------------*/
+/*--- Replace operations ---------------------------------------------------*/
 
 errset_((proc_Replace_E)() $union_errset_(
     mem_E,
@@ -234,7 +234,7 @@ $extern fn_((proc_spawnPath(
     proc_Self self, mem_Alctr gpa, proc_Env env, fs_Dir dir, proc_Spawn_Opts cmd
 ))(proc_Spawn_E$proc_Child));
 
-/*--- Run contract ----------------------------------------------------------*/
+/*--- Run operations --------------------------------------------------------*/
 
 errset_((proc_Run_Local_E)(
     proc_Run_StreamTooLong,

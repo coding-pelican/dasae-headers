@@ -65,7 +65,7 @@ extern "C" {
 /// ==================================================================================
 /// API Set Infrastructure
 /// ==================================================================================
-/// Provides the API set contract mechanism for Windows API versioning and
+/// Provides the API-set mechanism for Windows API versioning and
 /// compatibility. These headers define the infrastructure used by Windows
 /// to map API sets to their implementing DLLs.
 ///

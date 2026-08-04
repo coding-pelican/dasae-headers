@@ -109,7 +109,7 @@ TEST_fn_("core/pri/bitfield: packed unions preserve numeric layout" $scope) {
 } $unscoped(TEST_fn);
 
 /*
- * Contract probe:
+ * Behavior probe:
  * - source fields are declared in canonical numeric order, MSB -> LSB;
  * - `packed` has the same numeric value on little- and big-endian targets;
  * - the byte representation of `packed` remains native-endian.

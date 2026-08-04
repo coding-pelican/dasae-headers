@@ -92,7 +92,7 @@ bool dir_linkDir(const char* link_path, const char* target_path) {
     }
 
     /* Developer Mode or elevation may be unavailable. A directory junction keeps
-     * build/native usable without changing the build contract. Resolve a relative
+     * build/native usable without changing the build settings. Resolve a relative
      * target against the link's parent because mklink resolves it against CWD. */
     char* link_parent = path_parent(link_path);
     char* joined_target = link_parent ? path_join(link_parent, target_path) : strdup(target_path);

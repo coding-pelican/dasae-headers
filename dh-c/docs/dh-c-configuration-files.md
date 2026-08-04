@@ -1,10 +1,10 @@
-# dh-c Configuration Files
+# `dh-c` Configuration Files
 
 This document is the canonical guide for files a user may write for `dh-c`.
-For command syntax, start with `dh-c --help`. For a focused version of this
-contract, use:
+For command syntax, start with `dh-c --help`. For a focused version of these
+rules, use:
 
-```sh
+```bash
 dh-c help files
 dh-c help project-dh
 dh-c help dh-file
@@ -14,25 +14,25 @@ dh-c help invocation-only
 
 ## 1. Choose the file by ownership scope
 
-| File | Written by | Scope | Sections |
-| --- | --- | --- | --- |
-| `workspace.dh` | user | descendant projects in one workspace | no |
-| `project.dh` | user | one named project | yes |
-| `target.dh` | user | one resolved directory target | no |
-| `<source>.dh` | user | one selected source and its build unit | primary projectless source only |
-| file passed by `--dh-file` | user | one invocation or reusable policy overlay | no |
-| `lock.dh` / `<source>.lock.dh` | `dh-c` | exact dependency resolution | generated |
-| `manifest.dh` | `dh-c` | prebuilt artifact compatibility | generated |
+| File                           | Written by | Scope                                     | Sections                        |
+| ------------------------------ | ---------- | ----------------------------------------- | ------------------------------- |
+| `workspace.dh`                 | user       | descendant projects in one workspace      | no                              |
+| `project.dh`                   | user       | one named project                         | yes                             |
+| `target.dh`                    | user       | one resolved directory target             | no                              |
+| `<source>.dh`                  | user       | one selected source and its build unit    | primary projectless source only |
+| file passed by `--dh-file`     | user       | one invocation or reusable policy overlay | no                              |
+| `lock.dh` / `<source>.lock.dh` | `dh-c`     | exact dependency resolution               | generated                       |
+| `manifest.dh`                  | `dh-c`     | prebuilt artifact compatibility           | generated                       |
 
 Authored `.dh` files are strict. Unknown keys, malformed `key=value` lines,
 and sections in a flat file are errors. `dh-c` does not silently ignore a
-misspelled build contract.
+misspelled build setting.
 
 ## 2. Create a safe starting point
 
 Use the scaffold commands when beginning a named project or workspace:
 
-```sh
+```bash
 dh-c project app
 dh-c workspace .
 ```
@@ -40,7 +40,7 @@ dh-c workspace .
 `dh-c project [path]` creates a minimal project without overwriting an existing
 `project.dh`:
 
-```text
+```txt
 app/
 ├── project.dh
 ├── src/main.c
@@ -54,7 +54,7 @@ The generated project is immediately buildable with `dh-c build`.
 and cache/discovery boundary. It also refuses to overwrite an existing
 configuration. Use `dh-c help project` and `dh-c help workspace` for command
 examples, then `dh-c help project-dh` and `dh-c help workspace-dh` for the file
-contracts.
+formats.
 
 ## 3. Resolution order
 
@@ -247,7 +247,7 @@ shell's current directory.
 
 `workspace.dh` is both a workspace boundary and a flat defaults file.
 
-```text
+```txt
 workspace/
 ├── workspace.dh
 ├── app/project.dh
@@ -265,7 +265,7 @@ macro-backtrace-limit=short
 
 The workspace owns the preferred shared build cache:
 
-```text
+```txt
 workspace/.dh-c/cache/
 ```
 
@@ -279,7 +279,7 @@ not to one workspace-wide checkout namespace.
 
 ## 6. Root `project.dh`
 
-`project.dh` is the complete contract for one named project.
+`project.dh` is the complete configuration for one named project.
 
 ```ini
 output=my-app
@@ -354,11 +354,11 @@ into `lock.dh`. `package-root=` is a relative path for `provider=prebuilt` when
 the materialized source wraps the actual `include/`, `lib/`, and `bin/` package
 root. It cannot escape the materialized source. `runtime-file` is repeatable.
 Dependency sections also accept compile/link property keys when the dependency
-requires a local contract override.
+requires local overrides.
 
 Use:
 
-```sh
+```bash
 dh-c fetch
 dh-c update
 dh-c status
@@ -370,7 +370,7 @@ dh-c graph
 
 A directory target may contain `target.dh`:
 
-```text
+```txt
 examples/demo/
 ├── target.dh
 ├── include/
@@ -385,7 +385,7 @@ define=DEMO_BUILD
 ```
 
 It applies only when that directory is the resolved target. Build, test,
-syntax, and compile-database operations validate the same file contract.
+syntax, and compile-database operations validate the same file rules.
 
 `target.dh` replaces the ambiguous historical use of a nested `project.dh` as a
 flat target overlay. A nested project that is genuinely independent still uses
@@ -395,12 +395,12 @@ its own root `project.dh` and is discovered as a separate project.
 
 When sources are selected, `dh-c` loads same-stem companions:
 
-```text
+```txt
 main.c  -> main.dh
 util.c  -> util.dh
 ```
 
-```sh
+```bash
 dh-c build main.c util.c
 ```
 
@@ -420,7 +420,7 @@ revision=v1.0.0
 provider=dh
 ```
 
-```sh
+```bash
 dh-c update main.c
 dh-c build main.c util.c
 dh-c status main.c
@@ -440,7 +440,7 @@ is intentional.
 
 Use `--dh-file` for named, reusable policy bundles:
 
-```sh
+```bash
 dh-c build main.c \
   --dh-file=policies/freestanding.dh \
   --dh-file=platform/windows.dh
@@ -448,14 +448,14 @@ dh-c build main.c \
 
 Do not confuse it with `--dh`:
 
-```text
+```txt
 --dh-file=<path>   authored build overlay
 --dh=<path>        DH installation override
 ```
 
-## 10. Persistent contract versus invocation-only controls
+## 10. Persistent settings versus invocation-only controls
 
-Authored `.dh` files describe a reusable build contract. They intentionally do
+Authored `.dh` files describe reusable build settings. They intentionally do
 not store one command invocation's scheduling, presentation, selection, or
 maintenance behavior.
 
@@ -475,7 +475,7 @@ When a selection is a stable named part of a project, declare a
 `[target-root <name>]` in `project.dh` rather than encoding the selection in a
 policy overlay.
 
-```sh
+```bash
 dh-c help invocation-only
 ```
 
@@ -499,14 +499,14 @@ workspace unit scope when `workspace.dh` is found, otherwise under the user/glob
 
 - generated for library/prebuilt target-profile output
 - inventories all library artifacts, not the last executable built
-- records ABI contract, producer-link provenance, and LTO toolchain identity
+- records ABI identity, producer-link provenance, and LTO toolchain identity
 - is not replaced by test/sample/example executables
-- rejects old or structurally invalid contracts rather than preserving
+- rejects old or structurally invalid manifests rather than preserving
   unnecessary schema compatibility
 
 ## 12. Discoverability
 
-```sh
+```bash
 dh-c --help
 dh-c help --list
 dh-c help files

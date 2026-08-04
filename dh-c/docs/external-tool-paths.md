@@ -1,8 +1,8 @@
-# External tool path contract
+# External tool paths
 
 `dh-c` separates portable build intent from machine-local executable locations.
 Compiler and image-production tools remain authored build properties; helper
-programs used to execute that contract are injected through environment
+programs used to execute those steps are injected through environment
 variables.
 
 ## Precedence
@@ -17,33 +17,33 @@ The value is an executable path or name, not a shell command with additional
 arguments. CI images that install version-suffixed LLVM tools should set the
 corresponding override instead of creating an alias:
 
-```sh
+```bash
 DH_C_AR=llvm-ar-22 dh-c build release
 ```
 
 ## Tool matrix
 
-| Purpose | dh-c override | Conventional fallback | Default |
-| --- | --- | --- | --- |
-| generated build executor | `DH_C_MAKE` | `MAKE` | `make` |
-| static archive producer | `DH_C_AR` | `AR` | `llvm-ar` |
-| debugger | `DH_C_DEBUGGER` | `DEBUGGER` | `lldb` |
-| CMake provider | `DH_C_CMAKE` | `CMAKE` | `cmake` |
-| Git dependency transport | `DH_C_GIT` | `GIT` | `git` |
-| primary archive downloader | `DH_C_CURL` | `CURL` | `curl` |
-| fallback archive downloader | `DH_C_WGET` | `WGET` | `wget` |
-| primary archive extractor | `DH_C_TAR` | `TAR` | `tar` |
-| ZIP fallback extractor | `DH_C_UNZIP` | `UNZIP` | `unzip` |
-| tidy command | `DH_C_CLANG_TIDY` | `CLANG_TIDY` | `clang-tidy` |
-| format command | `DH_C_CLANG_FORMAT` | `CLANG_FORMAT` | `clang-format` |
-| disassembly output | `DH_C_LLVM_OBJDUMP` | `LLVM_OBJDUMP` | `llvm-objdump` |
-| DWARF inspection output | `DH_C_LLVM_DWARFDUMP` | `LLVM_DWARFDUMP` | `llvm-dwarfdump` |
-| PDB inspection output | `DH_C_LLVM_PDBUTIL` | `LLVM_PDBUTIL` | `llvm-pdbutil` |
-| Unix custom-provider shell | `DH_C_SHELL` | — | `/bin/sh` |
-| Windows custom-provider command interpreter | `DH_C_CMD` | `COMSPEC` | `cmd.exe` |
+| Purpose                                     | dh-c override         | Conventional fallback | Default          |
+| ------------------------------------------- | --------------------- | --------------------- | ---------------- |
+| generated build executor                    | `DH_C_MAKE`           | `MAKE`                | `make`           |
+| static archive producer                     | `DH_C_AR`             | `AR`                  | `llvm-ar`        |
+| debugger                                    | `DH_C_DEBUGGER`       | `DEBUGGER`            | `lldb`           |
+| CMake provider                              | `DH_C_CMAKE`          | `CMAKE`               | `cmake`          |
+| Git dependency transport                    | `DH_C_GIT`            | `GIT`                 | `git`            |
+| primary archive downloader                  | `DH_C_CURL`           | `CURL`                | `curl`           |
+| fallback archive downloader                 | `DH_C_WGET`           | `WGET`                | `wget`           |
+| primary archive extractor                   | `DH_C_TAR`            | `TAR`                 | `tar`            |
+| ZIP fallback extractor                      | `DH_C_UNZIP`          | `UNZIP`               | `unzip`          |
+| tidy command                                | `DH_C_CLANG_TIDY`     | `CLANG_TIDY`          | `clang-tidy`     |
+| format command                              | `DH_C_CLANG_FORMAT`   | `CLANG_FORMAT`        | `clang-format`   |
+| disassembly output                          | `DH_C_LLVM_OBJDUMP`   | `LLVM_OBJDUMP`        | `llvm-objdump`   |
+| DWARF inspection output                     | `DH_C_LLVM_DWARFDUMP` | `LLVM_DWARFDUMP`      | `llvm-dwarfdump` |
+| PDB inspection output                       | `DH_C_LLVM_PDBUTIL`   | `LLVM_PDBUTIL`        | `llvm-pdbutil`   |
+| Unix custom-provider shell                  | `DH_C_SHELL`          | —                     | `/bin/sh`        |
+| Windows custom-provider command interpreter | `DH_C_CMD`            | `COMSPEC`             | `cmd.exe`        |
 
 The Windows directory-junction fallback uses the same `DH_C_CMD`/`COMSPEC`
-contract.
+configuration.
 
 Generated Makefiles also expose `RM`, `MV`, and `PRINTF` as ordinary overridable
 Make variables. These are recipe utilities supplied by the selected Make/shell
@@ -59,7 +59,7 @@ helper variables:
 
 The compiler affects target detection, ABI, runtime discovery, and artifact
 compatibility. `objcopy` affects the produced image format. They are therefore
-part of the authored build contract rather than an incidental host-machine
+part of the authored build settings rather than an incidental host-machine
 helper choice.
 
 ## Object command length
@@ -67,7 +67,7 @@ helper choice.
 Linked and static-library plans write one quoted object path per line to a
 generated response file. They invoke the compiler driver or archiver as:
 
-```text
+```txt
 <compiler> @<response-file> <link-options>
 <archiver> rcs <target> @<response-file>
 ```

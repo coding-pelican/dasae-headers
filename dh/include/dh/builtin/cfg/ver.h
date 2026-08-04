@@ -120,7 +120,7 @@ extern "C" {
 
 /*--- Self-version Queries ---*/
 
-/* Raw build contract: dh__NUM__VER_* / dh__STR__VER_*. */
+/* Raw build definitions: dh__NUM__VER_* / dh__STR__VER_*. */
 #define dh__str__ver_core_sep ver_core_sep_default
 #define dh__num__ver_core_major ver_core_major_default
 #if defined(dh__NUM__VER_CORE_MAJOR)

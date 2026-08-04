@@ -223,7 +223,7 @@ TEST_fn_("search: min max helpers define first and last tie handling" $scope) {
     try_(TEST_expect(search_lastMax(seq, cmp_u_ord$(i32)) == 4));
 } $unscoped(TEST_fn);
 
-TEST_fn_("search: min max helpers define singleton and all-equal tie contracts" $scope) {
+TEST_fn_("search: min max helpers define singleton and all-equal tie behavior" $scope) {
     var single = A_from$((i32){ 7 $listed });
     var all_equal = A_from$((i32){ 5, 5, 5, 5 $listed });
     let single_seq = u_anyS(A_ref(single)).as_const;
@@ -273,7 +273,7 @@ TEST_fn_("search: unit sequence any none and diff helpers define empty and bound
     try_(TEST_expect(isNone(search_firstDiff(seq, seq, cmp_u_eql$(i32)))));
 } $unscoped(TEST_fn);
 
-TEST_fn_("search: unit sequence helpers define empty sequence needle and set contracts" $scope) {
+TEST_fn_("search: unit sequence helpers define empty sequence needle and set behavior" $scope) {
     var data = A_from$((i32){ 1, 2, 3 $listed });
     var missing_needle = A_from$((i32){ 3, 4 $listed });
     var longer_needle = A_from$((i32){ 1, 2, 3, 4 $listed });

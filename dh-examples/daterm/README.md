@@ -222,7 +222,7 @@ stateDiagram-v2
 
 Build the library and each declared artifact explicitly:
 
-```sh
+```bash
 dh-c build
 dh-c build --test test-context_ANSI.c
 dh-c build --example example-color.c

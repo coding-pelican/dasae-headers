@@ -1,11 +1,11 @@
-# External dependency contract
+# External dependencies
 
 `dh-c` separates requested dependency state, resolved dependency state, mutable
 source/provider state, and staged package output.
 
 Named project scope:
 
-```text
+```txt
 <project>/
   project.dh
   lock.dh
@@ -19,7 +19,7 @@ Named project scope:
 
 Projectless source-unit scope:
 
-```text
+```txt
 <unit>/
   main.c
   main.dh
@@ -92,7 +92,7 @@ cannot be absolute or contain a `..` path segment.
 
 Commands for a named project:
 
-```sh
+```bash
 dh-c status
 dh-c fetch
 dh-c update
@@ -101,7 +101,7 @@ dh-c deps [profile] [build options]
 
 Commands for a projectless source unit:
 
-```sh
+```bash
 dh-c status main.c
 dh-c fetch main.c
 dh-c update main.c
@@ -174,7 +174,7 @@ flowchart TD
 
 Dependency cleanup remains part of the canonical `clean` command:
 
-```sh
+```bash
 # Preview dependency state that is no longer declared by project.dh.
 dh-c clean --deps --unused --dry-run
 
@@ -199,7 +199,7 @@ make cleanup fail visibly. Untracked `build/`, `.dh-c/`, `.cache/`, `package/`, 
 `lib/deps/` entries created by dh-c are ignored by the dirty-checkout guard. Use
 `--force` only when genuine local changes are intentionally disposable. Cleanup
 never rewrites `lock.dh`: generated state and resolved project input are separate
-ownership domains. Run `dh-c update` later when the dependency contract itself
+ownership domains. Run `dh-c update` later when the dependency definition itself
 should change.
 
 ## Workspace and cache scope
@@ -208,7 +208,7 @@ A discovered `workspace.dh` is a strict flat defaults file, a project-discovery
 boundary, and the preferred shared build-cache scope. Workspace properties are
 merged before each descendant `project.dh`:
 
-```text
+```txt
 <workspace>/.dh-c/cache/
 ```
 
@@ -216,7 +216,7 @@ Projects and projectless source units in that workspace can reuse
 build/PCH/source-list cache entries. Mutable dependency checkouts remain under
 each owning scope:
 
-```text
+```txt
 <project>/.dh-c/deps/
 <workspace>/.dh-c/units/<unit-id>/deps/
 ```
@@ -238,7 +238,7 @@ During `dh-c deps`, CMake dependencies are configured and built out-of-source.
 `dh-c package`/provider installation privately installs them with
 `CMAKE_INSTALL_PREFIX` set to the dependency package directory.
 
-The configure contract forwards the effective compiler, archiver, target triple,
+The configure step forwards the effective compiler, archiver, target triple,
 and sysroot through `CMAKE_C_COMPILER`, `CMAKE_AR`,
 `CMAKE_C_COMPILER_TARGET`, and `CMAKE_SYSROOT`. If
 `DH_DEP_CMAKE_TOOLCHAIN_FILE` is set, it is forwarded as
@@ -264,7 +264,7 @@ and `CFLAGS`.
 `build-command=` is required. `install-command=` is optional. Commands execute
 from the source directory with these environment variables:
 
-```text
+```txt
 DH_DEP_SOURCE
 DH_DEP_BUILD
 DH_DEP_PACKAGE
@@ -302,7 +302,7 @@ to `wget` for remote downloads. Extraction uses `tar`; `.zip` also falls back to
 
 Tool executable locations are machine-local: `DH_C_CURL`, `DH_C_WGET`,
 `DH_C_TAR`, and `DH_C_UNZIP` override the downloader/extractor defaults. See
-[`external-tools.md`](./external-tools.md) for the complete tool contract.
+[`external-tool-paths.md`](./external-tool-paths.md) for the complete tool configuration.
 
 The generated lock records the archive location and `revision=sha256:<hex>`.
 `fetch` never accepts different bytes for an existing lock. If the materialized
@@ -337,4 +337,4 @@ is declared, the conventional dependency `bin/` tree is staged. External
 providers do not participate in the recursive `provider=dh` source build graph.
 
 For the complete authored-file ownership and precedence model, see
-[`dh-files.md`](./dh-files.md).
+[`dh-c-configuration-files.md`](./dh-c-configuration-files.md).

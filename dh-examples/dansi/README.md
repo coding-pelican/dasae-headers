@@ -46,14 +46,14 @@ flowchart LR
 
 ## Umbrellas
 
-| Header | Ownership |
-| --- | --- |
-| `dansi-core.h` | C0/C1 catalogs, ESC/CSI/control-string framing, standard cursor, erase, scroll, mode, SGR, style, color, and device reports |
-| `dansi-dec.h` | DEC terminal models, charset designation, DECCKM/DEC modes, VT keys and keypad, DECSTBM, device attributes, and DEC reports |
-| `dansi-link.h` | OSC 8 hyperlinks |
-| `dansi-shell.h` | OSC 7 current directory, OSC 133 FinalTerm marks, and OSC 633 VS Code shell integration |
+| Header          | Ownership                                                                                                                    |
+| --------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `dansi-core.h`  | C0/C1 catalogs, ESC/CSI/control-string framing, standard cursor, erase, scroll, mode, SGR, style, color, and device reports  |
+| `dansi-dec.h`   | DEC terminal models, charset designation, DECCKM/DEC modes, VT keys and keypad, DECSTBM, device attributes, and DEC reports  |
+| `dansi-link.h`  | OSC 8 hyperlinks                                                                                                             |
+| `dansi-shell.h` | OSC 7 current directory, OSC 133 FinalTerm marks, and OSC 633 VS Code shell integration                                      |
 | `dansi-xterm.h` | xterm modes, input extensions, screen/window/title operations, selections, resources, extended color, and palette operations |
-| `dansi.h` | Package umbrella in dependency order |
+| `dansi.h`       | Package umbrella in dependency order                                                                                         |
 
 `dansi-kitty.h`, `dansi-iterm.h`, and `dansi-sixel.h` reserve independent
 extension boundaries. They are not folded into core or xterm.
@@ -237,7 +237,7 @@ let pos = try_(dansi_cursor_fetchPos(
 ));
 ```
 
-The same staged contract is used by DEC reports and xterm screen, window,
+The same staged flow is used by DEC reports and xterm screen, window,
 title, palette, and resource queries where the protocol provides a response.
 
 ## OSC Extension Examples
@@ -263,13 +263,13 @@ the protocol requires escaping.
 
 Build the library from `dh-examples/dansi`:
 
-```sh
+```bash
 dh-c build
 ```
 
 Build an individual test by passing its file name after `--test`:
 
-```sh
+```bash
 dh-c build --test test-core_framing.c
 dh-c build --test test-core_ops.c
 dh-c build --test test-core_reports.c

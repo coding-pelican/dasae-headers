@@ -9,7 +9,7 @@
  * @ingroup dasae-headers(dh)
  * @prefix  SemVer
  *
- * @brief   Semantic Versioning 2.0 value and precedence contract.
+ * @brief   Semantic Versioning 2.0 value and precedence rules.
  * @details Represents arbitrary prerelease and build identifier sequences.
  *          Build metadata is retained but never participates in precedence.
  */

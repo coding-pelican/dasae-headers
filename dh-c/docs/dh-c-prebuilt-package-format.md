@@ -1,4 +1,4 @@
-# dh-c Prebuilt Package Contract
+# dh-c Prebuilt Package Format
 
 ## Purpose
 
@@ -41,12 +41,12 @@ For Linux GNU targets, dh-c canonicalizes the non-semantic `unknown` vendor to
 
 `libs/` contains the package's own artifacts. `deps/` is optional and contains transitive headers and link artifacts in the same relative layout that would otherwise be staged under `lib/deps/`.
 
-Artifact names follow the normal library contract:
+Artifact names follow the normal library layout:
 
-| Platform | Native static | LTO static | Shared | Import library |
-| --- | --- | --- | --- | --- |
-| Windows | `mylib.lib` | `mylib.lto.lib` | `mylib.dll` | `mylib.dll.lib` |
-| Linux | `libmylib.a` | `libmylib.lto.a` | `libmylib.so` | — |
+| Platform | Native static | LTO static       | Shared        | Import library  |
+| -------- | ------------- | ---------------- | ------------- | --------------- |
+| Windows  | `mylib.lib`   | `mylib.lto.lib`  | `mylib.dll`   | `mylib.dll.lib` |
+| Linux    | `libmylib.a`  | `libmylib.lto.a` | `libmylib.so` | —               |
 
 Every `kind=lib` profile contains the native static archive and shared artifact; Windows additionally contains the import library. Profiles with effective LTO also contain the `.lto` static archive so native and LTO consumers can select independently.
 
@@ -104,7 +104,7 @@ The artifact family does not change by profile:
 Profiles still select optimization, diagnostics, assertions, unwind, and LTO
 policy. They do not silently redefine `kind=lib` into static-only output.
 A producer may choose which profile directories to distribute, but any shipped
-`kind=lib` profile follows the same artifact-family contract.
+`kind=lib` profile follows the same artifact-family rules.
 
 Header-only projects use `kind=lib` with an `include/` tree and no C sources.
 They can be built and staged with the normal install package layout for every
@@ -121,7 +121,7 @@ There is no legacy package fallback and no manifest format/version selector.
 
 Run the package command once for each distributable profile:
 
-```sh
+```bash
 dh-c package dev --layout=prebuilt
 dh-c package fast --layout=prebuilt
 dh-c package test --layout=prebuilt
@@ -141,4 +141,4 @@ flowchart LR
     C --> E["prebuilt/target/profile/libs"]
     C --> F["prebuilt/target/profile/deps (optional)"]
 ```
-See [artifact-manifest.md](artifact-manifest.md).
+See [dh-c-prebuilt-manifest.md](dh-c-prebuilt-manifest.md).

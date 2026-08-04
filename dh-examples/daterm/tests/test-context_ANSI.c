@@ -104,7 +104,7 @@ TEST_fn_("daterm-runtime: position and size vocabulary is coordinate-safe" $scop
     return_ok({});
 } $unscoped(TEST_fn);
 
-TEST_fn_("daterm-runtime/Term: facade preserves cached queries and IO contracts" $guard) {
+TEST_fn_("daterm-runtime/Term: facade preserves cached queries and IO behavior" $guard) {
     var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     var ansi = try_(daterm_ANSI_init(unwrap_(daterm_ANSI_Cfg_direct(

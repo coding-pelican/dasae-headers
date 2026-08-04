@@ -428,7 +428,7 @@ TEST_fn_("sort: block sort handles lengths just above insertion fallback thresho
     try_(TEST_expect(sort_inOrdd(u_anyS(A_ref(data_31)).as_const, cmp_u_ord$(i32))));
 } $unscoped(TEST_fn);
 
-TEST_fn_("sort: block cache length matrix preserves the same sorted contract" $scope) {
+TEST_fn_("sort: block cache length matrix preserves the same sorted order" $scope) {
     var cache_lens = A_from$((usize){ 0, 1, 8, 24, 48, 96 $listed });
 
     for_(($a(cache_lens))(cache_len)) {

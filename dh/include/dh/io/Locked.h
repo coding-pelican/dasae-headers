@@ -25,7 +25,7 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-/// An acquired lock token. This value is move-only by contract: after passing
+/// An acquired lock token. This value is move-only: after passing
 /// its address to a consuming API, the source is invalid and must not be used.
 T_alias$((io_Locked)(struct io_Locked {
     var_(ctx, P$raw);

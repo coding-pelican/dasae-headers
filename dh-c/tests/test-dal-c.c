@@ -3575,7 +3575,7 @@ static void test_prebuilt_dependency_staging(void) {
     /* Producer link inputs are provenance, not a consumer requirement. A native
      * archive built while the producer also linked custom runtime libraries must
      * remain consumable by a caller with a different top-level link surface when
-     * the C ABI contract is unchanged. */
+     * the C ABI is unchanged. */
     char* consumer_link_libs[] = { "different-top-level-runtime" };
     prebuilt_opts.link_libs = consumer_link_libs;
     prebuilt_opts.link_count = 1;
@@ -3620,7 +3620,7 @@ static void test_prebuilt_dependency_staging(void) {
     TEST_ASSERT(file_write(manifest_path, wrong_abi_text));
     free(wrong_abi_text);
     TEST_ASSERT(!dal_c__prebuiltManifestCompatible(prebuilt_profile, &prebuilt_opts, stable_profile, dal_c_Target_static_lib, true, lto_path, &manifest_reason));
-    TEST_ASSERT(manifest_reason != NULL && strstr(manifest_reason, "ABI contract mismatch") != NULL);
+    TEST_ASSERT(manifest_reason != NULL && strstr(manifest_reason, "ABI mismatch") != NULL);
     free(manifest_reason);
     manifest_reason = NULL;
 

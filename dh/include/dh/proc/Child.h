@@ -44,7 +44,7 @@ errset_((proc_Child_Wait_E)() $union_errset_(
     proc_SysResrcsE
 ));
 T_use_E$($set(proc_Child_Wait_E)(proc_Child_Trm));
-/// Wait for an active child. Calling this after completion is a contract error.
+/// Wait for an active child. Calling this after completion is invalid.
 $attr($must_check)
 $extern fn_((proc_Child_wait(proc_Child* self, proc_Self proc))(proc_Child_Wait_E$proc_Child_Trm));
 /// Kill an active child and wait for cleanup. Idempotent after completion.

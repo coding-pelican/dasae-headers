@@ -23,7 +23,7 @@ TEST_fn_("ascii: scalar classification and case conversion" $scope) {
     try_(TEST_expect(ascii_toggleCase(u8_c('!')) == u8_c('!')));
 } $unscoped(TEST_fn);
 
-TEST_fn_("ascii: named constants and digit conversions define byte-level ASCII contract" $scope) {
+TEST_fn_("ascii: named constants and digit conversions define byte-level ASCII behavior" $scope) {
     try_(TEST_expect(ascii_nul_byte == u8_(0x00)));
     try_(TEST_expect(ascii_bel_byte == u8_(0x07)));
     try_(TEST_expect(ascii_bs_byte == u8_(0x08)));

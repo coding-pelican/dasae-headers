@@ -1,7 +1,73 @@
-# dh-c Build Contract Map
+# `dh-c` Build Map
+
+This document explains how `dh-c` turns a command and `.dh` files into
+artifacts. Command usage belongs in [`BUILD.md`](../../BUILD.md); configuration
+syntax belongs in
+[`dh-c-configuration-files.md`](./dh-c-configuration-files.md).
+
+## Big Picture
+
+```mermaid
+graph TD
+    CLI[command and explicit inputs] --> INTENT[normalized command intent]
+    CFG[workspace, project, target, source, and CLI settings] --> EFFECTIVE[effective build settings]
+    INTENT --> EFFECTIVE
+    EFFECTIVE --> DEPS[dependency resolution]
+    LOCK[lock.dh] --> DEPS
+    DEPS --> SOURCE{source or prebuilt?}
+    SOURCE -->|source| PROVIDER[dh, CMake, Make, or custom provider]
+    SOURCE -->|prebuilt| PACKAGE[validated prebuilt package]
+    PROVIDER --> PLAN[build plan]
+    PACKAGE --> PLAN
+    PLAN --> CACHE[object and PCH caches]
+    CACHE --> ARTIFACT[executable or library artifacts]
+    ARTIFACT --> ACTION{requested action}
+    ACTION -->|run or test| EXECUTE[execute and return status]
+    ACTION -->|package| PREBUILT[write package and manifest]
+    ACTION -->|build| DONE[finish]
+```
+
+## Build State
+
+```mermaid
+stateDiagram-v2
+    [*] --> ParseCommand
+    ParseCommand --> DiscoverScope
+    DiscoverScope --> LoadConfiguration
+    LoadConfiguration --> ResolveTarget
+    ResolveTarget --> ResolveDependencies
+    ResolveDependencies --> SelectInputs
+    SelectInputs --> GeneratePlan
+    GeneratePlan --> Compile
+    Compile --> Link
+    Link --> Execute: run or test
+    Link --> Package: package
+    Link --> [*]: build
+    Execute --> [*]
+    Package --> [*]
+```
+
+## Dependency And Prebuilt Flow
+
+```mermaid
+flowchart TD
+    A[read dependency section] --> B[read or update lock.dh]
+    B --> C{prebuilt policy}
+    C -->|required| D{matching package exists?}
+    D -->|no| E[fail]
+    D -->|yes| F[validate manifest and select artifacts]
+    C -->|auto| G{matching package exists?}
+    G -->|yes| F
+    G -->|no| H[materialize source]
+    C -->|off| H
+    H --> I[run selected provider]
+    I --> J[stage headers, libraries, and runtime files]
+    F --> J
+    J --> K[add dependency inputs to final plan]
+```
 
 ## Normalized Intent
-`dh-c` now lowers command payloads through `dal_c_CommandIntent`.
+`dh-c` lowers command payloads through `dal_c_CommandIntent`.
 
 Owner:
 - `dh-c/src/dal-c/Cmd.c`
@@ -24,7 +90,7 @@ Cross-module rule:
 - `Cmd.c` owns command-surface interpretation.
 - `build.c` consumes normalized intent and must not reinterpret raw payload unions.
 
-## Artifact And Output Contract
+## Artifacts And Outputs
 Owner:
 - `dh-c/src/dal-c/build.c`
 
@@ -37,22 +103,22 @@ Rules:
 - explicit output overrides still win
 
 Why:
-- build/run now share the same target-root-aware output policy
-- folder targets under the same root no longer collide on basename alone
+- build and run share the same target-root-aware output policy
+- folder targets under the same root retain enough path information to avoid collisions
 
-## Makefile And Stale-Detection Contract
+## Makefile And Stale Detection
 Owner:
 - `dh-c/src/dal-c/build.c`
 
 Rules:
 - Makefiles are plan-scoped under `build/<profile>/.plans/<context>/`
-- object files are shared under `build/<profile>/obj/`, with native-static, LTO-static, and shared compile contracts receiving distinct object hashes
+- object files are shared under `build/<profile>/obj/`, with native-static, LTO-static, and shared compilation receiving distinct object hashes
 - generated makefiles are rewritten only when content changes
 - generated unity/test-runner sources are rewritten only when content changes
-- object paths are keyed by compile-contract hash, not by the active plan file
+- object paths are keyed by a compile-settings hash, not by the active plan file
 - plan files do not own object freshness; source dependencies do
 
-Compile-contract hash inputs:
+Compile-settings hash inputs:
 - profile
 - compiler and compile options
 - include and define sets
@@ -62,10 +128,10 @@ Compile-contract hash inputs:
 - third-party warning mode
 
 Why:
-- switching between `sample`, `example`, `test`, `run`, or dependency builds no longer invalidates unrelated objects
+- switching between `sample`, `example`, `test`, `run`, or dependency builds preserves unrelated objects
 - repeated `run` reaches `make: Nothing to be done for 'all'.`
 
-## Self Reuse Contract
+## Self Reuse
 Owner:
 - `dh-c/src/dal-c/Cmd.c`
 - `dh-c/src/dal-c/build.c`
@@ -74,17 +140,17 @@ Owner:
 Rules:
 - reusable self code is declared by repeated `self-root=<path>`
 - when no `self-root` is declared, the resolved project `src` root remains the default
-- target roots declare whether they `link-self`
+- target roots declare whether they `link-project`
 - self-project reuse builds cached native and LTO static variants from the self roots when the profile enables LTO
-- target-root plans then compile only target-local sources and select the cached native or LTO self unit according to the final link contract
+- target-root plans then compile only target-local sources and select the cached native or LTO self unit according to the final link settings
 - `dh` self-project sample/test paths select `dh.lib`/`libdh.a` or `dh.lto.lib`/`libdh.lto.a` directly and skip a second local-project-lib path
 - third-party dependency staging still belongs only to `lib/deps`
 
 Why:
 - sibling targets can share one cached self unit without pretending it is a third-party dependency
-- `lib/deps` no longer mixes self-project reuse with external dependencies
+- `lib/deps` contains external dependencies rather than self-project reuse
 
-## Library Artifact Contract
+## Library Artifacts
 Owner:
 - `dh-c/src/dal-c/Cmd.c`
 - `dh-c/src/dal-c/build.c`
@@ -110,7 +176,7 @@ Why:
 - native consumers remain compatible without LTO, while LTO consumers retain cross-module optimization
 - DLL import libraries no longer collide with native static-library names
 
-## Packaged Prebuilt Contract
+## Packaged Prebuilts
 Owner:
 - `dh-c/src/dal-c/Project.c`
 - `dh-c/src/dal-c/Cmd.c`
@@ -128,7 +194,7 @@ Rules:
 - `dh`, self/static artifacts, and normal dependency links use the same native-versus-LTO selection rule
 - PCH files are not consumed from SDK prebuilt packages
 - `manifest.dh` inventories every artifact in the profile `libs/` directory; test/sample/example executables never overwrite it
-- target, profile, selected artifact role/path, compiled ABI contract, LTO toolchain contract, and Windows import-library pairing are validated before use
+- target, profile, selected artifact role/path, compiled ABI identity, LTO toolchain identity, and Windows import-library pairing are validated before use
 
 Why:
 - CI can test the current project without rebuilding unchanged dependency graphs
@@ -158,12 +224,12 @@ Why:
 - PCH exclusion is now project policy, not hardcoded source-name heuristics
 - `dh` self-build uses the same PCH framework as other projects
 
-## libdh And Self-Build Contract
+## libdh And Self Build
 Owner:
 - `dh-c/src/dal-c/build.c`
 
 Rules:
-- `dal_c__ensureLibDH()` detects the real `dh` project instead of constructing an ad hoc temporary contract
+- `dal_c__ensureLibDH()` detects the real `dh` project instead of constructing ad hoc temporary settings
 - self-build uses the same plan-scoped makefile generation
 - self-build uses the same object cache and PCH policy as normal builds
 
@@ -172,25 +238,14 @@ Owner:
 - `dh-c/include/dal-c.h`
 - `dh-c/src/dal-c/Cmd.c`
 
-Current intended surfaces:
-- `build`: direct source build, project self build, declared target-root build, legacy sample/example/test shorthands, `--dsl`, `--recur`
+Command surfaces:
+- `build`: direct source build, project self build, declared target-root build, sample/example/test shorthands, `--dsl`, `--recur`
 - `run`: same artifact policy as `build`, then execute/debug
 - `test`: test runner or standalone test build, then execute/debug
 - `build-dsl`: build `dh` only
 - `test-dsl`: build/run `dh/tests` directly
 - `clean`: build/cache cleanup with optional `--dsl` and `--recur`
 - `clean-dsl`: DSL-only cleanup, `--cache` only
-
-Audited fix:
-- `clean-dsl` help no longer advertises `clean`-only options
-
-## Removed Contradictions
-- one profile-wide Makefile being overwritten by multiple command contexts
-- object freshness depending on Makefile timestamp churn
-- hardcoded `dh-main.h` / `dh-TEST-main.h` no-PCH exceptions in core build logic
-- `Cmd.c` and `build.c` each owning their own cross-module command interpretation
-- sample/example/test plans recompiling project `src/` on every context build
-- self-project reusable code being staged through third-party dependency paths
 
 ## Target-scoped Artifact Layout
 
@@ -200,6 +255,6 @@ Audited fix:
 - Convenience alias: `build/native` points to the current host-target directory when the platform permits directory links
 - Explicit `--target=<triple>` never resolves through `native`; it uses the normalized triple directly.
 
-## Test Process Contract
+## Test Process
 
 The DH test root main returns `0` only when the framework reports zero failed tests. Any failed unit returns a non-zero process status and is propagated by `dh-c test`.

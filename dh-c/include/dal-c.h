@@ -959,7 +959,7 @@ static inline const char* dal_c_CmdAction_format(dal_c_CmdAction action) {
 #define dal_c_opt_help_short_char 'h'
 #define dal_c_opt_version_short_char 'v'
 
-/// === VERSION CONTRACT ===
+/// === VERSION FORMAT ===
 
 typedef enum dal_c_VersionRecordMode {
     dal_c_VersionRecordMode_invalid = -1,
@@ -1125,7 +1125,7 @@ typedef struct dal_c_CompilerOpts {
     int macro_backtrace_limit; // --macro-backtrace-limit=<short|unlimited|N>
     bool macro_backtrace_limit_set;
     dal_c_LooseErrorsMode loose_errors; // --loose-errors=<auto|never|warn|suppress>
-    dal_c_VersionSpec version; // project/file/CLI version contract
+    dal_c_VersionSpec version; // project/file/CLI version settings
 } dal_c_CompilerOpts;
 
 typedef struct dal_c_BuildDefaults {
@@ -1663,12 +1663,12 @@ static const dal_c_HelpOption dal_c_help_compile_check_options[] = {
     { dal_c_opt_prefix_long dal_c_opt_link_dsl dal_c_opt_value_sep "<on|off>", "Enable or disable automatic DSL/DH library integration (default: " dal_c_default_dsl_mode ")" },
     { dal_c_opt_prefix_long dal_c_opt_hosted, "Use hosted compile semantics (default: " dal_c_default_compile_env ")" },
     { dal_c_opt_prefix_long dal_c_opt_freestanding, "Use freestanding compile semantics (`-ffreestanding`)" },
-    { dal_c_opt_prefix_long dal_c_opt_link_libc dal_c_opt_value_sep "<on|off>", "Set libc compile contract macros" },
-    { dal_c_opt_prefix_long dal_c_opt_link_default_libs dal_c_opt_value_sep "<on|off>", "Set default-library compile contract macros" },
-    { dal_c_opt_prefix_long dal_c_opt_link_start_files dal_c_opt_value_sep "<on|off>", "Set startup-file compile contract macros" },
-    { dal_c_opt_prefix_long dal_c_opt_link_compiler_rt dal_c_opt_value_sep "<auto|on|off>", "Set compiler-runtime compile contract macros" },
-    { dal_c_opt_prefix_long dal_c_opt_link_stdlib dal_c_opt_value_sep "<on|off>", "Toggle the start-files + default-libs compile contract bundle" },
-    { dal_c_opt_prefix_long dal_c_opt_link_crt dal_c_opt_value_sep "<on|off>", "Toggle the startup-file compile contract bundle" },
+    { dal_c_opt_prefix_long dal_c_opt_link_libc dal_c_opt_value_sep "<on|off>", "Set libc build-fact macros" },
+    { dal_c_opt_prefix_long dal_c_opt_link_default_libs dal_c_opt_value_sep "<on|off>", "Set default-library build-fact macros" },
+    { dal_c_opt_prefix_long dal_c_opt_link_start_files dal_c_opt_value_sep "<on|off>", "Set startup-file build-fact macros" },
+    { dal_c_opt_prefix_long dal_c_opt_link_compiler_rt dal_c_opt_value_sep "<auto|on|off>", "Set compiler-runtime build-fact macros" },
+    { dal_c_opt_prefix_long dal_c_opt_link_stdlib dal_c_opt_value_sep "<on|off>", "Toggle the start-files + default-libs build settings" },
+    { dal_c_opt_prefix_long dal_c_opt_link_crt dal_c_opt_value_sep "<on|off>", "Toggle the startup-file build settings" },
     { dal_c_opt_prefix_long dal_c_opt_lto dal_c_opt_value_sep "<auto|off|on|full|thin>", "Override profile LTO policy for compile flags" },
     { dal_c_opt_prefix_long dal_c_opt_omit_frame_pointer dal_c_opt_value_sep "<auto|on|off>", "Emit or omit frame-pointer omission flags" },
     { dal_c_opt_prefix_long dal_c_opt_function_sections dal_c_opt_value_sep "<auto|on|off>", "Override function section splitting (`-ffunction-sections`)" },
@@ -1862,7 +1862,7 @@ static const char* const dal_c_help_deps_notes[] = {
     "`deps` builds declared dependencies only; it does not build the current project or source output.",
     "External providers are built and privately installed into target/profile package caches, then staged for the owning build unit.",
     "Generated dependency headers and libraries live under project `lib/deps` or the ad-hoc unit's generated export scope.",
-    "CMake/Make/custom providers receive the effective target, compiler, archiver, sysroot, and target C flags through their provider contract.",
+    "CMake/Make/custom providers receive the effective target, compiler, archiver, sysroot, and target C flags as inputs.",
     "`--prebuilt=auto` reads `prebuilt/<normalized-target>/<profile>` packages when present; `required` fails instead of compiling source.",
     "Final static links follow the declared dependency graph in stable consumer-before-provider order; providers shared by multiple consumers are emitted once.",
 };
@@ -1888,7 +1888,7 @@ static const char* const dal_c_help_toolchain_examples[] = {
 
 static const char* const dal_c_help_toolchain_notes[] = {
     "`toolchain` asks the compiler driver which implicit CRT/start/runtime/default libraries it would use.",
-    "Use it when freestanding or cross-target link options need to match the compiler's own contract.",
+    "Use it when freestanding or cross-target link options need to match the compiler's own behavior.",
 };
 #define dal_c_help_toolchain_notes_count ((int)(sizeof(dal_c_help_toolchain_notes) / sizeof(dal_c_help_toolchain_notes[0])))
 
@@ -2070,7 +2070,7 @@ static const char* const dal_c_help_clean_dsl_examples[] = {
 static const char* const dal_c_help_dsl_notes[] = {
     "Compatibility alias. Prefer the canonical command form with `--dsl` in new scripts.",
     "`--dsl` includes the DH/DSL boundary before the requested project action.",
-    "The canonical command owns the option contract: `build --dsl`, `test --dsl`, or `clean --dsl`.",
+    "The canonical command owns these options: `build --dsl`, `test --dsl`, or `clean --dsl`.",
 };
 #define dal_c_help_dsl_notes_count ((int)(sizeof(dal_c_help_dsl_notes) / sizeof(dal_c_help_dsl_notes[0])))
 
