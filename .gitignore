@@ -1,7 +1,4 @@
-# Created by https://www.toptal.com/developers/gitignore/api/windows,linux,macos,c,c++,objective-c,cmake
-# Edit at https://www.toptal.com/developers/gitignore?templates=windows,linux,macos,c,c++,objective-c,cmake
-
-### Windows ###
+########## Windows ############################################################
 # Windows thumbnail cache files
 Thumbs.db
 Thumbs.db:encryptable
@@ -27,13 +24,13 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
-### Linux ###
+########## Linux ##############################################################
 *~
 
 # temporary files which can be created if a process still has a handle open of a deleted file
 .fuse_hidden*
 
-# KDE directory preferences
+# Metadata left by Dolphin file manager, which comes with KDE Plasma
 .directory
 
 # Linux trash folder which might appear on any partition or disk
@@ -42,20 +39,22 @@ $RECYCLE.BIN/
 # .nfs files are created when an open file is removed but is still being accessed
 .nfs*
 
-### macOS ###
+# Log files created by default by the nohup command
+nohup.out
+
+########## MacOS ##############################################################
 # General
 .DS_Store
+.localized
+__MACOSX/
 .AppleDouble
 .LSOverride
+Icon?
 
-# Icon must end with two \r
-Icon
-
-
-# Thumbnails
+# Resource forks
 ._*
 
-# Files that might appear in the root of a volume
+# Files and directories that might appear in the root of a volume
 .DocumentRevisions-V100
 .fseventsd
 .Spotlight-V100
@@ -63,6 +62,15 @@ Icon
 .Trashes
 .VolumeIcon.icns
 .com.apple.timemachine.donotpresent
+.com.apple.timemachine.supported
+.PKInstallSandboxManager
+.PKInstallSandboxManager-SystemSoftware
+.hotfiles.btree
+.vol
+.file
+.disk_label*
+lost+found
+.HFS+ Private Directory Data?
 
 # Directories potentially created on remote AFP share
 .AppleDB
@@ -71,11 +79,145 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
-### macOS Patch ###
-# iCloud generated files
-*.icloud
+# Mac OS 6 to 9
+Desktop DB
+Desktop DF
+TheFindByContentFolder
+TheVolumeSettingsFolder
+.FBCIndex
+.FBCSemaphoreFile
+.FBCLockFolder
 
-### C ###
+# Quota system
+.quota.group
+.quota.user
+.quota.ops.group
+.quota.ops.user
+
+# TimeMachine
+Backups.backupdb
+.MobileBackups
+.MobileBackups.trash
+MobileBackups.trash
+tmbootpicker.efi
+
+########## Ephemeral and generated paths ######################################
+# Hidden directories — (^|.*/)\.[^/]+/…
+# Dot-files (.gitignore, .editorconfig, …) are not matched; only dot-directories.
+**/.*/
+
+# Build and cache output — [Bb]uilds?, [Cc]aches?, [Tt]mps?, [Tt]emps?
+**/[Bb]uild
+**/[Bb]uilds
+**/[Bb]uild[0-9]*
+**/[Bb]uilds[0-9]*
+**/[Bb]uild[_-][0-9A-Za-z]*
+**/[Bb]uilds[_-][0-9A-Za-z]*
+**/[Cc]ache
+**/[Cc]aches
+**/[Cc]ache[0-9]*
+**/[Cc]aches[0-9]*
+**/[Cc]ache[_-][0-9A-Za-z]*
+**/[Cc]aches[_-][0-9A-Za-z]*
+**/[Tt]mp
+**/[Tt]mps
+**/[Tt]mp[0-9]*
+**/[Tt]mps[0-9]*
+**/[Tt]mp[_-][0-9A-Za-z]*
+**/[Tt]mps[_-][0-9A-Za-z]*
+**/[Tt]emp
+**/[Tt]emps
+**/[Tt]emp[0-9]*
+**/[Tt]emps[0-9]*
+**/[Tt]emp[_-][0-9A-Za-z]*
+**/[Tt]emps[_-][0-9A-Za-z]*
+
+# Test doubles and placeholders — [Mm]ocks?, [Ff]akes?, [Dd]umm(ys?|ies), [Ss]tubs?, [Ss]hims?
+**/[Mm]ock
+**/[Mm]ocks
+**/[Mm]ock[0-9]*
+**/[Mm]ocks[0-9]*
+**/[Mm]ock[_-][0-9A-Za-z]*
+**/[Mm]ocks[_-][0-9A-Za-z]*
+**/[Ff]ake
+**/[Ff]akes
+**/[Ff]ake[0-9]*
+**/[Ff]akes[0-9]*
+**/[Ff]ake[_-][0-9A-Za-z]*
+**/[Ff]akes[_-][0-9A-Za-z]*
+**/[Dd]ummy
+**/[Dd]ummys
+**/[Dd]ummies
+**/[Dd]ummy[0-9]*
+**/[Dd]ummys[0-9]*
+**/[Dd]ummies[0-9]*
+**/[Dd]ummy[_-][0-9A-Za-z]*
+**/[Dd]ummys[_-][0-9A-Za-z]*
+**/[Dd]ummies[_-][0-9A-Za-z]*
+**/[Ss]tub
+**/[Ss]tubs
+**/[Ss]tub[0-9]*
+**/[Ss]tubs[0-9]*
+**/[Ss]tub[_-][0-9A-Za-z]*
+**/[Ss]tubs[_-][0-9A-Za-z]*
+**/[Ss]him
+**/[Ss]hims
+**/[Ss]him[0-9]*
+**/[Ss]hims[0-9]*
+**/[Ss]him[_-][0-9A-Za-z]*
+**/[Ss]hims[_-][0-9A-Za-z]*
+
+# Drafts and backups — [Dd]rafts?, [Bb]aks?, [Bb]ackups?, [Aa]rchives?
+**/[Dd]raft
+**/[Dd]rafts
+**/[Dd]raft[0-9]*
+**/[Dd]rafts[0-9]*
+**/[Dd]raft[_-][0-9A-Za-z]*
+**/[Dd]rafts[_-][0-9A-Za-z]*
+**/[Bb]ak
+**/[Bb]aks
+**/[Bb]ak[0-9]*
+**/[Bb]aks[0-9]*
+**/[Bb]ak[_-][0-9A-Za-z]*
+**/[Bb]aks[_-][0-9A-Za-z]*
+**/[Bb]ackup
+**/[Bb]ackups
+**/[Bb]ackup[0-9]*
+**/[Bb]ackups[0-9]*
+**/[Bb]ackup[_-][0-9A-Za-z]*
+**/[Bb]ackups[_-][0-9A-Za-z]*
+**/[Aa]rchive
+**/[Aa]rchives
+**/[Aa]rchive[0-9]*
+**/[Aa]rchives[0-9]*
+**/[Aa]rchive[_-][0-9A-Za-z]*
+**/[Aa]rchives[_-][0-9A-Za-z]*
+
+########## Git exceptions #####################################################
+# Required essential files - Git / VCS
+**/.git
+!**/.gitignore
+!**/.gitkeep
+!**/.gitattributes
+!**/.gitmodules
+!**/.git-blame-ignore-revs
+!**/.mailmap
+
+# CI/CD
+!**/.github/**
+!**/.gitlab-ci.yml
+!**/.gitlab/**
+
+########## Environment variables ##############################################
+.env*
+!.env.*sample
+!.env.*example
+!.env.*template
+!.env.*default
+!.env.*defaults
+!.env.*dist
+
+########## C ##################################################################
 # Prerequisites
 *.d
 
@@ -129,15 +271,34 @@ Module.symvers
 Mkfile.old
 dkms.conf
 
-### C++ ###
+# debug information files
+*.dwo
+
+########## C++ ################################################################
 # Prerequisites
+*.d
 
 # Compiled Object files
 *.slo
+*.lo
+*.o
+*.obj
 
 # Precompiled Headers
+*.gch
+*.pch
+
+# Linker files
+*.ilk
+
+# Debugger Files
+*.pdb
 
 # Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+*.so.*
 
 # Fortran module files
 *.mod
@@ -145,33 +306,51 @@ dkms.conf
 
 # Compiled Static libraries
 *.lai
+*.la
+*.a
+*.lib
 
 # Executables
+*.exe
+*.out
+*.app
 
-### Objective-C ###
+# Build directories
+build/
+Build/
+build-*/
+
+# CMake generated files
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+install_manifest.txt
+compile_commands.json
+
+# Temporary files
+*.tmp
+*.log
+*.bak
+*.swp
+
+# vcpkg
+vcpkg_installed/
+
+# debug information files
+*.dwo
+
+# test output & cache
+Testing/
+.cache/
+
+########## Objective-C ########################################################
 # Xcode
 #
 # gitignore contributors: remember to update Global/Xcode.gitignore, Objective-C.gitignore & Swift.gitignore
 
 ## User settings
 xcuserdata/
-
-## compatibility with Xcode 8 and earlier (ignoring not required starting Xcode 9)
-*.xcscmblueprint
-*.xccheckout
-
-## compatibility with Xcode 3 and earlier (ignoring not required starting Xcode 4)
-build/
-DerivedData/
-*.moved-aside
-*.pbxuser
-!default.pbxuser
-*.mode1v3
-!default.mode1v3
-*.mode2v3
-!default.mode2v3
-*.perspectivev3
-!default.perspectivev3
 
 ## Obj-C/Swift specific
 *.hmap
@@ -182,20 +361,25 @@ DerivedData/
 *.dSYM
 
 # CocoaPods
+#
 # We recommend against adding the Pods directory to your .gitignore. However
 # you should judge for yourself, the pros and cons are mentioned at:
 # https://guides.cocoapods.org/using/using-cocoapods.html#should-i-check-the-pods-directory-into-source-control
+#
 # Pods/
+#
 # Add this line if you want to avoid checking in source code from the Xcode workspace
 # *.xcworkspace
 
 # Carthage
+#
 # Add this line if you want to avoid checking in source code from Carthage dependencies.
 # Carthage/Checkouts
 
 Carthage/Build/
 
 # fastlane
+#
 # It is recommended to not store the screenshots in the git repo.
 # Instead, use fastlane to re-generate the screenshots whenever they are needed.
 # For more information about the recommended setup visit:
@@ -206,15 +390,7 @@ fastlane/Preview.html
 fastlane/screenshots/**/*.png
 fastlane/test_output
 
-# Code Injection
-# After new code Injection tools there's a generated folder /iOSInjectionProject
-# https://github.com/johnno1962/injectionforxcode
-
-iOSInjectionProject/
-
-### Objective-C Patch ###
-
-### CMake ###
+########## CMake ##############################################################
 CMakeLists.txt.user
 CMakeCache.txt
 CMakeFiles
@@ -226,16 +402,16 @@ install_manifest.txt
 compile_commands.json
 CTestTestfile.cmake
 _deps
-
-### CMake Patch ###
 CMakeUserPresets.json
 
-# External projects
-*-prefix/
+# CLion
+#  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
+#  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
+#  and can be added to the global gitignore or merged into this file.  For a more nuclear
+#  option (not recommended) you can uncomment the following to ignore the entire idea folder.
+#cmake-build-*
 
-# End of https://www.toptal.com/developers/gitignore/api/windows,linux,macos,c,c++,objective-c,cmake
-
-### DH-C ###
+########## dasae-headers c build tools ########################################
 # Generated project/workspace state and ad-hoc fallback cache.
 # Persistent dependency lock.dh files are intentionally not ignored.
 .dh-c/
@@ -248,53 +424,42 @@ CMakeUserPresets.json
 # Log directories
 **/.log*/
 
+# DH-C generated package roots
+**/self-prebuilt/
+
 # DH-C library files
 **/lib/deps.h
 **/lib/deps/
 **/lib/deps/.obj/
 **/lib/deps/.bin/
 
-### Project Specific ###
-
-# Environment variables
-.env*
-!.env.*template
-!.env.*example
-
+########## Project common files ###############################################
 # VS Code settings
 **/.vscode/
+# !.vscode/
 
 # Cursor settings
 **/.cursor/
+# !.cursor/
 .cursorrules
 
 # Claude settings
 **/.claude/
+# !.claude/
 CLAUDE.md
 
 # Agent settings
 **/.agents/
+# !.agents/
 AGENTS.md
 
-# Temporary files
-*.tmp*
-*.temp*
-*.bak*
-*.backup*
+# Local conversation
+# .memo.txt
 .message.txt
 .commit.txt
 .pull_request.txt
 .issue.txt
 
-# Temporary directories
-**/.tmp*/
-**/.temp*/
-**/.cache*/
-**/.mock*/
-**/.draft*/
-**/.bak*/
-**/.backup*/
-**/.archive*/
-
+########## Project specific files #############################################
 # Local extra projects
 dh-examples/extra/*/
