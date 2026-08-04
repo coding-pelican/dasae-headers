@@ -55,6 +55,84 @@ fn_((io_Reader_readAtLeast(io_Reader self, S$u8 out_bytes, usize least_len))(io_
     return_ok(idx);
 } $unscoped(fn);
 
+fn_((io_Reader_readInt$usize(io_Reader self, mem_Endian endian))(io_ReadExactE$usize) $scope) {
+    claim_assert(mem_Endian_isValid(endian));
+    if (endian == mem_Endian_little) {
+        var_(bytes, mem_ReadLESizeBuf) $undefined;
+        try_(io_Reader_readExact(self, A_ref$((S$u8)(bytes))));
+        return_ok(mem_readLESize(bytes));
+    }
+    var_(bytes, mem_ReadBESizeBuf) $undefined;
+    try_(io_Reader_readExact(self, A_ref$((S$u8)(bytes))));
+    return_ok(mem_readBESize(bytes));
+} $unscoped(fn);
+fn_((io_Reader_readInt$u64(io_Reader self, mem_Endian endian))(io_ReadExactE$u64) $scope) {
+    claim_assert(mem_Endian_isValid(endian));
+    if (endian == mem_Endian_little) {
+        var_(bytes, mem_ReadLE64Buf) $undefined;
+        try_(io_Reader_readExact(self, A_ref$((S$u8)(bytes))));
+        return_ok(mem_readLE64(bytes));
+    }
+    var_(bytes, mem_ReadBE64Buf) $undefined;
+    try_(io_Reader_readExact(self, A_ref$((S$u8)(bytes))));
+    return_ok(mem_readBE64(bytes));
+} $unscoped(fn);
+fn_((io_Reader_readInt$ulong(io_Reader self, mem_Endian endian))(io_ReadExactE$ulong) $scope) {
+    claim_assert(mem_Endian_isValid(endian));
+    if (endian == mem_Endian_little) {
+        var_(bytes, mem_ReadLELongBuf) $undefined;
+        try_(io_Reader_readExact(self, A_ref$((S$u8)(bytes))));
+        return_ok(mem_readLELong(bytes));
+    }
+    var_(bytes, mem_ReadBELongBuf) $undefined;
+    try_(io_Reader_readExact(self, A_ref$((S$u8)(bytes))));
+    return_ok(mem_readBELong(bytes));
+} $unscoped(fn);
+fn_((io_Reader_readInt$u32(io_Reader self, mem_Endian endian))(io_ReadExactE$u32) $scope) {
+    claim_assert(mem_Endian_isValid(endian));
+    if (endian == mem_Endian_little) {
+        var_(bytes, mem_ReadLE32Buf) $undefined;
+        try_(io_Reader_readExact(self, A_ref$((S$u8)(bytes))));
+        return_ok(mem_readLE32(bytes));
+    }
+    var_(bytes, mem_ReadBE32Buf) $undefined;
+    try_(io_Reader_readExact(self, A_ref$((S$u8)(bytes))));
+    return_ok(mem_readBE32(bytes));
+} $unscoped(fn);
+fn_((io_Reader_readInt$u16(io_Reader self, mem_Endian endian))(io_ReadExactE$u16) $scope) {
+    claim_assert(mem_Endian_isValid(endian));
+    if (endian == mem_Endian_little) {
+        var_(bytes, mem_ReadLE16Buf) $undefined;
+        try_(io_Reader_readExact(self, A_ref$((S$u8)(bytes))));
+        return_ok(mem_readLE16(bytes));
+    }
+    var_(bytes, mem_ReadBE16Buf) $undefined;
+    try_(io_Reader_readExact(self, A_ref$((S$u8)(bytes))));
+    return_ok(mem_readBE16(bytes));
+} $unscoped(fn);
+fn_((io_Reader_readInt$u8(io_Reader self, mem_Endian endian))(io_ReadExactE$u8) $scope) {
+    claim_assert(mem_Endian_isValid(endian));
+    return_ok(try_(io_Reader_readByte(self)));
+} $unscoped(fn);
+fn_((io_Reader_readInt$isize(io_Reader self, mem_Endian endian))(io_ReadExactE$isize) $scope) {
+    return_ok(bitCast$((isize)(try_(io_Reader_readInt$usize(self, endian)))));
+} $unscoped(fn);
+fn_((io_Reader_readInt$i64(io_Reader self, mem_Endian endian))(io_ReadExactE$i64) $scope) {
+    return_ok(bitCast$((i64)(try_(io_Reader_readInt$u64(self, endian)))));
+} $unscoped(fn);
+fn_((io_Reader_readInt$ilong(io_Reader self, mem_Endian endian))(io_ReadExactE$ilong) $scope) {
+    return_ok(bitCast$((ilong)(try_(io_Reader_readInt$ulong(self, endian)))));
+} $unscoped(fn);
+fn_((io_Reader_readInt$i32(io_Reader self, mem_Endian endian))(io_ReadExactE$i32) $scope) {
+    return_ok(bitCast$((i32)(try_(io_Reader_readInt$u32(self, endian)))));
+} $unscoped(fn);
+fn_((io_Reader_readInt$i16(io_Reader self, mem_Endian endian))(io_ReadExactE$i16) $scope) {
+    return_ok(bitCast$((i16)(try_(io_Reader_readInt$u16(self, endian)))));
+} $unscoped(fn);
+fn_((io_Reader_readInt$i8(io_Reader self, mem_Endian endian))(io_ReadExactE$i8) $scope) {
+    return_ok(bitCast$((i8)(try_(io_Reader_readInt$u8(self, endian)))));
+} $unscoped(fn);
+
 fn_((io_Reader_skip(io_Reader self, usize discard_len))(io_ReadExactE$void) $scope) {
     let skipped_len = try_(io_Reader_skipAtLeast(self, discard_len));
     if (skipped_len != discard_len) return_err(E_cause$UnexpectedEOF());

@@ -5,7 +5,7 @@
  * @file    Writer.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2025-05-13 (date of creation)
- * @updated 2026-07-31 (date of last update)
+ * @updated 2026-08-04 (date of last update)
  * @ingroup dal-project/da/io
  * @prefix  io_Writer
  */
@@ -19,6 +19,7 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "common.h"
+#include "../mem/common.h"
 #include "../fmt/errors.h"
 
 /*========== Macros and Declarations ========================================*/
@@ -61,6 +62,31 @@ $attr($must_check)
 $extern fn_((io_Writer_writeByte(io_Writer self, u8 byte))(io_WriteE$void));
 $attr($must_check)
 $extern fn_((io_Writer_writeByteN(io_Writer self, u8 byte, usize n))(io_WriteE$void));
+
+$attr($must_check)
+$extern fn_((io_Writer_writeInt$usize(io_Writer self, usize value, mem_Endian endian))(io_WriteE$void));
+$attr($must_check)
+$extern fn_((io_Writer_writeInt$u64(io_Writer self, u64 value, mem_Endian endian))(io_WriteE$void));
+$attr($must_check)
+$extern fn_((io_Writer_writeInt$ulong(io_Writer self, ulong value, mem_Endian endian))(io_WriteE$void));
+$attr($must_check)
+$extern fn_((io_Writer_writeInt$u32(io_Writer self, u32 value, mem_Endian endian))(io_WriteE$void));
+$attr($must_check)
+$extern fn_((io_Writer_writeInt$u16(io_Writer self, u16 value, mem_Endian endian))(io_WriteE$void));
+$attr($must_check)
+$extern fn_((io_Writer_writeInt$u8(io_Writer self, u8 value, mem_Endian endian))(io_WriteE$void));
+$attr($must_check)
+$extern fn_((io_Writer_writeInt$isize(io_Writer self, isize value, mem_Endian endian))(io_WriteE$void));
+$attr($must_check)
+$extern fn_((io_Writer_writeInt$i64(io_Writer self, i64 value, mem_Endian endian))(io_WriteE$void));
+$attr($must_check)
+$extern fn_((io_Writer_writeInt$ilong(io_Writer self, ilong value, mem_Endian endian))(io_WriteE$void));
+$attr($must_check)
+$extern fn_((io_Writer_writeInt$i32(io_Writer self, i32 value, mem_Endian endian))(io_WriteE$void));
+$attr($must_check)
+$extern fn_((io_Writer_writeInt$i16(io_Writer self, i16 value, mem_Endian endian))(io_WriteE$void));
+$attr($must_check)
+$extern fn_((io_Writer_writeInt$i8(io_Writer self, i8 value, mem_Endian endian))(io_WriteE$void));
 
 $attr($must_check)
 $extern fn_((io_Writer_lf(io_Writer self))(io_WriteE$void));

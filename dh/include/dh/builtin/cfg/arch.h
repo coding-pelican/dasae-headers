@@ -5,7 +5,7 @@
  * @file    arch.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2024-10-27 (date of creation)
- * @updated 2026-06-21 (date of last update)
+ * @updated 2026-08-04 (date of last update)
  * @ingroup dal-project/da/foundation/cfg
  * @prefix  arch
  *
@@ -143,15 +143,15 @@ extern "C" {
 
 /*--- Endianness ---*/
 
-#define arch_byte_order __comp_enum__arch_byte_order
-#define arch_byte_order_native arch_byte_order
-#define arch_byte_order_foreign __comp_enum__arch_byte_order_foreign
-#define arch_byte_order_unknown __comp_enum__arch_byte_order_unknown
-#define arch_byte_order_big_endian __comp_enum__arch_byte_order_big_endian
-#define arch_byte_order_little_endian __comp_enum__arch_byte_order_little_endian
+#define arch_endian_type __comp_enum__arch_endian_type
+#define arch_endian_type_unknown __comp_enum__arch_endian_type_unknown
+#define arch_endian_type_big __comp_enum__arch_endian_type_big
+#define arch_endian_type_little __comp_enum__arch_endian_type_little
 
-#define arch_byte_order_is_big_endian __comp_bool__arch_byte_order_is_big_endian
-#define arch_byte_order_is_little_endian __comp_bool__arch_byte_order_is_little_endian
+#define arch_endian_native __comp_enum__arch_endian_native
+#define arch_endian_foreign __comp_enum__arch_endian_foreign
+#define arch_endian_is_big __comp_bool__arch_endian_is_big
+#define arch_endian_is_little __comp_bool__arch_endian_is_little
 
 /*--- Cache Line ---*/
 
@@ -491,31 +491,33 @@ extern "C" {
 /*--- Endianness ---*/
 
 /* Byte order is a compiler-selected target fact. */
-#define __comp_enum__arch_byte_order arch_byte_order_unknown
-#define __comp_enum__arch_byte_order_unknown 0
-#define __comp_enum__arch_byte_order_big_endian 1
-#define __comp_enum__arch_byte_order_little_endian 2
-#define __comp_enum__arch_byte_order_foreign pp_expand( \
-    pp_switch_ pp_begin(arch_byte_order)( \
-        pp_case_((arch_byte_order_big_endian)(arch_byte_order_little_endian)), \
-        pp_case_((arch_byte_order_little_endian)(arch_byte_order_big_endian)), \
-        pp_default_(()(arch_byte_order_unknown)) \
+#define __comp_enum__arch_endian_type arch_endian_type_unknown
+#define __comp_enum__arch_endian_type_unknown 0
+#define __comp_enum__arch_endian_type_big 1
+#define __comp_enum__arch_endian_type_little 2
+
+#define __comp_enum__arch_endian_native arch_endian_type
+#define __comp_enum__arch_endian_foreign pp_expand( \
+    pp_switch_ pp_begin(arch_endian_type)( \
+        pp_case_((arch_endian_type_big)(arch_endian_type_little)), \
+        pp_case_((arch_endian_type_little)(arch_endian_type_big)), \
+        pp_default_(()(arch_endian_type_unknown)) \
     ) pp_end \
 )
-#define __comp_bool__arch_byte_order_is_little_endian pp_Tok_eql(arch_byte_order, arch_byte_order_little_endian)
-#define __comp_bool__arch_byte_order_is_big_endian pp_Tok_eql(arch_byte_order, arch_byte_order_big_endian)
+#define __comp_bool__arch_endian_is_little pp_Tok_eql(arch_endian_type, arch_endian_type_little)
+#define __comp_bool__arch_endian_is_big pp_Tok_eql(arch_endian_type, arch_endian_type_big)
 
 /* Detect byte order. WebAssembly's linear memory is defined as little-endian. */
 #if arch_family_type == arch_family_type_wasm
-#undef __comp_enum__arch_byte_order
-#define __comp_enum__arch_byte_order arch_byte_order_little_endian
+#undef __comp_enum__arch_endian_type
+#define __comp_enum__arch_endian_type arch_endian_type_little
 #elif defined(__BYTE_ORDER__) && defined(__ORDER_LITTLE_ENDIAN__) && defined(__ORDER_BIG_ENDIAN__)
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-#undef __comp_enum__arch_byte_order
-#define __comp_enum__arch_byte_order arch_byte_order_little_endian
+#undef __comp_enum__arch_endian_type
+#define __comp_enum__arch_endian_type arch_endian_type_little
 #elif __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
-#undef __comp_enum__arch_byte_order
-#define __comp_enum__arch_byte_order arch_byte_order_big_endian
+#undef __comp_enum__arch_endian_type
+#define __comp_enum__arch_endian_type arch_endian_type_big
 #endif
 #endif
 

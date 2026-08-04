@@ -5,7 +5,7 @@
  * @file    Buf.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2025-10-25 (date of creation)
- * @updated 2026-07-31 (date of last update)
+ * @updated 2026-08-04 (date of last update)
  * @ingroup dal-project/da/io
  * @prefix  io_Buf
  */
@@ -30,6 +30,11 @@ errset_((io_Buf_ReadE)() $union_errset_(
     io_TooSmallBufferE
 ));
 T_useBy$(($spec(E, $set(io_Buf_ReadE)))(u8, S_const$u8, S$u8));
+errset_((io_Buf_StreamE)() $union_errset_(
+    io_Buf_ReadE,
+    io_WriteE
+));
+T_use_E$($set(io_Buf_StreamE)(usize));
 
 typedef struct io_Buf_Reader {
     var_(inner, io_Reader);
@@ -85,6 +90,18 @@ $extern fn_((io_Buf_Reader_readUntilSeq(io_Buf_Reader* self, S_const$u8 delim, S
 $attr($must_check)
 $extern fn_((io_Buf_Reader_readUntilAny(io_Buf_Reader* self, S_const$u8 delims, S$u8 out_buf))(io_Buf_ReadE$S$u8));
 
+/*--- Reader delimited stream ---*/
+
+/// Stream through delimiter byte; delimiter is consumed and excluded from output.
+$attr($must_check)
+$extern fn_((io_Buf_Reader_streamUntilByte(io_Buf_Reader* self, u8 delim, io_Writer out))(io_Buf_StreamE$usize));
+/// Stream through delimiter sequence; delimiter is consumed and excluded from output.
+$attr($must_check)
+$extern fn_((io_Buf_Reader_streamUntilSeq(io_Buf_Reader* self, S_const$u8 delim, io_Writer out))(io_Buf_StreamE$usize));
+/// Stream through the first matching delimiter byte; it is consumed and excluded.
+$attr($must_check)
+$extern fn_((io_Buf_Reader_streamUntilAny(io_Buf_Reader* self, S_const$u8 delims, io_Writer out))(io_Buf_StreamE$usize));
+
 /*--- Reader delimited skip ---*/
 
 /// Skip until delimiter byte; delimiter is consumed.
@@ -102,13 +119,19 @@ $extern fn_((io_Buf_Reader_skipUntilAny(io_Buf_Reader* self, S_const$u8 delims))
 typedef struct io_Buf_Writer {
     var_(inner, io_Writer);
     var_(buf, S$u8);
-    var_(used, usize);
+    var_(cursor, usize);
 } io_Buf_Writer;
 /// Initialize buffered writer with external buffer
 $extern fn_((io_Buf_Writer_from(io_Writer inner, S$u8 buf))(io_Buf_Writer));
-/// Return currently pending data
+/// Return currently pending data before the cursor.
 $extern fn_((io_Buf_Writer_pending(io_Buf_Writer self))(S_const$u8));
 $extern fn_((io_Buf_Writer_pendingMut(io_Buf_Writer self))(S$u8));
+/// Return writable capacity after the cursor without advancing it.
+$extern fn_((io_Buf_Writer_unusedMut(io_Buf_Writer self))(S$u8));
+/// Commit bytes initialized through `io_Buf_Writer_unusedMut`.
+$extern fn_((io_Buf_Writer_advance(io_Buf_Writer* self, usize len))(void));
+/// Remove the most recently committed pending bytes.
+$extern fn_((io_Buf_Writer_undo(io_Buf_Writer* self, usize len))(void));
 /// Flush buffered data to inner writer
 $attr($must_check)
 $extern fn_((io_Buf_Writer_flush(io_Buf_Writer* self))(io_WriteE$void));

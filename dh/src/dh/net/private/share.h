@@ -102,14 +102,14 @@ T_use_E$(net__linux_SockAddr);
 
 $attr($maybe_unused)
 $static fn_((net__linux_toNetwork16(u16 value))(u16)) {
-    return pp_if_(arch_byte_order_is_little_endian)(
+    return pp_if_(arch_endian_is_little)(
         pp_then_(raw_swapBytes16(value)),
         pp_else_(value));
 };
 
 $attr($maybe_unused)
 $static fn_((net__linux_toNetwork32(u32 value))(u32)) {
-    return pp_if_(arch_byte_order_is_little_endian)(
+    return pp_if_(arch_endian_is_little)(
         pp_then_(raw_swapBytes32(value)),
         pp_else_(value));
 };

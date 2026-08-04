@@ -15,11 +15,12 @@ fn_((thrd_Batch_Done_from(thrd_Batch_Id id, TypeInfo result_type, u_V$thrd_Batch
     mem_set0P(thrd_Batch_Done_resultMut(ret_mem.inner, result_type));
     return ret_mem;
 };
-fn_((thrd_Batch_Done_into(const thrd_Batch_Done$raw* self, TypeInfo result_type, u_V$raw ret_mem))(u_V$raw)) {
-    claim_assert_nonnull(self);
+fn_((thrd_Batch_Done_into(u_V$thrd_Batch_Done$raw self, TypeInfo result_type, u_V$raw ret_mem))(u_V$raw)) {
+    claim_assert_nonnull(self.inner);
     claim_assert_nonnull(ret_mem.inner);
+    debug_assert_eqBy(self.type, thrd_Batch_Done_typeInfo(result_type), TypeInfo_eql);
     debug_assert_eqBy(ret_mem.type, result_type, TypeInfo_eql);
-    u_memcpy(ret_mem.ref, thrd_Batch_Done_result(self, result_type));
+    u_memcpy(ret_mem.ref, thrd_Batch_Done_result(self.inner, result_type));
     return ret_mem;
 };
 fn_((thrd_Batch_Done_take(thrd_Batch_Done$raw* self, TypeInfo result_type, u_V$raw ret_mem))(u_V$raw)) {

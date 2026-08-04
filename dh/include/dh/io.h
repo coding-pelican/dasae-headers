@@ -6,7 +6,7 @@
  * @file    io.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2025-03-22 (date of creation)
- * @updated 2026-07-31 (date of last update)
+ * @updated 2026-08-04 (date of last update)
  * @ingroup dasae-headers(dh)
  * @prefix  io
  *
@@ -29,8 +29,13 @@ extern "C" {
 
 #include "io/Reader.h"
 #include "io/Writer.h"
+
 #include "io/Fixed.h"
 #include "io/Buf.h"
+#include "io/Limited.h"
+#include "io/Count.h"
+#include "io/Hashed.h"
+#include "io/Bit.h"
 #include "io/Locked.h"
 
 #include "io/std.h"

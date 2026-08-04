@@ -147,7 +147,7 @@ TEST_fn_("core/pri/bitfield: packed bytes follow native endian only" $scope) {
     try_(TEST_expect(value.middle == 0xbc));
     try_(TEST_expect(value.low == 0xd));
 
-    pp_if_(arch_byte_order_is_little_endian)(
+    pp_if_(arch_endian_is_little)(
         pp_then_(
             try_(TEST_expect(bytes[0] == 0xcdu));
             try_(TEST_expect(bytes[1] == 0xabu));
@@ -155,6 +155,5 @@ TEST_fn_("core/pri/bitfield: packed bytes follow native endian only" $scope) {
         pp_else_(
             try_(TEST_expect(bytes[0] == 0xabu));
             try_(TEST_expect(bytes[1] == 0xcdu));
-        )
-    );
+        ));
 } $unscoped(TEST_fn);

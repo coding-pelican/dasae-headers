@@ -29,6 +29,7 @@ TEST_fn_("thrd/Batch: typed completion and fixed capacity" $guard) {
     *P_at((thrd_Batch_Done_resultMut$u8(&done))[0]) = 3;
     try_(TEST_expect(*P_at((thrd_Batch_Done_result$u8(&done))[0]) == 3));
     try_(TEST_expect(thrd_Batch_Done_into$u8(done) == 3));
+    try_(TEST_expect(*P_at((thrd_Batch_Done_result$u8(&done))[0]) == 3));
     try_(TEST_expect(thrd_Batch_Done_take$u8(&done) == 3));
     try_(TEST_expect(*P_at((thrd_Batch_Done_result$u8(&done))[0]) == 0));
 

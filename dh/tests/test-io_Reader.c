@@ -107,6 +107,32 @@ TEST_fn_("io/Reader: readByte reports UnexpectedEOF at EOF" $scope) {
     }
 } $unscoped(TEST_fn);
 
+TEST_fn_("io/Reader: endian integer input preserves signed and unsigned bits" $scope) {
+    var reader_impl = io_Fixed_Reader_from(io_Fixed_reading(
+        u8_l("\064\022\022\064\126\170\377\376")
+    ));
+    let reader = io_Fixed_reader(&reader_impl);
+
+    try_(TEST_expect(try_(io_Reader_readInt$u16(reader, mem_Endian_little)) == u16_(0x1234u)));
+    try_(TEST_expect(try_(io_Reader_readInt$u32(reader, mem_Endian_big)) == u32_(0x12345678u)));
+    try_(TEST_expect(try_(io_Reader_readInt$i16(reader, mem_Endian_big)) == i16_(-2)));
+    try_(TEST_expect(mem_Endian_isValid(mem_Endian_native)));
+    try_(TEST_expect(mem_Endian_isValid(mem_Endian_foreign)));
+} $unscoped(TEST_fn);
+
+TEST_fn_("io/Reader: endian integer input requires the complete value" $scope) {
+    var reader_impl = io_Fixed_Reader_from(io_Fixed_reading(u8_l("\001")));
+
+    if_err((io_Reader_readInt$u16(
+        io_Fixed_reader(&reader_impl), mem_Endian_little
+    ))(err)) {
+        try_(TEST_expect(E_eql(err.as_any, E_cause$UnexpectedEOF().as_any)));
+    } else_ok(value) {
+        let_ignore = value;
+        try_(TEST_expect(false));
+    }
+} $unscoped(TEST_fn);
+
 TEST_fn_("io/Reader: skipAtLeast returns skipped count at EOF" $scope) {
     var reader_impl = io_Fixed_Reader_from(io_Fixed_reading(u8_l("abc")));
     let skipped_len = try_(io_Reader_skipAtLeast(io_Fixed_reader(&reader_impl), 5));

@@ -129,10 +129,7 @@ fn_((main(proc_Entry entry))(E$void) $guard) {
     var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
-    var default_logger = log_Default_init(
-        catch_((io_std_direct())($ignore, io_std_noop)),
-        log_Level_debug
-    );
+    var default_logger = log_Default_init(entry.std, log_Level_debug);
     let logger = log_Default_self(&default_logger);
     log_info(logger, u8_l("Starting decision tree application"));
 

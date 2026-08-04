@@ -3,7 +3,7 @@
 cmp_fn_eql$((Target_Arch)(lhs, rhs)) {
     return lhs.kind == rhs.kind
         && lhs.family == rhs.family
-        && lhs.byte_order == rhs.byte_order
+        && lhs.endian == rhs.endian
         && lhs.word_bits == rhs.word_bits
         && lhs.byte_bits == rhs.byte_bits
         && lhs.cache_line_bytes == rhs.cache_line_bytes;

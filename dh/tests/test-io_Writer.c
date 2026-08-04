@@ -107,6 +107,21 @@ TEST_fn_("io/Writer: writeByteN writes repeated bytes through bounded chunks" $s
     try_(TEST_expect(mem_eqlBytes(A_ref$((S_const$u8)(out)), u8_l("xxxxxxx"))));
 } $unscoped(TEST_fn);
 
+TEST_fn_("io/Writer: endian integer output preserves signed and unsigned bits" $scope) {
+    var_(out, A$$(8, u8)) $undefined;
+    var writer_impl = io_Fixed_Writer_from(io_Fixed_writing(A_ref$((S$u8)(out))));
+    let writer = io_Fixed_writer(&writer_impl);
+
+    try_(io_Writer_writeInt$u16(writer, u16_(0x1234u), mem_Endian_little));
+    try_(io_Writer_writeInt$u32(writer, u32_(0x12345678u), mem_Endian_big));
+    try_(io_Writer_writeInt$i16(writer, i16_(-2), mem_Endian_big));
+
+    try_(TEST_expect(mem_eqlBytes(
+        io_Fixed_written(writer_impl.stream).as_const,
+        u8_l("\064\022\022\064\126\170\377\376")
+    )));
+} $unscoped(TEST_fn);
+
 TEST_fn_("io/Writer: writeBytes may leave a written prefix before capacity error" $scope) {
     var_(out, A$$(3, u8)) $undefined;
     var writer_impl = (test_io_ChunkWriter){

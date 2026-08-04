@@ -20,6 +20,7 @@ extern "C" {
 #include "Args.h"
 #include "Env.h"
 #include "Preopens.h"
+#include "../io/std.h"
 
 /*========== Macros and Declarations ========================================*/
 
@@ -27,6 +28,9 @@ struct proc_Entry {
     var_(args, proc_Args);
     var_(env, proc_Env);
     var_(preopens, proc_Preopens);
+    /// Supplies standard I/O without module-load initialization and permits
+    /// custom entry environments to inject their own implementation.
+    var_(std, io_std_Self);
 };
 T_use_prl$(proc_Entry);
 

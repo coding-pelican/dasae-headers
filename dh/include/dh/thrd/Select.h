@@ -99,7 +99,7 @@ $extern fn_((thrd_Select_Arm_from(
     TypeInfo type, u_V$raw tag, thrd_Select_Op op, u_V$thrd_Select_Arm$raw ret_mem
 ))(u_V$thrd_Select_Arm$raw));
 #define T_use_thrd_Select_Arm_from$(_T...) __gen__T_use_thrd_Select_Arm_from$(_T)
-$extern fn_((thrd_Select_Arm_into(thrd_Select_Arm$raw* self, u_V$raw ret_mem))(u_V$raw));
+$extern fn_((thrd_Select_Arm_into(u_V$thrd_Select_Arm$raw self, u_V$raw ret_mem))(u_V$raw));
 #define T_use_thrd_Select_Arm_into$(_T...) __gen__T_use_thrd_Select_Arm_into$(_T)
 $extern fn_((thrd_Select_Arm_take(thrd_Select_Arm$raw* self, u_V$raw ret_mem))(u_V$raw));
 #define T_use_thrd_Select_Arm_take$(_T...) __gen__T_use_thrd_Select_Arm_take$(_T)
@@ -278,7 +278,9 @@ fn_((thrd_Select_Op_ensureValid(thrd_Select_Op self))(thrd_Select_Op)) {
 #define __gen__T_use_thrd_Select_Arm_into$(_T...) \
     $attr($inline_always) \
     $static fn_((tpl$(thrd_Select_Arm_into, _T)(thrd_Select_Arm$(_T) self))(_T)) { \
-        return u_castV$((_T)(thrd_Select_Arm_into(self.as_raw, u_retV$(_T)))); \
+        return u_castV$((_T)(thrd_Select_Arm_into( \
+            u_asV$((u_V$thrd_Select_Arm$raw)(u_anyV(self))), u_retV$(_T) \
+        ))); \
     }
 #define __gen__T_use_thrd_Select_Arm_take$(_T...) \
     $attr($inline_always) \

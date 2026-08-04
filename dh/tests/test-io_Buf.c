@@ -76,6 +76,57 @@ TEST_fn_("io/Buf/Reader: skipUntilSeq preserves delimiter across buffer boundary
     try_(TEST_expect(mem_eqlBytes(line.as_const, u8_l("cd"))));
 } $unscoped(TEST_fn);
 
+TEST_fn_("io/Buf/Reader: streamUntilByte crosses buffers and consumes delimiter" $scope) {
+    var reader_impl = io_Fixed_Reader_from(io_Fixed_reading(u8_l("abcdef,tail")));
+    var_(read_mem, A$$(3, u8)) $undefined;
+    var reader = io_Buf_Reader_from(
+        io_Fixed_reader(&reader_impl), A_ref$((S$u8)(read_mem))
+    );
+    var_(out, A$$(8, u8)) $undefined;
+    var writer = io_Fixed_Writer_from(io_Fixed_writing(A_ref$((S$u8)(out))));
+
+    let streamed = try_(io_Buf_Reader_streamUntilByte(
+        &reader, u8_c(','), io_Fixed_writer(&writer)
+    ));
+    try_(TEST_expect(streamed == 6));
+    try_(TEST_expect(mem_eqlBytes(io_Fixed_written(writer.stream).as_const, u8_l("abcdef"))));
+    try_(TEST_expect(try_(io_Buf_Reader_takeByte(&reader)) == u8_c('t')));
+} $unscoped(TEST_fn);
+
+TEST_fn_("io/Buf/Reader: streamUntilSeq preserves delimiter across buffer boundary" $scope) {
+    var reader_impl = io_Fixed_Reader_from(io_Fixed_reading(u8_l("abcdef\r\ntail")));
+    var_(read_mem, A$$(3, u8)) $undefined;
+    var reader = io_Buf_Reader_from(
+        io_Fixed_reader(&reader_impl), A_ref$((S$u8)(read_mem))
+    );
+    var_(out, A$$(8, u8)) $undefined;
+    var writer = io_Fixed_Writer_from(io_Fixed_writing(A_ref$((S$u8)(out))));
+
+    let streamed = try_(io_Buf_Reader_streamUntilSeq(
+        &reader, u8_l("\r\n"), io_Fixed_writer(&writer)
+    ));
+    try_(TEST_expect(streamed == 6));
+    try_(TEST_expect(mem_eqlBytes(io_Fixed_written(writer.stream).as_const, u8_l("abcdef"))));
+    try_(TEST_expect(try_(io_Buf_Reader_takeByte(&reader)) == u8_c('t')));
+} $unscoped(TEST_fn);
+
+TEST_fn_("io/Buf/Reader: streamUntilAny propagates missing delimiter as EOF" $scope) {
+    var reader_impl = io_Fixed_Reader_from(io_Fixed_reading(u8_l("abc")));
+    var_(read_mem, A$$(2, u8)) $undefined;
+    var reader = io_Buf_Reader_from(
+        io_Fixed_reader(&reader_impl), A_ref$((S$u8)(read_mem))
+    );
+
+    if_err((io_Buf_Reader_streamUntilAny(
+        &reader, u8_l(",;"), io_Writer_noop
+    ))(err)) {
+        try_(TEST_expect(E_eql(err.as_any, E_cause$UnexpectedEOF().as_any)));
+    } else_ok(streamed) {
+        let_ignore = streamed;
+        try_(TEST_expect(false));
+    }
+} $unscoped(TEST_fn);
+
 TEST_fn_("io/Buf/Writer: pending reports buffered bytes before flush" $scope) {
     var_(out, A$$(8, u8)) $undefined;
     var writer_impl = io_Fixed_Writer_from(io_Fixed_writing(A_ref$((S$u8)(out))));
@@ -88,5 +139,25 @@ TEST_fn_("io/Buf/Writer: pending reports buffered bytes before flush" $scope) {
 
     try_(io_Buf_Writer_flush(&writer));
     try_(TEST_expect(io_Buf_Writer_pending(writer).len == 0));
+    try_(TEST_expect(mem_eqlBytes(io_Fixed_written(writer_impl.stream).as_const, u8_l("ab"))));
+} $unscoped(TEST_fn);
+
+TEST_fn_("io/Buf/Writer: cursor separates pending and writable regions" $scope) {
+    var_(out, A$$(8, u8)) $undefined;
+    var writer_impl = io_Fixed_Writer_from(io_Fixed_writing(A_ref$((S$u8)(out))));
+    var_(mem, A$$(4, u8)) $undefined;
+    var writer = io_Buf_Writer_from(io_Fixed_writer(&writer_impl), A_ref$((S$u8)(mem)));
+
+    let unused = io_Buf_Writer_unusedMut(writer);
+    try_(TEST_expect(unused.len == A_len(mem)));
+    mem_copyBytes(S_prefix((unused)(3)), u8_l("abc"));
+    io_Buf_Writer_advance(&writer, 3);
+    try_(TEST_expect(mem_eqlBytes(io_Buf_Writer_pending(writer), u8_l("abc"))));
+    try_(TEST_expect(mem_eqlBytes(io_Buf_Writer_pendingMut(writer).as_const, u8_l("abc"))));
+    try_(TEST_expect(io_Buf_Writer_unusedMut(writer).len == 1));
+
+    io_Buf_Writer_undo(&writer, 1);
+    try_(TEST_expect(mem_eqlBytes(io_Buf_Writer_pending(writer), u8_l("ab"))));
+    try_(io_Buf_Writer_flush(&writer));
     try_(TEST_expect(mem_eqlBytes(io_Fixed_written(writer_impl.stream).as_const, u8_l("ab"))));
 } $unscoped(TEST_fn);

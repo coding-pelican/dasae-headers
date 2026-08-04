@@ -17,10 +17,11 @@ fn_((thrd_Select_Arm_from(
     u_memcpy((u_P$raw){ .raw = as$(P$raw)(&ret_mem.inner->result_), .type = tag.type }, tag.ref.as_const);
     return ret_mem;
 };
-fn_((thrd_Select_Arm_into(thrd_Select_Arm$raw* self, u_V$raw ret_mem))(u_V$raw)) {
-    claim_assert_nonnull(self);
+fn_((thrd_Select_Arm_into(u_V$thrd_Select_Arm$raw self, u_V$raw ret_mem))(u_V$raw)) {
+    claim_assert_nonnull(self.inner);
     claim_assert_nonnull(ret_mem.inner);
-    u_memcpy(ret_mem.ref, (u_P_const$raw){ .raw = &self->result_, .type = ret_mem.type });
+    debug_assert_eqBy(self.type, thrd_Select_Arm_typeInfo(ret_mem.type), TypeInfo_eql);
+    u_memcpy(ret_mem.ref, (u_P_const$raw){ .raw = &self.inner->result_, .type = ret_mem.type });
     return ret_mem;
 };
 fn_((thrd_Select_Arm_take(thrd_Select_Arm$raw* self, u_V$raw ret_mem))(u_V$raw)) {

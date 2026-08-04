@@ -2,8 +2,17 @@
 #include "dh/fs/File/std.h"
 #include "dh/thrd/Mtx.h"
 
+#if io_pre_ensured_utf8_env_enabled && plat_is_windows
+#include "dh/sys/api/windows/console.h"
+#include "dh/sys/api/windows/nls.h"
+#endif /* io_pre_ensured_utf8_env_enabled && plat_is_windows */
+#if io_pre_ensured_utf8_env_enabled && io_using_libc
+#include <locale.h>
+#endif /* io_pre_ensured_utf8_env_enabled && io_using_libc */
+
 /*========== Internal Declarations ==========================================*/
 
+$static fn_((io_std_direct__ensureUTF8Env(void))(void));
 T_alias$((io_std_direct__Ctx)(struct io_std_direct__Ctx {
     var_(in_file, fs_File);
     var_(in_mtx, thrd_Mtx_Recur);
@@ -87,6 +96,7 @@ fn_((io_std_direct(void))(io_std_direct_E$io_std_Self) $scope) {
                 .unlockErrFn = io_std_direct__unlockErr,
             };
             let ctx_initialized = orelse_((O_ref(&ctx))(local_({
+                io_std_direct__ensureUTF8Env();
                 let fs_File_std = catch_((fs_File_std_direct())(err, switch (E_tag$fs_File_std_direct_E(err)) {
                     case_((E_Tag$fs_File_std_direct_Unsupported)) return_err(
                         E_cause$io_std_direct_Unsupported()
@@ -302,6 +312,18 @@ fn_((io_std_VTbl_unreachableUnlockErr(P$raw ctx))(void)) {
 
 /*========== Internal Definitions ===========================================*/
 
+fn_((io_std_direct__ensureUTF8Env(void))(void)) {
+#if io_pre_ensured_utf8_env_enabled
+#if plat_is_windows
+    let_ignore = SetConsoleCP(CP_UTF8);
+    let_ignore = SetConsoleOutputCP(CP_UTF8);
+#endif /* plat_is_windows */
+#if io_using_libc
+    /* NOLINTNEXTLINE(concurrency-mt-unsafe) */
+    let_ignore = setlocale(LC_ALL, ".UTF-8");
+#endif /* io_using_libc */
+#endif /* io_pre_ensured_utf8_env_enabled */
+};
 fn_((io_std_direct__in(P$raw ctx))(io_Reader)) {
     let self = ptrAlignCast$((io_std_direct__Ctx*)(ensureNonnull(ctx)));
     return fs_File_reader(self->in_file);

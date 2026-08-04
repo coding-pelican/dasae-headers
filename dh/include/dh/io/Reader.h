@@ -5,7 +5,7 @@
  * @file    Reader.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2025-06-06 (date of creation)
- * @updated 2026-07-31 (date of last update)
+ * @updated 2026-08-04 (date of last update)
  * @ingroup dal-project/da/io
  * @prefix  io_Reader
  */
@@ -19,6 +19,7 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "common.h"
+#include "../mem/common.h"
 
 /*========== Macros and Declarations ========================================*/
 
@@ -54,6 +55,31 @@ $extern fn_((io_Reader_readExact(io_Reader self, S$u8 out_bytes))(io_ReadExactE$
 /// Read until at least_len bytes are read, EOF is reached, or out_bytes is full.
 $attr($must_check)
 $extern fn_((io_Reader_readAtLeast(io_Reader self, S$u8 out_bytes, usize least_len))(io_ReadE$usize));
+
+$attr($must_check)
+$extern fn_((io_Reader_readInt$usize(io_Reader self, mem_Endian endian))(io_ReadExactE$usize));
+$attr($must_check)
+$extern fn_((io_Reader_readInt$u64(io_Reader self, mem_Endian endian))(io_ReadExactE$u64));
+$attr($must_check)
+$extern fn_((io_Reader_readInt$ulong(io_Reader self, mem_Endian endian))(io_ReadExactE$ulong));
+$attr($must_check)
+$extern fn_((io_Reader_readInt$u32(io_Reader self, mem_Endian endian))(io_ReadExactE$u32));
+$attr($must_check)
+$extern fn_((io_Reader_readInt$u16(io_Reader self, mem_Endian endian))(io_ReadExactE$u16));
+$attr($must_check)
+$extern fn_((io_Reader_readInt$u8(io_Reader self, mem_Endian endian))(io_ReadExactE$u8));
+$attr($must_check)
+$extern fn_((io_Reader_readInt$isize(io_Reader self, mem_Endian endian))(io_ReadExactE$isize));
+$attr($must_check)
+$extern fn_((io_Reader_readInt$i64(io_Reader self, mem_Endian endian))(io_ReadExactE$i64));
+$attr($must_check)
+$extern fn_((io_Reader_readInt$ilong(io_Reader self, mem_Endian endian))(io_ReadExactE$ilong));
+$attr($must_check)
+$extern fn_((io_Reader_readInt$i32(io_Reader self, mem_Endian endian))(io_ReadExactE$i32));
+$attr($must_check)
+$extern fn_((io_Reader_readInt$i16(io_Reader self, mem_Endian endian))(io_ReadExactE$i16));
+$attr($must_check)
+$extern fn_((io_Reader_readInt$i8(io_Reader self, mem_Endian endian))(io_ReadExactE$i8));
 
 /// Skip exactly discard_len bytes, or return `UnexpectedEOF`.
 $attr($must_check)

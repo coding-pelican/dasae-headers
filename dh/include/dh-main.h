@@ -117,6 +117,7 @@ $static fn_((main__runDHMain(start_Invoc* start))(start_ExitCode)) {
         .args = start_Invoc_args(start),
         .env = start_Invoc_env(start),
         .preopens = start_Invoc_preopens(start),
+        .std = catch_((io_std_direct())($ignore, io_std_noop)),
     };
     pp_if_(pp_not(main_no_return_err))(
         (let returned =),

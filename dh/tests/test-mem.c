@@ -81,9 +81,9 @@ TEST_fn_("mem/common: basic - log2 alignment helpers match runtime alignment mat
 } $unscoped(TEST_fn)
 
 TEST_fn_("mem/common: basic - endian read and write use fixed byte arrays" $scope) {
-    try_(TEST_expect(mem_byte_order_native == arch_byte_order_native));
-    try_(TEST_expect(mem_byte_order_foreign == arch_byte_order_foreign));
-    try_(TEST_expect(mem_byte_order_foreign != mem_byte_order_native));
+    try_(TEST_expect(mem_Endian_native == as$(mem_Endian)(arch_endian_native)));
+    try_(TEST_expect(mem_Endian_foreign == as$(mem_Endian)(arch_endian_foreign)));
+    try_(TEST_expect(mem_Endian_foreign != mem_Endian_native));
 
     let le16 = S_deref$((const mem_ReadLE16Buf)(u8_l("\064\022")));
     let le32 = S_deref$((const mem_ReadLE32Buf)(u8_l("\170\126\064\022")));

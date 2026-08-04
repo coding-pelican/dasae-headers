@@ -69,6 +69,74 @@ fn_((io_Writer_writeByteN(io_Writer self, u8 byte, usize n))(io_WriteE$void) $sc
     return_ok({});
 } $unscoped(fn);
 
+fn_((io_Writer_writeInt$usize(io_Writer self, usize value, mem_Endian endian))(io_WriteE$void)) {
+    claim_assert(mem_Endian_isValid(endian));
+    if (endian == mem_Endian_little) {
+        let bytes = mem_writeLESize(value);
+        return io_Writer_writeBytes(self, A_ref$((S_const$u8)(bytes)));
+    }
+    let bytes = mem_writeBESize(value);
+    return io_Writer_writeBytes(self, A_ref$((S_const$u8)(bytes)));
+};
+fn_((io_Writer_writeInt$u64(io_Writer self, u64 value, mem_Endian endian))(io_WriteE$void)) {
+    claim_assert(mem_Endian_isValid(endian));
+    if (endian == mem_Endian_little) {
+        let bytes = mem_writeLE64(value);
+        return io_Writer_writeBytes(self, A_ref$((S_const$u8)(bytes)));
+    }
+    let bytes = mem_writeBE64(value);
+    return io_Writer_writeBytes(self, A_ref$((S_const$u8)(bytes)));
+};
+fn_((io_Writer_writeInt$ulong(io_Writer self, ulong value, mem_Endian endian))(io_WriteE$void)) {
+    claim_assert(mem_Endian_isValid(endian));
+    if (endian == mem_Endian_little) {
+        let bytes = mem_writeLELong(value);
+        return io_Writer_writeBytes(self, A_ref$((S_const$u8)(bytes)));
+    }
+    let bytes = mem_writeBELong(value);
+    return io_Writer_writeBytes(self, A_ref$((S_const$u8)(bytes)));
+};
+fn_((io_Writer_writeInt$u32(io_Writer self, u32 value, mem_Endian endian))(io_WriteE$void)) {
+    claim_assert(mem_Endian_isValid(endian));
+    if (endian == mem_Endian_little) {
+        let bytes = mem_writeLE32(value);
+        return io_Writer_writeBytes(self, A_ref$((S_const$u8)(bytes)));
+    }
+    let bytes = mem_writeBE32(value);
+    return io_Writer_writeBytes(self, A_ref$((S_const$u8)(bytes)));
+};
+fn_((io_Writer_writeInt$u16(io_Writer self, u16 value, mem_Endian endian))(io_WriteE$void)) {
+    claim_assert(mem_Endian_isValid(endian));
+    if (endian == mem_Endian_little) {
+        let bytes = mem_writeLE16(value);
+        return io_Writer_writeBytes(self, A_ref$((S_const$u8)(bytes)));
+    }
+    let bytes = mem_writeBE16(value);
+    return io_Writer_writeBytes(self, A_ref$((S_const$u8)(bytes)));
+};
+fn_((io_Writer_writeInt$u8(io_Writer self, u8 value, mem_Endian endian))(io_WriteE$void)) {
+    claim_assert(mem_Endian_isValid(endian));
+    return io_Writer_writeByte(self, value);
+};
+fn_((io_Writer_writeInt$isize(io_Writer self, isize value, mem_Endian endian))(io_WriteE$void)) {
+    return io_Writer_writeInt$usize(self, bitCast$((usize)(value)), endian);
+};
+fn_((io_Writer_writeInt$i64(io_Writer self, i64 value, mem_Endian endian))(io_WriteE$void)) {
+    return io_Writer_writeInt$u64(self, bitCast$((u64)(value)), endian);
+};
+fn_((io_Writer_writeInt$ilong(io_Writer self, ilong value, mem_Endian endian))(io_WriteE$void)) {
+    return io_Writer_writeInt$ulong(self, bitCast$((ulong)(value)), endian);
+};
+fn_((io_Writer_writeInt$i32(io_Writer self, i32 value, mem_Endian endian))(io_WriteE$void)) {
+    return io_Writer_writeInt$u32(self, bitCast$((u32)(value)), endian);
+};
+fn_((io_Writer_writeInt$i16(io_Writer self, i16 value, mem_Endian endian))(io_WriteE$void)) {
+    return io_Writer_writeInt$u16(self, bitCast$((u16)(value)), endian);
+};
+fn_((io_Writer_writeInt$i8(io_Writer self, i8 value, mem_Endian endian))(io_WriteE$void)) {
+    return io_Writer_writeInt$u8(self, bitCast$((u8)(value)), endian);
+};
+
 fn_((io_Writer_lf(io_Writer self))(io_WriteE$void)) {
     return io_Writer_writeByte(self, io_lf_byte);
 };

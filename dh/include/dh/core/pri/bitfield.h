@@ -56,7 +56,7 @@ extern "C" {
 #define bitfield_reserved$(_$Alias...) __alias__bitfield_reserved$(_$Alias)
 #define bitfield_count$(_$Alias...) __alias__bitfield_count$(_$Alias)
 
-claim_assert_static(arch_byte_order_is_little_endian || arch_byte_order_is_big_endian);
+claim_assert_static(arch_endian_is_little || arch_endian_is_big);
 
 /*========== Macros and Definitions =========================================*/
 
@@ -187,7 +187,7 @@ claim_assert_static(arch_byte_order_is_little_endian || arch_byte_order_is_big_e
     }; \
     typedef union _$Alias { \
         struct $packed { \
-            pp_if_(arch_byte_order_is_little_endian)( \
+            pp_if_(arch_endian_is_little)( \
                 pp_then_( \
                     __bitfield___field_decls_rev(_$Alias, __VA_ARGS__) \
                         __bitfield___storage$(_$Alias) : bitfield_reserved$(_$Alias); \

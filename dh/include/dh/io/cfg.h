@@ -5,7 +5,7 @@
  * @file    cfg.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2026-02-06 (date of creation)
- * @updated 2026-07-31 (date of last update)
+ * @updated 2026-08-04 (date of last update)
  * @ingroup dal-project/da/io
  * @prefix  io
  *
@@ -28,10 +28,16 @@ extern "C" {
 
 /*---------- Configuration Flags --------------------------------------------*/
 
+/// Prepare UTF-8 console and linked-libc state when direct standard streams
+/// are initialized. A normal `proc_Entry` initializes them before `dh_main`.
+/// Define `IO_NO_PRE_ENSURED_UTF8_ENV` to disable this policy.
 #if !defined(io_pre_ensured_utf8_env_enabled)
 #define io_pre_ensured_utf8_env_enabled __comp_bool__io_pre_ensured_utf8_env_enabled
 #endif /* !defined(io_pre_ensured_utf8_env_enabled) */
 #define io_pre_ensured_utf8_env__enabled_default __comp_flag__io_pre_ensured_utf8_env__enabled_default
+
+/*---------- Derived Environment Facts -------------------------------------*/
+
 #define io_using_libc __comp_bool__io_using_libc
 
 /*========== Macros and Definitions =========================================*/
@@ -40,11 +46,14 @@ extern "C" {
 
 #define __comp_bool__io_pre_ensured_utf8_env_enabled io_pre_ensured_utf8_env__enabled_default
 #define __comp_flag__io_pre_ensured_utf8_env__enabled_default pp_true
-#define __comp_bool__io_using_libc env_libc_linked
 #if defined(IO_NO_PRE_ENSURED_UTF8_ENV)
 #undef __comp_flag__io_pre_ensured_utf8_env__enabled_default
 #define __comp_flag__io_pre_ensured_utf8_env__enabled_default pp_false
 #endif /* defined(IO_NO_PRE_ENSURED_UTF8_ENV) */
+
+/*---------- Derived Environment Facts -------------------------------------*/
+
+#define __comp_bool__io_using_libc env_libc_linked
 
 #if defined(__cplusplus)
 } /* extern "C" */

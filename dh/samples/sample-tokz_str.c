@@ -14,13 +14,11 @@ T_use$((u8)(
 ));
 
 fn_((main(proc_Entry entry))(E$void) $scope) {
-    let_ignore = entry;
     var_(input_mem, A$$(64, u8)) $undefined;
     let input_buf = A_ref$((S$u8)(input_mem));
     var_(read_mem, A$$(256, u8)) $undefined;
-    let std = catch_((io_std_direct())($ignore, io_std_noop));
     var stream_in = io_Buf_Reader_from(
-        io_std_in(std),
+        io_std_in(entry.std),
         A_ref$((S$u8)(read_mem))
     );
     let whitespace = A_ref$((S_const$u8)(u8_a(ascii_whitespaces)));

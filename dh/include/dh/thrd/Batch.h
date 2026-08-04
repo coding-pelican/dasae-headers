@@ -83,7 +83,7 @@ $static fn_((thrd_Batch_Done_resultMut(thrd_Batch_Done$raw* self, TypeInfo resul
 
 $extern fn_((thrd_Batch_Done_from(thrd_Batch_Id id, TypeInfo result_type, u_V$thrd_Batch_Done$raw ret_mem))(u_V$thrd_Batch_Done$raw));
 #define T_use_thrd_Batch_Done_from$(_T...) __gen__T_use_thrd_Batch_Done_from$(_T)
-$extern fn_((thrd_Batch_Done_into(const thrd_Batch_Done$raw* self, TypeInfo result_type, u_V$raw ret_mem))(u_V$raw));
+$extern fn_((thrd_Batch_Done_into(u_V$thrd_Batch_Done$raw self, TypeInfo result_type, u_V$raw ret_mem))(u_V$raw));
 #define T_use_thrd_Batch_Done_into$(_T...) __gen__T_use_thrd_Batch_Done_into$(_T)
 $extern fn_((thrd_Batch_Done_take(thrd_Batch_Done$raw* self, TypeInfo result_type, u_V$raw ret_mem))(u_V$raw));
 #define T_use_thrd_Batch_Done_take$(_T...) __gen__T_use_thrd_Batch_Done_take$(_T)
@@ -200,7 +200,9 @@ $extern fn_((thrd_Batch_waitProtcd(thrd_Batch* self, TypeInfo result_type))(void
 #define __gen__T_use_thrd_Batch_Done_into$(_T...) \
     $attr($inline_always) \
     $static fn_((tpl$(thrd_Batch_Done_into, _T)(thrd_Batch_Done$(_T) self))(_T)) { \
-        return u_castV$((_T)(thrd_Batch_Done_into(self.as_raw, typeInfo$(_T), u_retV$(_T)))); \
+        return u_castV$((_T)(thrd_Batch_Done_into( \
+            u_asV$((u_V$thrd_Batch_Done$raw)(u_anyV(self))), typeInfo$(_T), u_retV$(_T) \
+        ))); \
     }
 #define __gen__T_use_thrd_Batch_Done_take$(_T...) \
     $attr($inline_always) \

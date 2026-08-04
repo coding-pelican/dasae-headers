@@ -5,7 +5,7 @@
  * @file    Target.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2026-07-30 (date of creation)
- * @updated 2026-07-30 (date of last update)
+ * @updated 2026-08-04 (date of last update)
  * @ingroup dasae-headers(dh)
  * @prefix  Target
  *
@@ -54,15 +54,15 @@ T_alias$((Target_Arch_Family)(enum_((Target_Arch_Family $fits($packed))(
     Target_Arch_Family_powerpc = arch_family_type_powerpc,
     Target_Arch_Family_s390x = arch_family_type_s390x
 ))));
-T_alias$((Target_Arch_ByteOrder)(enum_((Target_Arch_ByteOrder $fits($packed))(
-    Target_Arch_ByteOrder_unknown = arch_byte_order_unknown,
-    Target_Arch_ByteOrder_big_endian = arch_byte_order_big_endian,
-    Target_Arch_ByteOrder_little_endian = arch_byte_order_little_endian
+T_alias$((Target_Arch_Endian)(enum_((Target_Arch_Endian $fits($packed))(
+    Target_Arch_Endian_unknown = arch_endian_type_unknown,
+    Target_Arch_Endian_big = arch_endian_type_big,
+    Target_Arch_Endian_little = arch_endian_type_little
 ))));
 T_alias$((Target_Arch)(struct Target_Arch {
     var_(kind, Target_Arch_Kind);
     var_(family, Target_Arch_Family);
-    var_(byte_order, Target_Arch_ByteOrder);
+    var_(endian, Target_Arch_Endian);
     var_(word_bits, u16);
     var_(byte_bits, u8);
     var_(cache_line_bytes, u16);
@@ -125,7 +125,7 @@ $extern cmp_fn_neq$((Target)(lhs, rhs));
     .arch = { \
         .kind = as$(Target_Arch_Kind)(arch_type), \
         .family = as$(Target_Arch_Family)(arch_family_type), \
-        .byte_order = as$(Target_Arch_ByteOrder)(arch_byte_order), \
+        .endian = as$(Target_Arch_Endian)(arch_endian_type), \
         .word_bits = as$(u16)(arch_bits_wide), \
         .byte_bits = as$(u8)(arch_bits_per_byte), \
         .cache_line_bytes = as$(u16)(arch_cache_line_bytes), \

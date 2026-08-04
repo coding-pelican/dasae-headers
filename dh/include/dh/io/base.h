@@ -5,7 +5,7 @@
  * @file    base.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2025-03-22 (date of creation)
- * @updated 2026-07-31 (date of last update)
+ * @updated 2026-08-04 (date of last update)
  * @ingroup dal-project/da/io
  * @prefix  io
  *
@@ -34,7 +34,10 @@ errset_((io_ReadExactE)() $union_errset_(
     io_ReadE,
     io_UnexpectedEOFE
 ));
-T_useBy$(($spec(E, $set(io_ReadExactE)))(u8));
+T_useBy$(($spec(E, $set(io_ReadExactE)))(
+    usize, u64, ulong, u32, u16, u8,
+    isize, i64, ilong, i32, i16, i8
+));
 
 errset_((io_WriteFailedE)(io_WriteFailed));
 errset_((io_TooSmallBufferE)(TooSmallBuffer));

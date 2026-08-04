@@ -84,6 +84,9 @@ TEST_fn_("thrd/Select: poll returns copied receive arm" $guard) {
     let que_recv_result = thrd_Select_Arm_into$test_thrd_SelectI8(que_recv_case);
     try_(TEST_expect(matches(que_recv_result, test_thrd_SelectI8_recv)));
     try_(TEST_expect(union_to((que_recv_result)(test_thrd_SelectI8_recv)) == 9));
+    let preserved = *P_at((thrd_Select_Arm_result$test_thrd_SelectI8(&que_recv_case))[0]);
+    try_(TEST_expect(matches(preserved, test_thrd_SelectI8_recv)));
+    try_(TEST_expect(union_to((preserved)(test_thrd_SelectI8_recv)) == 9));
 
     return_ok({});
 } $unguarded(TEST_fn);

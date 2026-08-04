@@ -5,7 +5,7 @@
  * @file    common.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2024-12-17 (date of creation)
- * @updated 2026-07-31 (date of last update)
+ * @updated 2026-08-04 (date of last update)
  * @ingroup dasae-headers(dh)/mem
  * @prefix  mem
  *
@@ -88,8 +88,14 @@ $static fn_((mem_swapBytes16(u16 x))(u16));
 
 /*--- Endian Conversion ---*/
 
-#define mem_byte_order_native arch_byte_order_native
-#define mem_byte_order_foreign arch_byte_order_foreign
+T_alias$((mem_Endian)(enum_((mem_Endian $fits($packed))(
+    mem_Endian_big = arch_endian_type_big,
+    mem_Endian_little = arch_endian_type_little
+))));
+#define mem_Endian_native (as$(mem_Endian)(arch_endian_native))
+#define mem_Endian_foreign (as$(mem_Endian)(arch_endian_foreign))
+$attr($inline_always)
+$static fn_((mem_Endian_isValid(mem_Endian self))(bool));
 
 $attr($inline_always)
 $static fn_((mem_littleToNativeSize(usize x))(usize));
@@ -1067,106 +1073,110 @@ fn_((mem_swapBytes16(u16 x))(u16)) {
 
 /*--- Endian Conversion ---*/
 
+fn_((mem_Endian_isValid(mem_Endian self))(bool)) {
+    return self == mem_Endian_big || self == mem_Endian_little;
+};
+
 fn_((mem_littleToNativeSize(usize x))(usize)) {
-    return pp_if_(arch_byte_order_is_little_endian)(
+    return pp_if_(arch_endian_is_little)(
         pp_then_(x),
         pp_else_(mem_swapBytesSize(x)));
 };
 fn_((mem_littleToNative64(u64 x))(u64)) {
-    return pp_if_(arch_byte_order_is_little_endian)(
+    return pp_if_(arch_endian_is_little)(
         pp_then_(x),
         pp_else_(mem_swapBytes64(x)));
 };
 fn_((mem_littleToNativeLong(ulong x))(ulong)) {
-    return pp_if_(arch_byte_order_is_little_endian)(
+    return pp_if_(arch_endian_is_little)(
         pp_then_(x),
         pp_else_(mem_swapBytesLong(x)));
 };
 fn_((mem_littleToNative32(u32 x))(u32)) {
-    return pp_if_(arch_byte_order_is_little_endian)(
+    return pp_if_(arch_endian_is_little)(
         pp_then_(x),
         pp_else_(mem_swapBytes32(x)));
 };
 fn_((mem_littleToNative16(u16 x))(u16)) {
-    return pp_if_(arch_byte_order_is_little_endian)(
+    return pp_if_(arch_endian_is_little)(
         pp_then_(x),
         pp_else_(mem_swapBytes16(x)));
 };
 
 fn_((mem_bigToNativeSize(usize x))(usize)) {
-    return pp_if_(arch_byte_order_is_big_endian)(
+    return pp_if_(arch_endian_is_big)(
         pp_then_(x),
         pp_else_(mem_swapBytesSize(x)));
 };
 fn_((mem_bigToNative64(u64 x))(u64)) {
-    return pp_if_(arch_byte_order_is_big_endian)(
+    return pp_if_(arch_endian_is_big)(
         pp_then_(x),
         pp_else_(mem_swapBytes64(x)));
 };
 fn_((mem_bigToNativeLong(ulong x))(ulong)) {
-    return pp_if_(arch_byte_order_is_big_endian)(
+    return pp_if_(arch_endian_is_big)(
         pp_then_(x),
         pp_else_(mem_swapBytesLong(x)));
 };
 fn_((mem_bigToNative32(u32 x))(u32)) {
-    return pp_if_(arch_byte_order_is_big_endian)(
+    return pp_if_(arch_endian_is_big)(
         pp_then_(x),
         pp_else_(mem_swapBytes32(x)));
 };
 fn_((mem_bigToNative16(u16 x))(u16)) {
-    return pp_if_(arch_byte_order_is_big_endian)(
+    return pp_if_(arch_endian_is_big)(
         pp_then_(x),
         pp_else_(mem_swapBytes16(x)));
 };
 
 fn_((mem_nativeToLittleSize(usize x))(usize)) {
-    return pp_if_(arch_byte_order_is_little_endian)(
+    return pp_if_(arch_endian_is_little)(
         pp_then_(x),
         pp_else_(mem_swapBytesSize(x)));
 };
 fn_((mem_nativeToLittle64(u64 x))(u64)) {
-    return pp_if_(arch_byte_order_is_little_endian)(
+    return pp_if_(arch_endian_is_little)(
         pp_then_(x),
         pp_else_(mem_swapBytes64(x)));
 };
 fn_((mem_nativeToLittleLong(ulong x))(ulong)) {
-    return pp_if_(arch_byte_order_is_little_endian)(
+    return pp_if_(arch_endian_is_little)(
         pp_then_(x),
         pp_else_(mem_swapBytesLong(x)));
 };
 fn_((mem_nativeToLittle32(u32 x))(u32)) {
-    return pp_if_(arch_byte_order_is_little_endian)(
+    return pp_if_(arch_endian_is_little)(
         pp_then_(x),
         pp_else_(mem_swapBytes32(x)));
 };
 fn_((mem_nativeToLittle16(u16 x))(u16)) {
-    return pp_if_(arch_byte_order_is_little_endian)(
+    return pp_if_(arch_endian_is_little)(
         pp_then_(x),
         pp_else_(mem_swapBytes16(x)));
 };
 
 fn_((mem_nativeToBigSize(usize x))(usize)) {
-    return pp_if_(arch_byte_order_is_big_endian)(
+    return pp_if_(arch_endian_is_big)(
         pp_then_(x),
         pp_else_(mem_swapBytesSize(x)));
 };
 fn_((mem_nativeToBig64(u64 x))(u64)) {
-    return pp_if_(arch_byte_order_is_big_endian)(
+    return pp_if_(arch_endian_is_big)(
         pp_then_(x),
         pp_else_(mem_swapBytes64(x)));
 };
 fn_((mem_nativeToBigLong(ulong x))(ulong)) {
-    return pp_if_(arch_byte_order_is_big_endian)(
+    return pp_if_(arch_endian_is_big)(
         pp_then_(x),
         pp_else_(mem_swapBytesLong(x)));
 };
 fn_((mem_nativeToBig32(u32 x))(u32)) {
-    return pp_if_(arch_byte_order_is_big_endian)(
+    return pp_if_(arch_endian_is_big)(
         pp_then_(x),
         pp_else_(mem_swapBytes32(x)));
 };
 fn_((mem_nativeToBig16(u16 x))(u16)) {
-    return pp_if_(arch_byte_order_is_big_endian)(
+    return pp_if_(arch_endian_is_big)(
         pp_then_(x),
         pp_else_(mem_swapBytes16(x)));
 };
