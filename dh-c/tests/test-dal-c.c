@@ -73,6 +73,7 @@ static void test_clean_prefers_local_build_dir(void);
 static void test_clean_profile_removes_dependency_exports(void);
 static void test_clean_cache_scope(void);
 static void test_clean_unused_dependencies(void);
+static void test_clean_removes_only_empty_project_state(void);
 static void test_target_request_resoln(void);
 static void test_linux_gnu_target_vendor_is_canonical(void);
 static void test_output_override_generates_target_extensions(void);
@@ -132,6 +133,7 @@ int main(void) {
     RUN_TEST(test_clean_profile_removes_dependency_exports);
     RUN_TEST(test_clean_cache_scope);
     RUN_TEST(test_clean_unused_dependencies);
+    RUN_TEST(test_clean_removes_only_empty_project_state);
     RUN_TEST(test_target_request_resoln);
     RUN_TEST(test_linux_gnu_target_vendor_is_canonical);
     RUN_TEST(test_output_override_generates_target_extensions);
@@ -2789,7 +2791,7 @@ static void test_pch_dependency_invalidates_linked_plan(void) {
     TEST_ASSERT(file_write(pch_dep_header, "#pragma once\n#define PCH_DEP_VALUE 1\n"));
     TEST_ASSERT(file_write(source, "int main(void) { return 0; }\n"));
 
-    dal_c_Project* proj = dal_c_Project_detectAt(project_root, NULL);
+    dal_c_Project* proj = dal_c_Project_detectAt(project_root, project_root);
     TEST_ASSERT(proj != NULL);
     TEST_ASSERT(proj->pch_header != NULL);
 
@@ -4028,6 +4030,51 @@ static void test_clean_unused_dependencies(void) {
     free(unused_src);
     free(used_src);
     free(lock_dh);
+    free(project_dh);
+    free(project_root);
+    free(temp_root);
+    free(original_cwd);
+}
+
+static void test_clean_removes_only_empty_project_state(void) {
+    test_reset_temp_root();
+
+    char* original_cwd = env_getCWD();
+    char* temp_root = test_temp_root();
+    char* project_root = path_join(temp_root, "clean-empty-state-project");
+    char* project_dh = path_join(project_root, "project.dh");
+    char* state_dir = path_join(project_root, ".dh-c");
+    char* state_marker = path_join(state_dir, "keep.txt");
+    char* build_dev = path_join(project_root, "build/dev");
+
+    TEST_ASSERT(original_cwd != NULL);
+    TEST_ASSERT(dir_createRecur(state_dir));
+    TEST_ASSERT(dir_createRecur(build_dev));
+    TEST_ASSERT(file_write(project_dh, "output=clean-empty-state-project\n"));
+    TEST_ASSERT(env_setCWD(project_root));
+
+    const char* argv[] = { dal_c_tool_name, "clean", "dev", NULL };
+    dal_c_Cmd* cmd = dal_c_Cmd_parse(3, argv);
+    TEST_ASSERT(cmd != NULL);
+    dal_c_Project* proj = dal_c_Project_detect(cmd);
+    TEST_ASSERT(proj != NULL && proj->root != NULL);
+    TEST_ASSERT(dal_c_Cmd_cleanTarget(cmd, proj) == 0);
+    TEST_ASSERT(!path_exists(state_dir));
+
+    TEST_ASSERT(dir_createRecur(state_dir));
+    TEST_ASSERT(dir_createRecur(build_dev));
+    TEST_ASSERT(file_write(state_marker, "preserve\n"));
+    TEST_ASSERT(dal_c_Cmd_cleanTarget(cmd, proj) == 0);
+    TEST_ASSERT(path_isFile(state_marker));
+
+    dal_c_Project_cleanup(&proj);
+    dal_c_Cmd_cleanup(&cmd);
+    TEST_ASSERT(env_setCWD(original_cwd));
+    TEST_ASSERT(test_remove_recur(temp_root));
+
+    free(build_dev);
+    free(state_marker);
+    free(state_dir);
     free(project_dh);
     free(project_root);
     free(temp_root);

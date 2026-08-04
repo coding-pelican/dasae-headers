@@ -1,4 +1,4 @@
-# dh-c Build Guide
+# Build - `dh-c` Guide
 
 `dh-c` is a direct-source and project build tool for dasae-headers. Its usage
 model combines direct compiler-style input with optional workspace/project
@@ -208,7 +208,7 @@ dh-c clean --deps --unused --force
 Git dependency checkouts with user changes are preserved unless `--force` is explicit.
 Untracked `build/`, `.dh-c/`, package staging, and dependency-export state created by dh-c
 do not make an otherwise clean checkout look user-modified. `lock.dh` is never removed
-by dependency cleanup.
+by dependency cleanup. After cleanup, dh-c removes `.dh-c` when no state remains inside it.
 
 ## 5. Inspection commands
 
@@ -449,6 +449,7 @@ Normally ignored:
 ```txt
 build/
 .dh-c/
+package/        # generated install-layout staging
 prebuilt/       # immutable library package output unless deliberately vendored
 self-prebuilt/  # generated relocatable dh-c SDK roots
 dist/           # generated release/archive output

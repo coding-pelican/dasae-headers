@@ -411,27 +411,21 @@ CMakeUserPresets.json
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #cmake-build-*
 
-########## dasae-headers c build tools ########################################
+########## dasae-headers c build tool #########################################
 # Generated project/workspace state and ad-hoc fallback cache.
 # Persistent dependency lock.dh files are intentionally not ignored.
-.dh-c/
 **/.dh-c/
-.dh-c-cache/
 **/.dh-c-cache/
 
-# Log files
-*.log*
-# Log directories
-**/.log*/
-
-# DH-C generated package roots
-**/self-prebuilt/
-
-# DH-C library files
+# Generated dependency exports
 **/lib/deps.h
 **/lib/deps/
-**/lib/deps/.obj/
-**/lib/deps/.bin/
+
+# Generated package and distribution roots
+**/package/
+**/prebuilt/
+**/self-prebuilt/
+**/dist/
 
 ########## Project common files ###############################################
 # VS Code settings
@@ -459,6 +453,11 @@ AGENTS.md
 .commit.txt
 .pull_request.txt
 .issue.txt
+
+# Generated logs
+*.log
+*.log.*
+**/.log/
 
 ########## Project specific files #############################################
 # Local extra projects

@@ -183,6 +183,7 @@ static bool dal_c_Cmd__pathIsUnderRoot(const char* root, const char* path);
 static int dal_c_Cmd__cleanDependencyExportsAt(const dal_c_Cmd* self, const char* root, bool* cleaned);
 static int dal_c_Cmd__cleanCacheScope(const dal_c_Cmd* self, const dal_c_Project* proj, bool* cleaned);
 static int dal_c_Cmd__cleanDependencyState(const dal_c_Cmd* self, const dal_c_Project* proj, bool* cleaned);
+static bool dal_c_Cmd__removeEmptyProjectState(const dal_c_Cmd* self, const char* root, bool* cleaned);
 static bool dal_c_Cmd__executeNeedsProjectLock(const dal_c_Cmd* self);
 static int dal_c_Cmd__executeUnlocked(const dal_c_Cmd* self, const dal_c_Project* proj);
 static int dal_c_Cmd__makeTargetUnlocked(const dal_c_Cmd* self, const dal_c_Project* proj);
@@ -2904,6 +2905,46 @@ static bool dal_c_Cmd__removeGeneratedPath(const dal_c_Cmd* self, const char* pa
     return true;
 }
 
+static bool dal_c_Cmd__removeEmptyProjectState(const dal_c_Cmd* self, const char* root, bool* cleaned) {
+    if (!root || !root[0]) { return true; }
+    char* state_dir = path_join(root, ".dh-c");
+    if (!state_dir || !path_isDir(state_dir)) {
+        free(state_dir);
+        return true;
+    }
+
+    int entry_count = 0;
+    char** entries = dir_listEntries(state_dir, &entry_count);
+    for (int i = 0; entries && i < entry_count; ++i) { free(entries[i]); }
+    free(entries);
+    if (entry_count != 0) {
+        free(state_dir);
+        return true;
+    }
+
+    if (self->payload.clean.dry_run) {
+        printf("[DRY-RUN] remove %s\n", state_dir);
+        if (cleaned) { *cleaned = true; }
+        free(state_dir);
+        return true;
+    }
+
+#ifdef _WIN32
+    bool removed = RemoveDirectoryA(state_dir) != 0;
+#else
+    bool removed = rmdir(state_dir) == 0;
+#endif
+    if (!removed) {
+        (void)fprintf(stderr, "Error: Failed to remove empty project state: %s\n", state_dir);
+        free(state_dir);
+        return false;
+    }
+    printf("Cleaned: %s\n", state_dir);
+    if (cleaned) { *cleaned = true; }
+    free(state_dir);
+    return true;
+}
+
 static time_t dal_c_Cmd__newestMtime(const char* path) {
     if (!path || (!path_isDir(path) && !path_isFile(path))) { return 0; }
     time_t newest = file_mtime(path);
@@ -3360,6 +3401,11 @@ int dal_c_Cmd_cleanTarget(const dal_c_Cmd* self, const dal_c_Project* proj) {
                 return deps_result;
             }
         }
+        if (!dal_c_Cmd__removeEmptyProjectState(self, cwd, &cleaned)) {
+            free(cwd_build_dir);
+            free(cwd);
+            return 1;
+        }
         free(cwd_build_dir);
         free(cwd);
         if (!cleaned) { printf("Nothing to clean\n"); }
@@ -3408,6 +3454,10 @@ int dal_c_Cmd_cleanTarget(const dal_c_Cmd* self, const dal_c_Project* proj) {
             int child_result = dal_c_Cmd__runRecursiveClean(self, proj);
             if (child_result != 0) { return child_result; }
         }
+    }
+
+    if (proj && proj->root && !dal_c_Cmd__removeEmptyProjectState(self, proj->root, &cleaned)) {
+        return 1;
     }
 
     if (!cleaned) { printf("Nothing to clean\n"); }

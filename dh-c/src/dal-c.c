@@ -2189,7 +2189,7 @@ static int dal_c__printUsage(const char* topic) {
     printf("PCH RULES:\n");
     printf("  `pch=auto` uses the detected DH bundle when available; `pch=deps` uses generated `lib/deps.h`; `pch=off` disables PCH.\n");
     printf("  PCH files are generated inside the active profile/flag cache plan and are rebuilt when their headers or compile settings change.\n");
-    printf("  Disabled, unavailable, unused, and already-fresh PCH paths are reported with `[SKIP] PCH ...`; unused PCH rules are not emitted.\n");
+    printf("  Disabled, unavailable, unused, and already-fresh PCH paths are reported separately with `[SKIP] PCH ...`; unused PCH rules are not emitted.\n");
     printf("  `lib/deps.h` is generated only when a dependency prelude is needed; it includes top-level headers under `lib/deps/`.\n\n");
 
     printf("CONFIGURATION FILES:\n");
@@ -2203,6 +2203,7 @@ static int dal_c__printUsage(const char* topic) {
     printf("  Dependency state, `lib/deps/`, and `lib/deps.h` are created lazily; dependency-free work does not create them.\n");
     printf("  Project build locks live in the global cache; obsolete `.dh-c/build.lock` state is removed when safe.\n");
     printf("  `lib/deps/`, `lib/deps.h`, and `.dh-exports` store generated dependency exports consumed by project builds.\n");
+    printf("  `package/`, `prebuilt/`, and `self-prebuilt/` are generated packaging roots.\n");
     printf("  `lock.dh` sits beside project.dh; `<source>.lock.dh` sits beside an ad-hoc primary source companion. Cleanup never rewrites either.\n");
     printf("  Use `clean --cache --older-than=30d` or `clean --deps --unused --dry-run` for maintenance.\n");
     printf("  Do not place durable source assets, checked-in resources, or manual files under generated state.\n\n");

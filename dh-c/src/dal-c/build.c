@@ -3272,7 +3272,7 @@ dal_c__noinline int dal_c__generateMakefile(
     bool plan_uses_pch = dal_c__sourcesUsePch(proj, sources, has_pch);
     if (cmd->show_progress) {
         if (!has_pch) {
-            (void)printf("[SKIP] PCH disabled or unavailable\n");
+            (void)printf("[SKIP] PCH %s\n", proj && !proj->pch_enabled ? "disabled" : "unavailable");
         } else if (!plan_uses_pch) {
             (void)printf("[SKIP] PCH no selected source uses the precompiled header\n");
         } else if (dal_c__pchDepsAreUpToDate(cmd, proj, profile, build_dir, target_type)) {
@@ -7967,6 +7967,7 @@ static char* dal_c__makePchPath(const dal_c_Cmd* cmd, const dal_c_Project* proj,
 
 static bool dal_c__pchHeaderIsDHInstallHeader(const dal_c_Project* proj) {
     if (!proj || !proj->dh_path || !proj->pch_header) { return false; }
+    if (proj->root && str_eql(proj->root, proj->dh_path)) { return false; }
     char* include_dir = path_join(proj->dh_path, dal_c_dir_include);
     char* rel = include_dir ? path_relative(include_dir, proj->pch_header) : NULL;
     bool is_dh_header = rel != NULL

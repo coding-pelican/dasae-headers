@@ -593,7 +593,7 @@ compiler attributes, source locations, and primitive target operations.
   separate syntax/attribute layer described below.
 - **Version configuration (`builtin/cfg/ver.h`):**
   - `ver_self_core_major`, `ver_self_core_minor`, `ver_self_core_patch`,
-    `ver_self_core_num`, `ver_self_core_str` — build-provided `dh` version
+    `ver_self_core_num`, `ver_self_core_str` — build-provided dasae-headers version
   - `ver_self_num`, `ver_self_str`, `ver_self_str_with_build` — prerelease and
     build-aware self-version queries
   - `ver_self_label_*` and `ver_self_build_*` expose the prerelease and build
@@ -1675,7 +1675,7 @@ Both rely on `TypeInfo` from `core`/`type_info.h`
 
 ## Language Baseline
 
-`dh` targets C11 through C17 compilation modes on Clang and GCC. Its selective
+dasae-headers targets C11 through C17 compilation modes on Clang and GCC. Its selective
 C23 compatibility surface makes normalized modern spellings, type operations,
 feature queries, and declaration or expression forms available without requiring
 the compiler to run in that mode.

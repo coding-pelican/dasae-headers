@@ -1,4 +1,4 @@
-# dh-c Prebuilt Package Format
+# `dh-c` Prebuilt Package Format
 
 ## Purpose
 
