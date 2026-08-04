@@ -3,7 +3,6 @@ set -euo pipefail
 
 repo_root=$(git rev-parse --show-toplevel)
 dh_root="$repo_root/dh"
-profile=${DH_VERIFY_PROFILE:-dev}
 state_dir=$(git rev-parse --git-path dh-hooks)
 
 case "$state_dir" in
@@ -103,13 +102,15 @@ case $(uname -s) in
         ;;
 esac
 
-run_dh test "$profile" --test
-run_dh syntax "$profile" \
-    --target="$cross_target" \
-    --freestanding \
-    --link-libc=off \
-    --link-default-libs=off \
-    --all
+for profile in test release; do
+    run_dh test "$profile" --test
+    run_dh syntax "$profile" \
+        --target="$cross_target" \
+        --freestanding \
+        --link-libc=off \
+        --link-default-libs=off \
+        --all
+done
 
 echo
-echo "verify-native: native tests and $cross_target syntax passed"
+echo "verify-native: test and release native tests and $cross_target syntax passed"
