@@ -12,15 +12,15 @@ $static let_(debug_assert__fmt_loc, S_const$u8) = u8_l("    in function {:z}, at
 
 fn_((debug_assert_failLog(const char* expr, const char* func, const char* file, u32 line))(void) $guard) {
     let std = catch_((io_std_direct())($ignore, io_std_noop));
-    let locked = io_std_lockErr(std);
-    defer_(io_Locked_Writer_unlock(locked));
+    var locked = io_std_lockErr(std);
+    defer_(io_Locked_Writer_unlock(&locked));
     io_stream_eprintln(debug_assert__fmt_default, expr, func, file, line);
 } $unguarded(fn);
 
 fn_((debug_assert_failLogMsg(const char* expr, const char* func, const char* file, u32 line, const char* msg))(void) $guard) {
     let std = catch_((io_std_direct())($ignore, io_std_noop));
-    let locked = io_std_lockErr(std);
-    defer_(io_Locked_Writer_unlock(locked));
+    var locked = io_std_lockErr(std);
+    defer_(io_Locked_Writer_unlock(&locked));
     io_stream_eprint(debug_assert__fmt_msg, msg);
     io_stream_eprint(u8_l(" "));
     io_stream_eprintln(debug_assert__fmt_expr, expr);
@@ -29,8 +29,8 @@ fn_((debug_assert_failLogMsg(const char* expr, const char* func, const char* fil
 
 fn_((debug_assert_failLogFmt(const char* expr, const char* func, const char* file, u32 line, const char* fmt, ...))(void) $guard) {
     let std = catch_((io_std_direct())($ignore, io_std_noop));
-    let locked = io_std_lockErr(std);
-    defer_(io_Locked_Writer_unlock(locked));
+    var locked = io_std_lockErr(std);
+    defer_(io_Locked_Writer_unlock(&locked));
     using_(var_(args, va_list) $undefined) using_fini_(va_start(args, fmt), va_end(args)) {
         io_stream_eprintVaArgs(mem_spanZ0Bytes(as$(const u8*)(fmt)), args);
     }

@@ -98,7 +98,12 @@ fn_((fs_Dir_rename(fs_Dir self, S_const$u8 old_sub_path, S_const$u8 new_sub_path
     var_(new_path, A$$(fs__path_max, u8)) = A_zero();
     let old_resolved = try_(fs_Dir__resolvePath(self, old_sub_path, A_ref$((S$u8)(old_path))));
     let new_resolved = try_(fs_Dir__resolvePath(self, new_sub_path, A_ref$((S$u8)(new_path))));
-    return fs_File_rename(old_resolved.as_const, new_resolved.as_const);
+    if (!MoveFileExA(
+        as$(LPCSTR)(old_resolved.ptr),
+        as$(LPCSTR)(new_resolved.ptr),
+        MOVEFILE_REPLACE_EXISTING
+    )) return_err(E_cause$fs_WriteFailed());
+    return_ok({});
 #elif plat_is_linux
     var_(old_path, A$$(fs__path_max, u8)) = A_zero();
     var_(new_path, A$$(fs__path_max, u8)) = A_zero();

@@ -28,15 +28,15 @@ $static fn_((test_log_Output_writer(test_log_Output* self))(io_Writer)) {
     });
 };
 
-TEST_fn_("log: writer provider filters levels and formats default scope" $scope) {
+TEST_fn_("log: writer filters levels and formats default scope" $scope) {
     T_use_A$(64, u8);
     var_(storage, A$64$u8) $undefined;
     var output = (test_log_Output){
         .buf = A_ref$((S$u8)storage),
         .used = 0,
     };
-    var provider = log_Writer_init(test_log_Output_writer(&output), log_Level_info);
-    let logger = log_Writer_self(&provider);
+    var writer = log_Writer_init(test_log_Output_writer(&output), log_Level_info);
+    let logger = log_Writer_self(&writer);
 
     log_debug(logger, u8_l("filtered {:u}"), 1u);
     log_info(logger, u8_l("ready {:u}"), 2u);
@@ -47,15 +47,15 @@ TEST_fn_("log: writer provider filters levels and formats default scope" $scope)
     )));
 } $unscoped(TEST_fn);
 
-TEST_fn_("log: writer provider carries explicit scope" $scope) {
+TEST_fn_("log: writer carries explicit scope" $scope) {
     T_use_A$(64, u8);
     var_(storage, A$64$u8) $undefined;
     var output = (test_log_Output){
         .buf = A_ref$((S$u8)storage),
         .used = 0,
     };
-    var provider = log_Writer_init(test_log_Output_writer(&output), log_Level_debug);
-    let logger = log_Writer_self(&provider);
+    var writer = log_Writer_init(test_log_Output_writer(&output), log_Level_debug);
+    let logger = log_Writer_self(&writer);
 
     log_scopedWarn(logger, u8_l("proc"), u8_l("missing {:s}"), u8_l("child"));
 
@@ -65,7 +65,7 @@ TEST_fn_("log: writer provider carries explicit scope" $scope) {
     )));
 } $unscoped(TEST_fn);
 
-TEST_fn_("log: noop provider is an enabled policy, not a missing provider" $scope) {
+TEST_fn_("log: noop logger is a valid disabled policy" $scope) {
     try_(TEST_expect(log_isValid(log_Self_noop)));
     try_(TEST_expect(!log_enabled(
         log_Self_noop,
@@ -73,4 +73,8 @@ TEST_fn_("log: noop provider is an enabled policy, not a missing provider" $scop
         log_scope_default
     )));
     log_err(log_Self_noop, u8_l("discarded by policy"));
+} $unscoped(TEST_fn);
+
+TEST_fn_("log: failing logger retains a complete interface" $scope) {
+    try_(TEST_expect(log_isValid(log_Self_failing)));
 } $unscoped(TEST_fn);

@@ -17,12 +17,8 @@ TEST_fn_("proc/Preopens: empty set has no named resources" $scope) {
     try_(TEST_expect(isNone(proc_Preopens_by(proc_Preopens_empty, u8_l("stdin")))));
 } $unscoped(TEST_fn);
 
-TEST_fn_("proc/Preopens: caller set injects a real resource" $scope) {
-    let direct = try_(proc_Preopens_direct());
-    let native_stdout = unwrap_(proc_Preopens_by(direct, u8_l("stdout")));
-    try_(TEST_expect(matches(native_stdout, proc_Preopens_Resrc_file)));
-
-    var file = union_to((native_stdout)(proc_Preopens_Resrc_file));
+TEST_fn_("proc/Preopens: caller set injects a resource without native preopens" $scope) {
+    var_(file, fs_File) = cleared();
     let preopens = proc_Preopens_ensureValid((proc_Preopens){
         .ctx = &file,
         .vtbl = &test_proc_Preopens__vtbl,

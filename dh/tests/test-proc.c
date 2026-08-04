@@ -4,6 +4,96 @@
 #include "dh/io/Reader.h"
 #include "dh/mem/common.h"
 
+TEST_fn_("proc/Self: noop and failing capabilities preserve unavailable operations" $scope) {
+    var selfs = A_from$((proc_Self){ proc_noop, proc_failing });
+    var_(path_mem, A$$(32, u8)) $undefined;
+    var argv = A_from$((S_const$u8){ u8_l("program") });
+    let spawn_opts = proc_Spawn_Opts_default(A_ref$((S$S_const$u8)(argv)));
+    let replace_opts = proc_Replace_Opts_default(A_ref$((S$S_const$u8)(argv)));
+
+    for_(($s(A_ref$((S_const$proc_Self)(selfs))))(self_ptr)) {
+        let self = *P_at((self_ptr)[0]);
+        try_(TEST_expect(proc_isValid(self)));
+
+        if_err((proc_openExe(self, fs_File_OpenFlags_default))(err)) {
+            try_(TEST_expect(E_eql(&err, E_cause$proc_OperationUnsupported().as_any)));
+        } else_ok(file) {
+            fs_File_close(file);
+            try_(TEST_expect(false));
+        }
+        if_err((proc_exePath(self, A_ref$((S$u8)(path_mem))))(err)) {
+            try_(TEST_expect(E_eql(err.as_any, E_cause$proc_OperationUnsupported().as_any)));
+        } else_ok(path) {
+            let_ignore = path;
+            try_(TEST_expect(false));
+        }
+        if_err((proc_currPath(self, A_ref$((S$u8)(path_mem))))(err)) {
+            try_(TEST_expect(E_eql(err.as_any, E_cause$proc_OperationUnsupported().as_any)));
+        } else_ok(path) {
+            let_ignore = path;
+            try_(TEST_expect(false));
+        }
+        if_err((proc_setCurrPath(self, mem_Alctr_noop, u8_l(".")))(err)) {
+            try_(TEST_expect(E_eql(err.as_any, E_cause$proc_OperationUnsupported().as_any)));
+        } else_ok(value) {
+            let_ignore = value;
+            try_(TEST_expect(false));
+        }
+        if_err((proc_setCurrDir(self, mem_Alctr_noop, fs_Dir_cwd))(err)) {
+            try_(TEST_expect(E_eql(err.as_any, E_cause$proc_OperationUnsupported().as_any)));
+        } else_ok(value) {
+            let_ignore = value;
+            try_(TEST_expect(false));
+        }
+        if_err((proc_replace(
+            self, mem_Alctr_noop, proc_Env_empty, replace_opts
+        ))(err)) {
+            try_(TEST_expect(E_eql(err.as_any, E_cause$proc_OperationUnsupported().as_any)));
+        } else_ok(value) {
+            let_ignore = value;
+            try_(TEST_expect(false));
+        }
+        if_err((proc_replacePath(
+            self, mem_Alctr_noop, proc_Env_empty, fs_Dir_cwd, replace_opts
+        ))(err)) {
+            try_(TEST_expect(E_eql(err.as_any, E_cause$proc_OperationUnsupported().as_any)));
+        } else_ok(value) {
+            let_ignore = value;
+            try_(TEST_expect(false));
+        }
+        if_err((proc_spawn(
+            self, mem_Alctr_noop, proc_Env_empty, spawn_opts
+        ))(err)) {
+            try_(TEST_expect(E_eql(err.as_any, E_cause$proc_OperationUnsupported().as_any)));
+        } else_ok(child) {
+            var child_mut = child;
+            proc_Child_kill(&child_mut, proc_noop);
+            try_(TEST_expect(false));
+        }
+        if_err((proc_spawnPath(
+            self, mem_Alctr_noop, proc_Env_empty, fs_Dir_cwd, spawn_opts
+        ))(err)) {
+            try_(TEST_expect(E_eql(err.as_any, E_cause$proc_OperationUnsupported().as_any)));
+        } else_ok(child) {
+            var child_mut = child;
+            proc_Child_kill(&child_mut, proc_noop);
+            try_(TEST_expect(false));
+        }
+        if_err((proc_userInfo(self, u8_l("nobody")))(err)) {
+            try_(TEST_expect(E_tag(err.as_any) == E_Tag$proc_UserInfo_Unsupported));
+        } else_ok(info) {
+            let_ignore = info;
+            try_(TEST_expect(false));
+        }
+        if_err((proc_baseAddr(self))(err)) {
+            try_(TEST_expect(E_tag(err.as_any) == E_Tag$proc_BaseAddr_Unsupported));
+        } else_ok(address) {
+            let_ignore = address;
+            try_(TEST_expect(false));
+        }
+    } $end(for);
+} $unscoped(TEST_fn);
+
 TEST_fn_("proc/Self: direct capability exposes process paths" $guard) {
     let self = try_(proc_direct());
     try_(TEST_expect(proc_isValid(self)));

@@ -72,7 +72,7 @@ extern "C" {
 
 #define S_T$(_$T...) TypeOf(*(as$(_$T*)(null))->ptr)
 #define S_TUnqual$(_$T...) TypeOfUnqual(*(as$(_$T*)(null))->ptr)
-#define S_isConst$(_$T...) eqlType$(S_InnerT$(_$T)*, const S_InnerTUnqual$(_$T)*)
+#define S_isConst$(_$T...) eqlType$(S_InnerT$(_$T)*, const S_InnerT$(_$T)*)
 
 #define S_InnerT$(_$T...) TypeOf(*(as$(_$T*)(null))->ptr)
 #define S_InnerTUnqual$(_$T...) TypeOfUnqual(*(as$(_$T*)(null))->ptr)

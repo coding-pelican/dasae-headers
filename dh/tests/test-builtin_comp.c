@@ -54,3 +54,24 @@ TEST_fn_("builtin/comp: TypeOfUnqual removes qualifiers from unions and arrays" 
     try_(TEST_expect(*A_at((array_value)[0]) == 7));
     try_(TEST_expect(*A_at((array_value)[1]) == 6));
 } $unscoped(TEST_fn);
+
+TEST_fn_("builtin/comp: copy preserves scalar, union, and array-wrapper values" $scope) {
+    $static let_(const_scalar, u32) = 7;
+
+    var scalar = copy(const_scalar);
+    scalar = 8;
+    try_(TEST_expect(scalar == 8));
+
+    var union_value = copy(test_builtin_comp__const_union);
+    union_value.value = 9;
+    try_(TEST_expect(union_value.value == 9));
+
+    var anonymous_union = copy(((test_builtin_comp__Union){ .value = 11 }));
+    anonymous_union.value = 12;
+    try_(TEST_expect(anonymous_union.value == 12));
+
+    var array_value = copy(test_builtin_comp__const_array);
+    *A_at((array_value)[0]) = 10;
+    try_(TEST_expect(*A_at((array_value)[0]) == 10));
+    try_(TEST_expect(*A_at((array_value)[1]) == 2));
+} $unscoped(TEST_fn);

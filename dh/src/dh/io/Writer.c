@@ -30,15 +30,20 @@ fn_((io_Writer_failingWrite(P$raw ctx, S_const$u8 bytes))(io_WriteE$usize) $scop
     return_err(E_cause$io_WriteFailed());
 } $unscoped(fn);
 
-fn_((io_Writer_write(io_Writer self, S_const$u8 bytes))(io_WriteE$usize)) {
+fn_((io_Writer_write(io_Writer self, S_const$u8 bytes))(io_WriteE$usize) $scope) {
     self = io_Writer_ensureValid(self);
     claim_assert_nonnullS(bytes);
-    return self.writeFn(self.ctx, bytes);
-};
+    let written = try_(self.writeFn(self.ctx, bytes));
+    claim_assert(written <= bytes.len);
+    return_ok(written);
+} $unscoped(fn);
 fn_((io_Writer_writeBytes(io_Writer self, S_const$u8 bytes))(io_WriteE$void) $scope) {
     var_(idx, usize) = 0;
     while (idx != bytes.len) {
-        idx += try_(io_Writer_write(self, S_suffix((bytes)(idx))));
+        let remaining = S_suffix((bytes)(idx));
+        let written = try_(io_Writer_write(self, remaining));
+        if (written == 0) return_err(E_cause$io_WriteFailed());
+        idx += written;
     }
     return_ok({});
 } $unscoped(fn);

@@ -133,10 +133,49 @@ $static fn_((test_exec_Coop__sleepAndProbe(test_exec_Coop_Probe probe))(u32)) {
 };
 fn_use_Clsr_((test_exec_Coop__sleepAndProbe)(test_exec_Coop_Probe)(u32));
 
+T_alias$((test_exec_Coop_Clock)(struct test_exec_Coop_Clock {
+    var_(now, time_Inst);
+}));
+
+$static fn_((test_exec_Coop_Clock__now(P$raw ctx))(time_Awake_Inst)) {
+    let self = ptrCast$((test_exec_Coop_Clock*)(ensureNonnull(ctx)));
+    return (time_Awake_Inst){ .raw = self->now };
+};
+
+$static fn_((test_exec_Coop_Clock__resolution(
+    P$raw ctx
+))(time_ResolutionE$time_Resolution) $scope) {
+    let_ignore = ensureNonnull(ctx);
+    return_ok(time_Dur_fromNanos(1));
+} $unscoped(fn);
+
+$static fn_((test_exec_Coop_Clock__sleep(
+    P$raw ctx, time_Dur dur
+))(Sched_Cancelable$void) $scope) {
+    let self = ptrCast$((test_exec_Coop_Clock*)(ensureNonnull(ctx)));
+    self->now = unwrap_(time_Inst_addChkdDur(self->now, dur));
+    return_ok({});
+} $unscoped(fn);
+
+$static fn_((test_exec_Coop_Clock_awake(test_exec_Coop_Clock* self))(time_Awake)) {
+    $static let_(vtbl, time_Awake_VTbl) = {
+        .nowFn = test_exec_Coop_Clock__now,
+        .resolutionFn = test_exec_Coop_Clock__resolution,
+        .sleepFn = test_exec_Coop_Clock__sleep,
+    };
+    return time_Awake_ensureValid((time_Awake){
+        .ctx = self,
+        .vtbl = &vtbl,
+    });
+};
+
 TEST_fn_("exec/Coop: run drives timed task while current-task scope remains bounded" $guard) {
     var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
-    let clock = try_(time_Awake_direct());
+    var_(clock_state, test_exec_Coop_Clock) = {
+        .now = time_Inst_from(0, 0),
+    };
+    let clock = test_exec_Coop_Clock_awake(&clock_state);
     var coop = exec_Coop_init(heap_Sys_alctr(&heap), clock);
     defer_(exec_Coop_fini(&coop));
     let sched = Sched_coop(&coop);
@@ -167,7 +206,10 @@ TEST_fn_("exec/Coop: cooperative cancel reaches sleep cancel point" $guard) {
     defer_(heap_Sys_fini(&heap));
     var arena = heap_Arena_init(heap_Sys_alctr(&heap));
     defer_(heap_Arena_fini(&arena));
-    let clock = try_(time_Awake_direct());
+    var_(clock_state, test_exec_Coop_Clock) = {
+        .now = time_Inst_from(0, 0),
+    };
+    let clock = test_exec_Coop_Clock_awake(&clock_state);
     var coop = exec_Coop_init(heap_Arena_alctr(&arena), clock);
     defer_(exec_Coop_fini(&coop));
     let sched = Sched_coop(&coop);
@@ -190,9 +232,10 @@ TEST_fn_("exec/Coop: preserves timed progress within stackless and fiber tasks" 
     defer_(heap_Sys_fini(&heap));
     var arena = heap_Arena_init(heap_Sys_alctr(&heap));
     defer_(heap_Arena_fini(&arena));
-    let clock = catch_((time_Awake_direct())(
-        $ignore, return_ok(try_(TEST_skipMsg(u8_l("monotonic clock is unavailable"))))
-    ));
+    var_(clock_state, test_exec_Coop_Clock) = {
+        .now = time_Inst_from(0, 0),
+    };
+    let clock = test_exec_Coop_Clock_awake(&clock_state);
     var coop = exec_Coop_init(heap_Arena_alctr(&arena), clock);
     defer_(exec_Coop_fini(&coop));
     let sched = Sched_coop(&coop);

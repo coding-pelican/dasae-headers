@@ -179,10 +179,10 @@ $static fn_((log_Default__log(
     va_list args
 ))(void) $guard) {
     let self = log_Default__ctx(ctx);
-    let locked = io_std_lockErr(self->std);
-    defer_(io_Locked_Writer_unlock(locked));
+    var locked = io_std_lockErr(self->std);
+    defer_(io_Locked_Writer_unlock(&locked));
     let_ignore = catch_((log__write(
-        io_Locked_writer(locked),
+        io_Locked_writer(&locked),
         level,
         scope,
         fmt,

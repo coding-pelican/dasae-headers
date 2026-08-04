@@ -479,7 +479,7 @@ static inline __UINT64_TYPE__ __comp_raw_brev64_runtime(__UINT64_TYPE__ x) {
     as$(usize)(_$len_bytes) \
 )
 #define ____raw_allocaAlign(_$len_bytes, _$log2_align...) __builtin_alloca_with_align( \
-    as$(usize)(_$len_bytes), as$(usize)(1) << as$(u8)(_$log2_align) \
+    as$(usize)(_$len_bytes), as$(usize)(arch_bits_per_byte) << as$(u8)(_$log2_align) \
 )
 
 #if defined(__cplusplus)

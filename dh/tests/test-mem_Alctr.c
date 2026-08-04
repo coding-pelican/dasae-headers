@@ -58,6 +58,7 @@ TEST_fn_("mem/Alctr: typed realloc preserves prefix and clears grown elements" $
 } $unguarded(TEST_fn);
 
 TEST_fn_("mem/Alctr: noop allocator accepts empty allocation but reports exhaustion" $guard) {
+    try_(TEST_expect(mem_Alctr_isValid(mem_Alctr_noop)));
     let empty = try_(mem_Alctr_allocBytes($trace mem_Alctr_noop, 0));
     try_(TEST_expect(empty.len == 0));
 
@@ -67,4 +68,46 @@ TEST_fn_("mem/Alctr: noop allocator accepts empty allocation but reports exhaust
         let_ignore = value;
         try_(TEST_expect(false));
     }
+
+    var_(owned_mem, A$$(3, u8)) = A_init({
+        [0] = 1,
+        [1] = 2,
+        [2] = 3,
+    });
+    let owned = A_ref$((S$u8)(owned_mem));
+    try_(TEST_expect(!mem_Alctr_resizeBytes($trace mem_Alctr_noop, owned, 4)));
+    try_(TEST_expect(isNone(mem_Alctr_remapBytes(
+        $trace mem_Alctr_noop, owned, 4
+    ))));
+    if_err((mem_Alctr_reallocBytes($trace mem_Alctr_noop, owned, 4))(err)) {
+        try_(TEST_expect(E_eql(err.as_any, E_cause$OutOfMemory().as_any)));
+    } else_ok(value) {
+        let_ignore = value;
+        try_(TEST_expect(false));
+    }
+    try_(TEST_expect(mem_eqlBytes(owned.as_const, u8_l("\x01\x02\x03"))));
+    mem_Alctr_freeBytes($trace mem_Alctr_noop, owned);
+    for_(($s(A_ref$((S_const$u8)(owned_mem))))(byte)) {
+        try_(TEST_expect(*byte == 0));
+    } $end(for);
+} $unguarded(TEST_fn);
+
+TEST_fn_("mem/Alctr: failing allocator preserves allocation error contract" $guard) {
+    try_(TEST_expect(mem_Alctr_isValid(mem_Alctr_failing)));
+
+    let empty = try_(mem_Alctr_allocBytes($trace mem_Alctr_failing, 0));
+    try_(TEST_expect(empty.len == 0));
+
+    if_err((mem_Alctr_allocBytes($trace mem_Alctr_failing, 1))(err)) {
+        try_(TEST_expect(E_eql(err.as_any, E_cause$OutOfMemory().as_any)));
+    } else_ok(value) {
+        let_ignore = value;
+        try_(TEST_expect(false));
+    }
+
+    try_(TEST_expect(mem_Alctr_resizeBytes($trace mem_Alctr_failing, empty, 0)));
+    try_(TEST_expect(isSome(mem_Alctr_remapBytes(
+        $trace mem_Alctr_failing, empty, 0
+    ))));
+    mem_Alctr_freeBytes($trace mem_Alctr_failing, empty);
 } $unguarded(TEST_fn);

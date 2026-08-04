@@ -73,6 +73,11 @@ T_alias$((CompHash64)(struct CompHash64 {
 T_alias$((CompHash32)(struct CompHash32 {
     var_(val, u32); ///< The 32-bit hash value
 }));
+/// @brief String hash value container structure
+/// @details Holds the calculated 16-bit hash value for a string
+T_alias$((CompHash16)(struct CompHash16 {
+    var_(val, u16); ///< The 16-bit hash value
+}));
 
 /// @brief  Directly calculate hash value from a null-terminated string
 /// @param  _$raw_str Null-terminated string to hash
@@ -98,6 +103,14 @@ T_alias$((CompHash32)(struct CompHash32 {
 ///   // hash now contains the 32-bit hash value for "hello"
 #define compHash32(_$raw_str...) \
     ____compHash32(_$raw_str)
+/// @brief Calculate a 16-bit hash value from a null-terminated string
+/// @param  _$raw_str Null-terminated string to hash
+/// @return 16-bit hash value
+/// @example
+///   u16 hash = compHash16("hello");
+///   // hash now contains the 16-bit hash value for "hello"
+#define compHash16(_$raw_str...) \
+    ____compHash16(_$raw_str)
 
 /// @brief  Create a CompHash from a string
 /// @param  str String to hash
@@ -123,6 +136,14 @@ $static fn_((CompHash64_from(S_const$u8 str))(CompHash64));
 ///   // hash.value now contains the hash for "hello"
 $attr($inline_always)
 $static fn_((CompHash32_from(S_const$u8 str))(CompHash32));
+/// @brief Create a CompHash16 from a string
+/// @param  str String to hash
+/// @return CompHash16 structure containing the hash value
+/// @example
+///   CompHash16 hash = CompHash16_from(u8_l("hello"));
+///   // hash.value now contains the hash for "hello"
+$attr($inline_always)
+$static fn_((CompHash16_from(S_const$u8 str))(CompHash16));
 
 /// @brief  Extract the hash value from a CompHash structure
 /// @param  self CompHash structure
@@ -151,6 +172,15 @@ $static fn_((CompHash64_val(CompHash64 self))(u64));
 ///   // value now contains the 32-bit hash value
 $attr($inline_always)
 $static fn_((CompHash32_val(CompHash32 self))(u32));
+/// @brief Extract the hash value from a CompHash16 structure
+/// @param  self CompHash16 structure
+/// @return 16-bit hash value
+/// @example
+///   CompHash16 hash = CompHash16_from(u8_l("hello"));
+///   u16 value = CompHash16_val(hash);
+///   // value now contains the 16-bit hash value
+$attr($inline_always)
+$static fn_((CompHash16_val(CompHash16 self))(u16));
 
 /// @brief  Directly calculate hash value from a string
 /// @param  str String to hash
@@ -176,6 +206,14 @@ $static fn_((CompHash64_calc(S_const$u8 str))(u64));
 ///   // hash now contains the 32-bit hash value for "hello"
 $attr($inline_always)
 $static fn_((CompHash32_calc(S_const$u8 str))(u32));
+/// @brief Calculate a 16-bit hash value from a string
+/// @param  str String to hash
+/// @return 16-bit hash value
+/// @example
+///   u16 hash = CompHash16_calc(u8_l("hello"));
+///   // hash now contains the 16-bit hash value for "hello"
+$attr($inline_always)
+$static fn_((CompHash16_calc(S_const$u8 str))(u16));
 
 /*========== Macros and Definitions =========================================*/
 
@@ -190,6 +228,10 @@ $static fn_((CompHash32_calc(S_const$u8 str))(u32));
 #define ____compHash32(_$raw_str...) \
     /** Calculate hash value from a compile-time string literal */ \
     CompHash32_calc(u8_l(_$raw_str))
+
+#define ____compHash16(_$raw_str...) \
+    /** Calculate hash value from a compile-time string literal */ \
+    CompHash16_calc(u8_l(_$raw_str))
 
 #if in_analysis_active_only || in_comptime
 fn_((CompHash_from(S_const$u8 str))(CompHash)) {
@@ -207,6 +249,11 @@ fn_((CompHash32_from(S_const$u8 str))(CompHash32)) {
     return (CompHash32){ .val = isZero(str.len) ? 0 : CompHash32_calc(str) };
 };
 
+fn_((CompHash16_from(S_const$u8 str))(CompHash16)) {
+    claim_assert_nonnullS(str);
+    return (CompHash16){ .val = isZero(str.len) ? 0 : CompHash16_calc(str) };
+};
+
 fn_((CompHash_val(CompHash self))(usize)) {
     return self.val;
 };
@@ -219,11 +266,17 @@ fn_((CompHash32_val(CompHash32 self))(u32)) {
     return self.val;
 };
 
+fn_((CompHash16_val(CompHash16 self))(u16)) {
+    return self.val;
+};
+
 fn_((CompHash_calc(S_const$u8 str))(usize)) {
     claim_assert_nonnullS(str);
-    return pp_if_(abi_size_is_64bit)(
-        pp_then_(CompHash64_calc(str)),
-        pp_else_(CompHash32_calc(str)));
+    return pp_switch_((abi_size_unit)(
+        pp_case_((abi_bits_unit_16bit)(as$(usize)(CompHash16_calc(str)))),
+        pp_case_((abi_bits_unit_32bit)(as$(usize)(CompHash32_calc(str)))),
+        pp_case_((abi_bits_unit_64bit)(as$(usize)(CompHash64_calc(str))))
+    ));
 };
 
 fn_((CompHash64_calc(S_const$u8 str))(u64)) {
@@ -242,6 +295,10 @@ fn_((CompHash32_calc(S_const$u8 str))(u32)) {
         hash = u32_(65599u) * hash + *ch;
     } $end(for);
     return hash ^ (hash >> 16);
+};
+
+fn_((CompHash16_calc(S_const$u8 str))(u16)) {
+    return as$(u16)(CompHash32_calc(str));
 };
 #endif /* in_analysis_active_only || in_comptime */
 

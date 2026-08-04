@@ -333,22 +333,14 @@ extern "C" {
     *__p_val = l0$((TypeOf(__val))); \
     local_return_(__val); \
 })
-#define copy(_$val... /*(TypeOf(_$val))*/) ____copy(pp_uniqTok(val), _$val)
-#if UNUSED_CODE
-#define ____copy(__val, _$val...) (*&*((TypeOfUnqual(_$val)[1]){ [0] = _$val }))
-#endif /* UNUSED_CODE */
-/* TODO: Check compound literal / initializer "compile-time constant" issue on Clang 17 */
-#define ____copy(__val, _$val...) ( \
-    *(TypeOfUnqual(_$val)*)raw_memcpy( \
-        &l0$((TypeOfUnqual(_$val))), \
-        local_({ \
-            let __val = _$val; \
-            typedef TypeOfUnqual(__val) CopyType; \
-            local_return_((struct { CopyType val[1]; }){ .val = { [0] = __val } }); \
-        }).val, \
-        sizeOf$(TypeOfUnqual(_$val)) \
-    ) \
-)
+#define copy(_$val... /*(TypeOf(_$val))*/) ____copy(pp_uniqTok(val), pp_uniqTok(dst), _$val)
+#define ____copy(__val, __dst, _$val...) (*local_({ \
+    let __val = _$val; \
+    typedef TypeOfUnqual(__val) CopyType; \
+    let __dst = as$(CopyType*)(raw_allocaAlign(sizeOf$(CopyType), alignOfLog2$(CopyType))); \
+    raw_memcpy(__dst, &__val, sizeOf$(CopyType)); \
+    local_return_(__dst); \
+}))
 
 /* TODO: Support bitfield */
 #define with_(/*(_$expr: _$T)(_$initial...: (_$field)(_$asg)*/... /*(_$T)*/) __step__with_(__VA_ARGS__)

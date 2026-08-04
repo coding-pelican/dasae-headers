@@ -57,9 +57,9 @@ fn_((ETrace_print_debug(void))(void) $guard) {
     if (!trace->is_enabled) return;
     if (trace->depth == 0) return;
     let std = catch_((io_std_direct())($ignore, io_std_noop));
-    let locked = io_std_lockErr(std);
-    defer_(io_Locked_Writer_unlock(locked));
-    let writer = io_Locked_writer(locked);
+    var locked = io_std_lockErr(std);
+    defer_(io_Locked_Writer_unlock(&locked));
+    let writer = io_Locked_writer(&locked);
     {
         let rest_frames = A_prefix((trace->rest_frames)(pri_min(A_len(trace->rest_frames), trace->depth)));
         for_(($s(rest_frames))(frame)) catch_((io_Writer_println(

@@ -144,6 +144,8 @@ extern "C" {
 /*--- Endianness ---*/
 
 #define arch_byte_order __comp_enum__arch_byte_order
+#define arch_byte_order_native arch_byte_order
+#define arch_byte_order_foreign __comp_enum__arch_byte_order_foreign
 #define arch_byte_order_unknown __comp_enum__arch_byte_order_unknown
 #define arch_byte_order_big_endian __comp_enum__arch_byte_order_big_endian
 #define arch_byte_order_little_endian __comp_enum__arch_byte_order_little_endian
@@ -493,6 +495,13 @@ extern "C" {
 #define __comp_enum__arch_byte_order_unknown 0
 #define __comp_enum__arch_byte_order_big_endian 1
 #define __comp_enum__arch_byte_order_little_endian 2
+#define __comp_enum__arch_byte_order_foreign pp_expand( \
+    pp_switch_ pp_begin(arch_byte_order)( \
+        pp_case_((arch_byte_order_big_endian)(arch_byte_order_little_endian)), \
+        pp_case_((arch_byte_order_little_endian)(arch_byte_order_big_endian)), \
+        pp_default_(()(arch_byte_order_unknown)) \
+    ) pp_end \
+)
 #define __comp_bool__arch_byte_order_is_little_endian pp_Tok_eql(arch_byte_order, arch_byte_order_little_endian)
 #define __comp_bool__arch_byte_order_is_big_endian pp_Tok_eql(arch_byte_order, arch_byte_order_big_endian)
 

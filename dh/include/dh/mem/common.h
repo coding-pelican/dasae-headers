@@ -88,6 +88,9 @@ $static fn_((mem_swapBytes16(u16 x))(u16));
 
 /*--- Endian Conversion ---*/
 
+#define mem_byte_order_native arch_byte_order_native
+#define mem_byte_order_foreign arch_byte_order_foreign
+
 $attr($inline_always)
 $static fn_((mem_littleToNativeSize(usize x))(usize));
 $attr($inline_always)

@@ -9,6 +9,12 @@ claim_assert_static(sizeOf$(S$u8) == (sizeOf$(usize) * 2));
 claim_assert_static(sizeOf$(TypeInfoPacked) == sizeOf$(usize));
 claim_assert_static(env_is_hosted != env_is_freestanding);
 claim_assert_static(arch_byte_order_big_endian < arch_byte_order_little_endian);
+claim_assert_static(arch_byte_order_native == arch_byte_order);
+claim_assert_static(arch_byte_order_foreign != arch_byte_order_native);
+claim_assert_static(
+    arch_byte_order_foreign == arch_byte_order_big_endian
+        || arch_byte_order_foreign == arch_byte_order_little_endian
+);
 
 TEST_fn_("Cfg: runtime value materializes builtin cfg facts" $scope) {
     let cfg = Cfg_here();

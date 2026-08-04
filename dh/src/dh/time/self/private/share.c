@@ -51,6 +51,26 @@ pp_if_(plat_is_windows)(pp_then_(
         }
         return as$(u64)(freq.QuadPart);
     };
+
+    fn_((time__windows_qpcNow(void))(time_Inst)) {
+        var_(counter, LARGE_INTEGER) = cleared();
+        if (!QueryPerformanceCounter(&counter)) {
+            claim_unreachable_msg("Failed to query performance counter");
+        }
+        let freq = time__windows_qpcFreq();
+        let ticks = as$(u64)(counter.QuadPart);
+        return time_Inst_from(
+            ticks / freq,
+            as$(u32)(((ticks % freq) * as$(u64)(time_nanos_per_sec)) / freq)
+        );
+    };
+
+    fn_((time__windows_qpcResolution(void))(time_Resolution)) {
+        let freq = time__windows_qpcFreq();
+        let nanos = time_nanos_per_sec / freq
+                  + (time_nanos_per_sec % freq != 0 ? 1 : 0);
+        return time_Dur_fromNanos(as$(u32)(nanos == 0 ? 1 : nanos));
+    };
 ));
 
 pp_if_(plat_is_posix)(pp_then_(

@@ -29,6 +29,48 @@ $static fn_((test_io_ChunkReader_reader(test_io_ChunkReader* self))(io_Reader)) 
     };
 };
 
+TEST_fn_("io/Reader: noop reports EOF without changing output" $scope) {
+    var_(out, A$$(2, u8)) = A_init({
+        [0] = u8_c('a'),
+        [1] = u8_c('b'),
+    });
+
+    let bytes_read = try_(io_Reader_read(io_Reader_noop, A_ref$((S$u8)(out))));
+    try_(TEST_expect(bytes_read == 0));
+    try_(TEST_expect(mem_eqlBytes(A_ref$((S_const$u8)(out)), u8_l("ab"))));
+} $unscoped(TEST_fn);
+
+TEST_fn_("io/Reader: noop EOF terminates every completion loop" $scope) {
+    var_(out, A$$(2, u8)) $undefined;
+
+    try_(TEST_expect(try_(io_Reader_readAtLeast(
+        io_Reader_noop, A_ref$((S$u8)(out)), A_len(out)
+    )) == 0));
+    try_(TEST_expect(try_(io_Reader_skipAtLeast(io_Reader_noop, 2)) == 0));
+    try_(TEST_expect(try_(io_Reader_copy(
+        io_Reader_noop, io_Writer_noop
+    )) == 0));
+    if_err((io_Reader_readExact(
+        io_Reader_noop, A_ref$((S$u8)(out))
+    ))(err)) {
+        try_(TEST_expect(E_eql(err.as_any, E_cause$UnexpectedEOF().as_any)));
+    } else_ok(value) {
+        let_ignore = value;
+        try_(TEST_expect(false));
+    }
+} $unscoped(TEST_fn);
+
+TEST_fn_("io/Reader: failing reports read failure" $scope) {
+    var_(out, A$$(1, u8)) $undefined;
+
+    if_err((io_Reader_read(io_Reader_failing, A_ref$((S$u8)(out))))(err)) {
+        try_(TEST_expect(E_eql(err.as_any, E_cause$io_ReadFailed().as_any)));
+    } else_ok(bytes_read) {
+        let_ignore = bytes_read;
+        try_(TEST_expect(false));
+    }
+} $unscoped(TEST_fn);
+
 TEST_fn_("io/Reader: readAtLeast returns partial count at EOF" $scope) {
     var reader_impl = io_Fixed_Reader_from(io_Fixed_reading(u8_l("abc")));
     let reader = io_Fixed_reader(&reader_impl);

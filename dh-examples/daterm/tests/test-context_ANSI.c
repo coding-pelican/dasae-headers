@@ -104,6 +104,29 @@ TEST_fn_("daterm-runtime: position and size vocabulary is coordinate-safe" $scop
     return_ok({});
 } $unscoped(TEST_fn);
 
+TEST_fn_("daterm-runtime/Term: facade preserves cached queries and IO contracts" $guard) {
+    var heap = try_(heap_Sys_init());
+    defer_(heap_Sys_fini(&heap));
+    var ansi = try_(daterm_ANSI_init(unwrap_(daterm_ANSI_Cfg_direct(
+        heap_Sys_alctr(&heap)
+    ))));
+    defer_(daterm_ANSI_fini(&ansi));
+    let_(expected, daterm_CellSize) = {
+        .cols = 132,
+        .rows = 43,
+    };
+    asg_l((&ansi.cached_screen_cells)(some$((O$daterm_CellSize)(expected))));
+    let term = daterm_ANSI_term(&ansi);
+    let cached = try_(daterm_Term_queryCachedScreenCells(term));
+
+    try_(TEST_expect(daterm_Term_isValid(term)));
+    try_(TEST_expect(io_Reader_isValid(daterm_Term_reader(term))));
+    try_(TEST_expect(io_Writer_isValid(daterm_Term_writer(term))));
+    try_(daterm_Term_flush(term));
+    try_(TEST_expect(daterm_Term_caps(term).flush));
+    try_(TEST_expect(cached.cols == 132 && cached.rows == 43));
+} $unguarded(TEST_fn);
+
 TEST_fn_("daterm-context/ANSI: caps match selected input mode" $guard) {
     var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));

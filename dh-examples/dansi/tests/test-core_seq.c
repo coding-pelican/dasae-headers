@@ -70,3 +70,47 @@ TEST_fn_("dansi-core/Seq: typed receivers accept 7-bit and 8-bit introducers" $s
     try_(TEST_expect(mem_eqlBytes(ss3.as_const, u8_l("\x8f" "P"))));
     return_ok({});
 } $unscoped(TEST_fn);
+
+TEST_fn_("dansi-core/Seq: receive reports incomplete and overlong sequences" $scope) {
+    var_(buf, A$$(4, u8)) $undefined;
+    let incomplete = eval_(bool $scope)(catch_((dansi_Seq_receive(
+        io_Reader_noop, A_ref$((S$u8)(buf))
+    ))(err, {
+        try_(TEST_expect(E_tag(err.as_any) == E_Tag$dansi_Seq_Incomplete));
+        $break_(true);
+    }))) eval_(else)({ $break_(false); }) $unscoped(eval);
+
+    var long_reader = io_Fixed_Reader_from(io_Fixed_reading(u8_l("\x1b[1234")));
+    let too_long = eval_(bool $scope)(catch_((dansi_Seq_receive(
+        io_Fixed_reader(&long_reader), A_ref$((S$u8)(buf))
+    ))(err, {
+        try_(TEST_expect(E_tag(err.as_any) == E_Tag$dansi_Seq_TooLong));
+        $break_(true);
+    }))) eval_(else)({ $break_(false); }) $unscoped(eval);
+
+    try_(TEST_expect(incomplete));
+    try_(TEST_expect(too_long));
+} $unscoped(TEST_fn);
+
+TEST_fn_("dansi-core/Seq: typed receivers reject wrong prefixes and short buffers" $scope) {
+    var wrong_reader = io_Fixed_Reader_from(io_Fixed_reading(u8_l("X")));
+    var_(buf, A$$(4, u8)) $undefined;
+    let unexpected = eval_(bool $scope)(catch_((dansi_Seq_receiveCSI(
+        io_Fixed_reader(&wrong_reader), A_ref$((S$u8)(buf))
+    ))(err, {
+        try_(TEST_expect(E_tag(&err) == E_Tag$Unexpected));
+        $break_(true);
+    }))) eval_(else)({ $break_(false); }) $unscoped(eval);
+
+    var short_reader = io_Fixed_Reader_from(io_Fixed_reading(u8_l("\x1b[")));
+    var_(short_buf, A$$(1, u8)) $undefined;
+    let too_small = eval_(bool $scope)(catch_((dansi_Seq_receiveCSI(
+        io_Fixed_reader(&short_reader), A_ref$((S$u8)(short_buf))
+    ))(err, {
+        try_(TEST_expect(E_tag(&err) == E_Tag$TooSmallBuffer));
+        $break_(true);
+    }))) eval_(else)({ $break_(false); }) $unscoped(eval);
+
+    try_(TEST_expect(unexpected));
+    try_(TEST_expect(too_small));
+} $unscoped(TEST_fn);

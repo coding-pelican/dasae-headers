@@ -44,6 +44,7 @@ $attr($inline_always)
 $static fn_((io_Reader_ensureValid(io_Reader self))(io_Reader));
 
 $attr($must_check)
+/// Read at most out_bytes.len bytes. Zero means EOF for a non-empty output.
 $extern fn_((io_Reader_read(io_Reader self, S$u8 out_bytes))(io_ReadE$usize));
 $attr($must_check)
 $extern fn_((io_Reader_readByte(io_Reader self))(io_ReadExactE$u8));

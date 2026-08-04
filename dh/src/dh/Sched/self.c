@@ -181,8 +181,9 @@ fn_((Sched_para(exec_Para* para))(Sched)) {
 
 fn_((Sched_VTbl_noAsync(P$raw ctx, u_P$raw result, P$$(Clsr$raw) inner))(O$P$FutureAny) $scope) {
     let_ignore = ensureNonnull(ctx);
-    let_ignore = (claim_assert_nonnull(result.raw), result);
-    let_ignore = ensureNonnull(inner);
+    claim_assert_nonnull(result.raw);
+    inner = ensureNonnull(inner);
+    u_memcpy(result, clsr_invokeToComplete(inner, result.type));
     return_none();
 } $unscoped(fn);
 fn_((Sched_VTbl_failingSpawn(P$raw ctx, u_P$raw result, P$$(Clsr$raw) inner))(Sched_ConcE$P$FutureAny) $scope) {

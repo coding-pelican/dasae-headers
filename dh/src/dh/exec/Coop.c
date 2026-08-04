@@ -81,7 +81,7 @@ fn_((exec_Coop__pumpUntil(exec_Coop* self, O$time_Awake_Inst deadline))(bool)) {
         );
     ));
     var timeout = exec_LaneTimed_remaining(&self->timed, next_deadline);
-    if (time_Dur_isZero(timeout)) return false;
+    if (time_Dur_isZero(timeout)) return true;
     if_some((deadline)(run_deadline)) {
         let remaining = exec_LaneTimed_remaining(&self->timed, run_deadline);
         if (time_Dur_isZero(remaining)) return false;

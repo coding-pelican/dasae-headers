@@ -11,11 +11,11 @@ $static fn_((exec_LaneTimed__now(exec_LaneTimed* self))(time_Awake_Inst));
 
 T_use$((exec_Timer)(ArrPQue_empty, ArrPQue_len, ArrPQue_at, ArrPQue_removeAt));
 fn_((exec_LaneTimed_init(mem_Alctr gpa, time_Awake clock))(exec_LaneTimed)) {
-    let clock_pump = catch_((time_Awake_direct())($ignore, clock));
+    clock = time_Awake_ensureValid(clock);
     return (exec_LaneTimed){
         .lane = exec_Lane_init(gpa),
         .clock = clock,
-        .clock_pump = clock_pump,
+        .clock_pump = clock,
         .tasks_timer = ArrPQue_empty$exec_Timer(exec_LaneTimed__timerCtx()),
     };
 };

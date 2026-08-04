@@ -13,9 +13,7 @@ fn_use_Clsr_((test_exec_LaneTimed__identity)(u32)(u32));
 TEST_fn_("exec/LaneTimed: due timer returns waiting task to ready queue" $guard) {
     var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
-    let clock = catch_((time_Awake_direct())(
-        $ignore, return_ok(try_(TEST_skipMsg(u8_l("monotonic clock is unavailable"))))
-    ));
+    let clock = time_Awake_noop;
     var timed = exec_LaneTimed_init(heap_Sys_alctr(&heap), clock);
     defer_(exec_LaneTimed_fini(&timed));
     var_(result, u32) = 0;

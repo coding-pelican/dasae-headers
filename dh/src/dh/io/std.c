@@ -123,23 +123,25 @@ fn_((io_std_tryLockIn(io_std_Self self))(O$io_Locked_Reader) $scope) {
     if (!self.vtbl->tryLockInFn(self.ctx)) {
         return_none();
     }
-    return_some(io_Locked_Reader_from(
+    var_(lock, io_Locked) = {
+        .ctx = self.ctx,
+        .unlockFn = self.vtbl->unlockInFn,
+    };
+    return_some(io_Locked_Reader_adopt(
         self.vtbl->inFn(self.ctx),
-        l$((io_Locked){
-            .ctx = self.ctx,
-            .unlockFn = self.vtbl->unlockInFn,
-        })
+        &lock
     ));
 } $unscoped(fn);
 fn_((io_std_lockIn(io_std_Self self))(io_Locked_Reader)) {
     self = io_std_ensureValid(self);
     self.vtbl->lockInFn(self.ctx);
-    return io_Locked_Reader_from(
+    var_(lock, io_Locked) = {
+        .ctx = self.ctx,
+        .unlockFn = self.vtbl->unlockInFn,
+    };
+    return io_Locked_Reader_adopt(
         self.vtbl->inFn(self.ctx),
-        l$((io_Locked){
-            .ctx = self.ctx,
-            .unlockFn = self.vtbl->unlockInFn,
-        })
+        &lock
     );
 };
 
@@ -152,23 +154,25 @@ fn_((io_std_tryLockOut(io_std_Self self))(O$io_Locked_Writer) $scope) {
     if (!self.vtbl->tryLockOutFn(self.ctx)) {
         return_none();
     }
-    return_some(io_Locked_Writer_from(
+    var_(lock, io_Locked) = {
+        .ctx = self.ctx,
+        .unlockFn = self.vtbl->unlockOutFn,
+    };
+    return_some(io_Locked_Writer_adopt(
         self.vtbl->outFn(self.ctx),
-        l$((io_Locked){
-            .ctx = self.ctx,
-            .unlockFn = self.vtbl->unlockOutFn,
-        })
+        &lock
     ));
 } $unscoped(fn);
 fn_((io_std_lockOut(io_std_Self self))(io_Locked_Writer)) {
     self = io_std_ensureValid(self);
     self.vtbl->lockOutFn(self.ctx);
-    return io_Locked_Writer_from(
+    var_(lock, io_Locked) = {
+        .ctx = self.ctx,
+        .unlockFn = self.vtbl->unlockOutFn,
+    };
+    return io_Locked_Writer_adopt(
         self.vtbl->outFn(self.ctx),
-        l$((io_Locked){
-            .ctx = self.ctx,
-            .unlockFn = self.vtbl->unlockOutFn,
-        })
+        &lock
     );
 };
 
@@ -181,23 +185,25 @@ fn_((io_std_tryLockErr(io_std_Self self))(O$io_Locked_Writer) $scope) {
     if (!self.vtbl->tryLockErrFn(self.ctx)) {
         return_none();
     }
-    return_some(io_Locked_Writer_from(
+    var_(lock, io_Locked) = {
+        .ctx = self.ctx,
+        .unlockFn = self.vtbl->unlockErrFn,
+    };
+    return_some(io_Locked_Writer_adopt(
         self.vtbl->errFn(self.ctx),
-        l$((io_Locked){
-            .ctx = self.ctx,
-            .unlockFn = self.vtbl->unlockErrFn,
-        })
+        &lock
     ));
 } $unscoped(fn);
 fn_((io_std_lockErr(io_std_Self self))(io_Locked_Writer)) {
     self = io_std_ensureValid(self);
     self.vtbl->lockErrFn(self.ctx);
-    return io_Locked_Writer_from(
+    var_(lock, io_Locked) = {
+        .ctx = self.ctx,
+        .unlockFn = self.vtbl->unlockErrFn,
+    };
+    return io_Locked_Writer_adopt(
         self.vtbl->errFn(self.ctx),
-        l$((io_Locked){
-            .ctx = self.ctx,
-            .unlockFn = self.vtbl->unlockErrFn,
-        })
+        &lock
     );
 };
 

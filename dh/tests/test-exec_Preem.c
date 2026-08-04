@@ -66,7 +66,13 @@ TEST_fn_("exec/Preem: cancel after completion joins thread and preserves result"
 
     var clsr = clsr_((test_exec_Preem_sleepThenReturn)(time, time_Dur_fromMillis(1), 321));
     var future = try_(Sched_spawn$u32(sched, clsr.as_base));
-    catch_((time_Awake_sleep(time, time_Dur_fromMillis(25)))($ignore, $do_nothing));
+    let task = ptrAlignCast$((exec_Preem_Task*)(unwrap_(future.any_future)));
+    let wait_begin = time_Awake_now(time);
+    while (
+        exec_Preem_Task_state(task) != exec_Task_State_done
+        && time_Dur_lt(time_Awake_Inst_elapsed(wait_begin, time), time_Dur_fromSecs(5))
+    ) try_(thrd_yield());
+    try_(TEST_expect(exec_Preem_Task_state(task) == exec_Task_State_done));
     try_(TEST_expect(Future_cancel$u32(&future, sched) == 321));
     try_(TEST_expect(isNone(future.any_future)));
     return_ok({});

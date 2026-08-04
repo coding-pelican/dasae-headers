@@ -233,21 +233,13 @@ fn_((time_Awake_direct__unsupported_resolution(P$raw ctx))(time_ResolutionE$time
 
 pp_if_(plat_is_windows)(pp_then_(
     fn_((time_Awake_direct__windows_now(P$raw ctx))(time_Awake_Inst)) {
-        var_(counter, LARGE_INTEGER) = cleared();
         let_ignore = ctx;
-        QueryPerformanceCounter(&counter);
-        let freq = time__windows_qpcFreq();
-        let ticks = as$(u64)(counter.QuadPart);
-        let secs = ticks / freq;
-        let nanos = as$(u32)(((ticks % freq) * as$(u64)(time_nanos_per_sec)) / freq);
-        return l$((time_Awake_Inst){ .raw = time_Inst_from(secs, nanos) });
+        return l$((time_Awake_Inst){ .raw = time__windows_qpcNow() });
     };
 
     fn_((time_Awake_direct__windows_resolution(P$raw ctx))(time_ResolutionE$time_Resolution) $scope) {
         let_ignore = ctx;
-        let freq = time__windows_qpcFreq();
-        let nanos = time_nanos_per_sec / freq;
-        return_ok(time_Dur_fromNanos(as$(u32)(nanos == 0 ? 1 : nanos)));
+        return_ok(time__windows_qpcResolution());
     } $unscoped(fn);
 ));
 

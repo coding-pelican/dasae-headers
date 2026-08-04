@@ -26,11 +26,13 @@ fn_((io_Reader_failingRead(P$raw ctx, S$u8 out_buf))(io_ReadE$usize) $scope) {
     return_err(E_cause$io_ReadFailed());
 } $unscoped(fn);
 
-fn_((io_Reader_read(io_Reader self, S$u8 out_bytes))(io_ReadE$usize)) {
+fn_((io_Reader_read(io_Reader self, S$u8 out_bytes))(io_ReadE$usize) $scope) {
     self = io_Reader_ensureValid(self);
     claim_assert_nonnullS(out_bytes);
-    return self.readFn(self.ctx, out_bytes);
-};
+    let bytes_read = try_(self.readFn(self.ctx, out_bytes));
+    claim_assert(bytes_read <= out_bytes.len);
+    return_ok(bytes_read);
+} $unscoped(fn);
 fn_((io_Reader_readByte(io_Reader self))(io_ReadExactE$u8) $scope) {
     var_(byte_buf, A$$(1, u8)) $undefined;
     let bytes_read = try_(io_Reader_read(self, A_ref$((S$u8)byte_buf)));

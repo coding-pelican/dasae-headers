@@ -101,9 +101,9 @@ fn_((debug_StackTrace__printPanicHeader(io_Writer writer, S_const$u8 reason, usi
 fn_((debug_StackTrace__unsupported_setupCrashHandler(void))(void)) $do_nothing;
 fn_((debug_StackTrace__unsupported_print(void))(void) $guard) {
     let std = catch_((io_std_direct())($ignore, io_std_noop));
-    let locked = io_std_lockErr(std);
-    defer_(io_Locked_Writer_unlock(locked));
-    let writer = io_Locked_writer(locked);
+    var locked = io_std_lockErr(std);
+    defer_(io_Locked_Writer_unlock(&locked));
+    let writer = io_Locked_writer(&locked);
     catch_((io_Writer_println(writer, u8_l("Stack Trace: Unsupported Platform")))($ignore, $do_nothing));
 } $unguarded(fn);
 
@@ -121,8 +121,8 @@ fn_((debug_StackTrace__unsupported_print(void))(void) $guard) {
 $attr($callconv_stdcall)
 $static fn_((debug_StackTrace__windows__handleException(EXCEPTION_POINTERS* ExceptionInfo))(LONG) $guard) {
     let std = catch_((io_std_direct())($ignore, io_std_noop));
-    let locked = io_std_lockErr(std);
-    defer_(io_Locked_Writer_unlock(locked));
+    var locked = io_std_lockErr(std);
+    defer_(io_Locked_Writer_unlock(&locked));
     {
         let code = ExceptionInfo->ExceptionRecord->ExceptionCode;
         let reason = expr_(S_const$u8 $scope)(switch (code) {
@@ -135,7 +135,7 @@ $static fn_((debug_StackTrace__windows__handleException(EXCEPTION_POINTERS* Exce
             case_((EXCEPTION_STACK_OVERFLOW)) $break_(u8_l("stack overflow")) $end(case);
             default_() $break_(u8_l("unknown exception")) $end(default);
         }) $unscoped(expr);
-        debug_StackTrace__printPanicHeader(io_Locked_writer(locked), reason, as$(usize)(code));
+        debug_StackTrace__printPanicHeader(io_Locked_writer(&locked), reason, as$(usize)(code));
         debug_StackTrace_print();
     }
     return_(EXCEPTION_EXECUTE_HANDLER); /* Process termination via OS */
@@ -147,9 +147,9 @@ fn_((debug_StackTrace__windows_setupCrashHandler(void))(void)) {
 
 fn_((debug_StackTrace__windows_print(void))(void) $guard) {
     let std = catch_((io_std_direct())($ignore, io_std_noop));
-    let locked = io_std_lockErr(std);
-    defer_(io_Locked_Writer_unlock(locked));
-    using_(let writer = io_Locked_writer(locked)) {
+    var locked = io_std_lockErr(std);
+    defer_(io_Locked_Writer_unlock(&locked));
+    using_(let writer = io_Locked_writer(&locked)) {
         let process = GetCurrentProcess();
         SymSetOptions(SymGetOptions() | SYMOPT_LOAD_LINES | SYMOPT_UNDNAME | SYMOPT_DEFERRED_LOADS);
         SymInitialize(process, null, true);
@@ -213,9 +213,9 @@ fn_((debug_StackTrace__windows_print(void))(void) $guard) {
 
 $static fn_((debug_StackTrace__unix__handleSignal(i32 sig))(void) $guard) {
     using_(let std = catch_((io_std_direct())($ignore, io_std_noop))) blk_defer {
-        let locked = io_std_lockErr(std);
-        defer_(io_Locked_Writer_unlock(locked));
-        using_(let writer = io_Locked_writer(locked)) {
+        var locked = io_std_lockErr(std);
+        defer_(io_Locked_Writer_unlock(&locked));
+        using_(let writer = io_Locked_writer(&locked)) {
             let reason = expr_(S_const$u8 $scope)(switch (sig) {
                 case_((sys_posix_SIGSEGV)) $break_(u8_l("segmentation fault")) $end(case);
                 case_((sys_posix_SIGABRT)) $break_(u8_l("aborted")) $end(case);
@@ -246,9 +246,9 @@ fn_((debug_StackTrace__unix_setupCrashHandler(void))(void)) {
 
 fn_((debug_StackTrace__unix_print(void))(void) $guard) {
     let std = catch_((io_std_direct())($ignore, io_std_noop));
-    let locked = io_std_lockErr(std);
-    defer_(io_Locked_Writer_unlock(locked));
-    using_(let writer = io_Locked_writer(locked)) {
+    var locked = io_std_lockErr(std);
+    defer_(io_Locked_Writer_unlock(&locked));
+    using_(let writer = io_Locked_writer(&locked)) {
         $static var_(stack, A$$(debug_StackTrace__max_frames, P$raw)) $undefined_static;
         let frames = as$(usize)(backtrace(A_ptr(stack), debug_StackTrace__max_frames));
         let tid = as$(u64)(thrd_currId());

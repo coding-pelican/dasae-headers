@@ -211,19 +211,13 @@ fn_((time_Boot_direct__unsupported_resolution(P$raw ctx))(time_ResolutionE$time_
 
 pp_if_(plat_is_windows)(pp_then_(
     fn_((time_Boot_direct__windows_now(P$raw ctx))(time_Boot_Inst)) {
-        let millis = GetTickCount64();
         let_ignore = ctx;
-        return l$((time_Boot_Inst){
-            .raw = time_Inst_from(
-                millis / time_millis_per_sec,
-                as$(u32)((millis % time_millis_per_sec) * time_nanos_per_milli)
-            ),
-        });
+        return l$((time_Boot_Inst){ .raw = time__windows_qpcNow() });
     };
 
     fn_((time_Boot_direct__windows_resolution(P$raw ctx))(time_ResolutionE$time_Resolution) $scope) {
         let_ignore = ctx;
-        return_ok(time_Dur_fromMillis(1));
+        return_ok(time__windows_qpcResolution());
     } $unscoped(fn);
 ));
 

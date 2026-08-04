@@ -20,9 +20,11 @@ $static fn_((hash__readLE64(S_const$u8 bytes))(u64));
 /*========== External Definitions ===========================================*/
 
 fn_((hash_int$usize(usize input))(usize)) {
-    return pp_if_(abi_size_is_64bit)(
-        pp_then_(as$(usize)(hash_int$u64(as$(u64)(input)))),
-        pp_else_(as$(usize)(hash_int$u32(as$(u32)(input)))));
+    return pp_switch_((abi_size_unit)(
+        pp_case_((abi_bits_unit_16bit)(as$(usize)(hash_int$u16(as$(u16)(input))))),
+        pp_case_((abi_bits_unit_32bit)(as$(usize)(hash_int$u32(as$(u32)(input))))),
+        pp_case_((abi_bits_unit_64bit)(as$(usize)(hash_int$u64(as$(u64)(input)))))
+    ));
 };
 
 fn_((hash_int$u64(u64 input))(u64)) {

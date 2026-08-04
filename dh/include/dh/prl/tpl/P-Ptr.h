@@ -41,7 +41,7 @@ extern "C" {
 
 #define P_T$(_$T...) TypeOf(*as$(_$T)(null))
 #define P_TUnqual$(_$T...) TypeOfUnqual(*as$(_$T)(null))
-#define P_isConst$(_$T... /*(bool)*/) eqlType$(P_DerefT$(_$T)*, const P_DerefTUnqual$(_$T)*)
+#define P_isConst$(_$T... /*(bool)*/) eqlType$(_$T, const P_DerefT$(_$T)*)
 
 #define P_DerefT$(_$T...) TypeOf(*as$(_$T)(null))
 #define P_DerefTUnqual$(_$T...) TypeOfUnqual(*as$(_$T)(null))
