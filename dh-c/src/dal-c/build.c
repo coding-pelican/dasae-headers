@@ -4975,6 +4975,96 @@ static bool dal_c__optsDefinesEitherMacro(
     return dal_c__optsDefinesMacro(opts, positive) || dal_c__optsDefinesMacro(opts, negative);
 }
 
+static bool dal_c__targetIsWindows(const dal_c_CompilerOpts* opts) {
+    assert(opts != NULL);
+    const char* target = opts->arch_target;
+    if (target && target[0] != '\0') {
+        return strstr(target, "windows") != NULL
+            || strstr(target, "mingw") != NULL
+            || strstr(target, "msvc") != NULL;
+    }
+    return dal_c__platformIsWindows();
+}
+
+static bool dal_c__targetHasComponentPrefix(const char* target, const char* prefix) {
+    assert(target != NULL);
+    assert(prefix != NULL);
+    size_t prefix_len = strlen(prefix);
+    for (const char* component = target; component[0] != '\0';) {
+        const char* separator = strchr(component, '-');
+        size_t component_len = separator ? (size_t)(separator - component) : strlen(component);
+        if (component_len >= prefix_len && strncmp(component, prefix, prefix_len) == 0) {
+            return true;
+        }
+        if (!separator) { break; }
+        component = separator + 1;
+    }
+    return false;
+}
+
+static bool dal_c__targetHasGnuSourceLibcProfile(const dal_c_CompilerOpts* opts) {
+    assert(opts != NULL);
+    const char* target = opts->arch_target;
+    if (target && target[0] != '\0') {
+        if (dal_c__targetIsWindows(opts)) { return false; }
+        return dal_c__targetHasComponentPrefix(target, "gnu")
+            || dal_c__targetHasComponentPrefix(target, "musl")
+            || dal_c__targetHasComponentPrefix(target, "uclibc")
+            || dal_c__targetHasComponentPrefix(target, "android");
+    }
+
+    /* Native musl does not expose a reliable predefined libc macro before its
+     * headers are included. Linux/Android hosts are therefore the native
+     * fallback for the GNU-compatible feature-test profile. Explicit targets
+     * are classified by their ABI/libc component above. */
+#if defined(__linux__) || defined(__ANDROID__)
+    return true;
+#else
+    return false;
+#endif
+}
+
+static bool dal_c__targetUsesGnuSource(const dal_c_CompilerOpts* opts) {
+    assert(opts != NULL);
+    return dal_c__resolvedCompileEnv(opts) == dal_c_CompileEnv_hosted
+        && dal_c__resolvedLibcLinked(opts)
+        && dal_c__targetHasGnuSourceLibcProfile(opts);
+}
+
+static void dal_c__appendDefaultPlatformDefines(ArrStr* argv, const dal_c_CompilerOpts* opts) {
+    assert(argv != NULL);
+    assert(opts != NULL);
+    if (dal_c__targetIsWindows(opts)) {
+        if (!dal_c__optsDefinesMacro(opts, "UNICODE")) {
+            ArrStr_push(argv, "-DUNICODE");
+        }
+        if (!dal_c__optsDefinesMacro(opts, "_UNICODE")) {
+            ArrStr_push(argv, "-D_UNICODE");
+        }
+    } else if (dal_c__targetUsesGnuSource(opts)) {
+        if (!dal_c__optsDefinesMacro(opts, "_GNU_SOURCE")) {
+            ArrStr_push(argv, "-D_GNU_SOURCE");
+        }
+    }
+}
+
+static void dal_c__writeDefaultPlatformDefines(FILE* fp, const dal_c_CompilerOpts* opts) {
+    assert(fp != NULL);
+    assert(opts != NULL);
+    if (dal_c__targetIsWindows(opts)) {
+        if (!dal_c__optsDefinesMacro(opts, "UNICODE")) {
+            (void)fprintf(fp, " -DUNICODE");
+        }
+        if (!dal_c__optsDefinesMacro(opts, "_UNICODE")) {
+            (void)fprintf(fp, " -D_UNICODE");
+        }
+    } else if (dal_c__targetUsesGnuSource(opts)) {
+        if (!dal_c__optsDefinesMacro(opts, "_GNU_SOURCE")) {
+            (void)fprintf(fp, " -D_GNU_SOURCE");
+        }
+    }
+}
+
 static bool dal_c__resolvedCompileFact(
     const dal_c_CompilerOpts* opts,
     const char* positive,
@@ -5410,6 +5500,7 @@ void dal_c__appendCompileDbArguments(
     }
     ArrStr_push(argv, "-fms-extensions");
     ArrStr_push(argv, "-funsigned-char");
+    dal_c__appendDefaultPlatformDefines(argv, opts);
     dal_c__appendCompileDbDiagnostics(
         argv, opts, compiler_is_clang, !str_eql(profile->name, dal_c_profile_fast)
     );
@@ -5512,7 +5603,7 @@ void dal_c__appendSyntaxArguments(
     assert(src != NULL);
 
     const dal_c_CompilerOpts* opts = &cmd->opts;
-    bool is_windows = dal_c__platformIsWindows();
+    bool is_windows = dal_c__targetIsWindows(opts);
     const char* compiler = opts->compiler ? opts->compiler : dal_c_default_compiler;
     bool compiler_is_clang = dal_c__compilerLooksLikeClang(compiler);
     dal_c_CompileEnv compile_env = dal_c__resolvedCompileEnv(opts);
@@ -5552,6 +5643,7 @@ void dal_c__appendSyntaxArguments(
     }
     ArrStr_push(argv, "-fms-extensions");
     ArrStr_push(argv, "-funsigned-char");
+    dal_c__appendDefaultPlatformDefines(argv, opts);
     if (!is_windows && target_type == dal_c_Target_shared_lib) {
         ArrStr_push(argv, "-fPIC");
     }
@@ -6483,8 +6575,8 @@ static dal_c__noinline void dal_c__writeMakefileVariables(
     assert(profile != NULL);
     assert(build_dir != NULL);
 
-    bool is_windows = dal_c__platformIsWindows();
     const dal_c_CompilerOpts* opts = &cmd->opts;
+    bool is_windows = dal_c__targetIsWindows(opts);
     dal_c_CompileEnv compile_env = dal_c__resolvedCompileEnv(opts);
     bool libc_fact = dal_c__resolvedCompileLibcFact(opts);
     bool default_libs_fact = dal_c__resolvedCompileDefaultLibsFact(opts);
@@ -6531,6 +6623,7 @@ static dal_c__noinline void dal_c__writeMakefileVariables(
     }
     (void)fprintf(fp, " -fms-extensions");
     (void)fprintf(fp, " -funsigned-char");
+    dal_c__writeDefaultPlatformDefines(fp, opts);
     if (!is_windows && target_type == dal_c_Target_shared_lib) {
         (void)fprintf(fp, " -fPIC");
     }

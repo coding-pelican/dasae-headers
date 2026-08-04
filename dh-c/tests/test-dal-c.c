@@ -79,6 +79,7 @@ static void test_output_ext_does_not_rewrite_dependency_artifacts(void);
 static void test_explicit_file_build_uses_file_project(void);
 static void test_target_root_directory_uses_local_include(void);
 static void test_syntax_arguments_follow_build_compile_contract(void);
+static void test_gnu_source_profile_contracts(void);
 static void test_compile_db_command(void);
 static void test_deps_prelude_tracks_dh_contract(void);
 static void test_skip_source_filters(void);
@@ -136,6 +137,7 @@ int main(void) {
     RUN_TEST(test_explicit_file_build_uses_file_project);
     RUN_TEST(test_target_root_directory_uses_local_include);
     RUN_TEST(test_syntax_arguments_follow_build_compile_contract);
+    RUN_TEST(test_gnu_source_profile_contracts);
     RUN_TEST(test_compile_db_command);
     RUN_TEST(test_deps_prelude_tracks_dh_contract);
     RUN_TEST(test_skip_source_filters);
@@ -1564,6 +1566,51 @@ static void test_makefile_mode_contracts(void) {
             dal_c_tool_name,
             "build",
             "dev",
+            "--target=x86_64-w64-windows-gnu",
+            "--lto=off",
+            NULL
+        };
+        dal_c_Cmd* cmd = dal_c_Cmd_parse(5, argv);
+        TEST_ASSERT(cmd != NULL);
+        dal_c_CompilerOpts_merge(&cmd->opts, &proj->opts);
+        const dal_c_ProfileSpec* profile = dal_c_ProfileSpec_by(cmd->opts.profile);
+        TEST_ASSERT(profile != NULL);
+        char* profile_dir = dal_c__makeBuildProfileDir(proj, &cmd->opts, profile);
+        char* object_dir = path_join(profile_dir, "obj-platform-features");
+        char* target_path = path_join(profile_dir, "platform-features.lib");
+        char* makefile_path = dal_c__makePlanFilePath(
+            proj, profile, cmd, target_path, dal_c_Target_static_lib
+        );
+        TEST_ASSERT(profile_dir != NULL);
+        TEST_ASSERT(object_dir != NULL);
+        TEST_ASSERT(target_path != NULL);
+        TEST_ASSERT(makefile_path != NULL);
+        TEST_ASSERT(dir_createRecur(object_dir));
+        TEST_ASSERT(
+            dal_c__generateMakefile(
+                cmd, proj, profile, sources, target_path, object_dir, dal_c_Target_static_lib
+            ) == 0
+        );
+        char* makefile_text = file_read(makefile_path);
+        TEST_ASSERT(makefile_text != NULL);
+        TEST_ASSERT(strstr(makefile_text, " -DUNICODE") != NULL);
+        TEST_ASSERT(strstr(makefile_text, " -D_UNICODE") != NULL);
+        TEST_ASSERT(strstr(makefile_text, " -D_GNU_SOURCE") == NULL);
+        TEST_ASSERT(strstr(makefile_text, " -fPIC") == NULL);
+
+        free(makefile_text);
+        free(makefile_path);
+        free(target_path);
+        free(object_dir);
+        free(profile_dir);
+        dal_c_Cmd_cleanup(&cmd);
+    }
+
+    {
+        const char* argv[] = {
+            dal_c_tool_name,
+            "build",
+            "dev",
             "--freestanding",
             "--link-libc",
             "--link-default-libs=off",
@@ -1625,6 +1672,14 @@ static void test_makefile_mode_contracts(void) {
         TEST_ASSERT(strstr(makefile_text, "-DCOMP_NO_STDLIB") != NULL);
         TEST_ASSERT(strstr(makefile_text, "-DCOMP_HAS_CRT") != NULL);
         TEST_ASSERT(strstr(makefile_text, "-DCOMP_NO_CRT") == NULL);
+#if defined(_WIN32)
+        TEST_ASSERT(strstr(makefile_text, " -DUNICODE") != NULL);
+        TEST_ASSERT(strstr(makefile_text, " -D_UNICODE") != NULL);
+#else
+        TEST_ASSERT(strstr(makefile_text, " -DUNICODE") == NULL);
+        TEST_ASSERT(strstr(makefile_text, " -D_UNICODE") == NULL);
+#endif
+        TEST_ASSERT(strstr(makefile_text, " -D_GNU_SOURCE") == NULL);
         TEST_ASSERT(strstr(makefile_text, " -fmacro-backtrace-limit=37") != NULL);
         TEST_ASSERT(strstr(makefile_text, " -Wformat=2") != NULL);
         TEST_ASSERT(strstr(makefile_text, " -Werror=uninitialized") != NULL);
@@ -4524,6 +4579,90 @@ static void test_target_root_directory_uses_local_include(void) {
     free(temp_root);
 }
 
+static void test_gnu_source_profile_contracts(void) {
+    test_reset_temp_root();
+
+    char* temp_root = test_temp_root();
+    char* project_root = path_join(temp_root, "gnu-source-profile-project");
+    char* project_dh = path_join(project_root, dal_c_file_detector_project);
+    char* source_dir = path_join(project_root, "src");
+    char* source = path_join(source_dir, "main.c");
+    TEST_ASSERT(temp_root != NULL);
+    TEST_ASSERT(project_root != NULL);
+    TEST_ASSERT(project_dh != NULL);
+    TEST_ASSERT(source_dir != NULL);
+    TEST_ASSERT(source != NULL);
+    TEST_ASSERT(dir_createRecur(source_dir));
+    TEST_ASSERT(file_write(project_dh, "output=gnu-source-profile\nlink-dsl=off\n"));
+    TEST_ASSERT(file_write(source, "int main(void) { return 0; }\n"));
+
+    dal_c_Project* proj = dal_c_Project_detectAt(project_root, NULL);
+    TEST_ASSERT(proj != NULL);
+
+    typedef struct test_GnuSourceCase {
+        const char* target;
+        const char* option;
+        bool expect_gnu_source;
+        bool expect_unicode;
+    } test_GnuSourceCase;
+
+    const test_GnuSourceCase cases[] = {
+        { "x86_64-pc-linux-gnu", NULL, true, false },
+        { "aarch64-unknown-linux-gnueabihf", NULL, true, false },
+        { "x86_64-unknown-linux-musl", NULL, true, false },
+        { "aarch64-linux-android", NULL, true, false },
+        { "armv7a-linux-androideabi", NULL, true, false },
+        { "x86_64-unknown-hurd-gnu", NULL, true, false },
+        { "x86_64-unknown-linux-none", NULL, false, false },
+        { "x86_64-unknown-linux-uclibc", NULL, true, false },
+        { "wasm32-unknown-wasi", NULL, false, false },
+        { "x86_64-apple-darwin", NULL, false, false },
+        { "x86_64-w64-windows-gnu", NULL, false, true },
+        { "x86_64-pc-linux-gnu", "--freestanding", false, false },
+        { "x86_64-pc-linux-gnu", "--link-libc=off", false, false },
+        { "x86_64-pc-linux-gnu", "--link-default-libs=off", false, false },
+    };
+
+    for (size_t i = 0; i < sizeof(cases) / sizeof(cases[0]); ++i) {
+        char* target_arg = str_format("--target=%s", cases[i].target);
+        TEST_ASSERT(target_arg != NULL);
+        const char* argv[6] = {
+            dal_c_tool_name,
+            "syntax",
+            "dev",
+            target_arg,
+            cases[i].option,
+            NULL
+        };
+        int argc = cases[i].option ? 5 : 4;
+        dal_c_Cmd* cmd = dal_c_Cmd_parse(argc, argv);
+        TEST_ASSERT(cmd != NULL);
+        dal_c_CompilerOpts_merge(&cmd->opts, &proj->opts);
+        const dal_c_ProfileSpec* profile = dal_c_ProfileSpec_by(cmd->opts.profile);
+        TEST_ASSERT(profile != NULL);
+
+        ArrStr* args = ArrStr_init();
+        dal_c__appendSyntaxArguments(args, cmd, proj, profile, source, dal_c_Target_executable);
+        TEST_ASSERT(
+            test_arrstr_contains(args, "-D_GNU_SOURCE") == cases[i].expect_gnu_source
+        );
+        TEST_ASSERT(test_arrstr_contains(args, "-DUNICODE") == cases[i].expect_unicode);
+        TEST_ASSERT(test_arrstr_contains(args, "-D_UNICODE") == cases[i].expect_unicode);
+
+        ArrStr_fini(&args);
+        dal_c_Cmd_cleanup(&cmd);
+        free(target_arg);
+    }
+
+    dal_c_Project_cleanup(&proj);
+    TEST_ASSERT(test_remove_recur(temp_root));
+    free(source);
+    free(source_dir);
+    free(project_dh);
+    free(project_root);
+    free(temp_root);
+}
+
 static void test_syntax_arguments_follow_build_compile_contract(void) {
     test_reset_temp_root();
 
@@ -4596,9 +4735,59 @@ static void test_syntax_arguments_follow_build_compile_contract(void) {
         TEST_ASSERT(test_arrstr_contains(args, "-DNDEBUG"));
     }
     TEST_ASSERT(!test_arrstr_contains(args, "-fsyntax-only"));
+#if defined(_WIN32)
+    TEST_ASSERT(test_arrstr_contains(args, "-DUNICODE"));
+    TEST_ASSERT(test_arrstr_contains(args, "-D_UNICODE"));
+#else
+    TEST_ASSERT(!test_arrstr_contains(args, "-DUNICODE"));
+    TEST_ASSERT(!test_arrstr_contains(args, "-D_UNICODE"));
+#endif
+    TEST_ASSERT(!test_arrstr_contains(args, "-D_GNU_SOURCE"));
 
     ArrStr_fini(&args);
     dal_c_Cmd_cleanup(&cmd);
+
+    const char* windows_argv[] = {
+        dal_c_tool_name,
+        "syntax",
+        "dev",
+        "--target=x86_64-w64-windows-gnu",
+        NULL
+    };
+    dal_c_Cmd* windows_cmd = dal_c_Cmd_parse(4, windows_argv);
+    TEST_ASSERT(windows_cmd != NULL);
+    dal_c_CompilerOpts_merge(&windows_cmd->opts, &proj->opts);
+    const dal_c_ProfileSpec* windows_profile = dal_c_ProfileSpec_by(windows_cmd->opts.profile);
+    TEST_ASSERT(windows_profile != NULL);
+    ArrStr* windows_args = ArrStr_init();
+    dal_c__appendSyntaxArguments(
+        windows_args, windows_cmd, proj, windows_profile, source, dal_c_Target_executable
+    );
+    TEST_ASSERT(test_arrstr_contains(windows_args, "-DUNICODE"));
+    TEST_ASSERT(test_arrstr_contains(windows_args, "-D_UNICODE"));
+    TEST_ASSERT(!test_arrstr_contains(windows_args, "-D_GNU_SOURCE"));
+    ArrStr_fini(&windows_args);
+    dal_c_Cmd_cleanup(&windows_cmd);
+
+    const char* linux_argv[] = {
+        dal_c_tool_name,
+        "compile-db",
+        "dev",
+        "--target=x86_64-pc-linux-gnu",
+        NULL
+    };
+    dal_c_Cmd* linux_cmd = dal_c_Cmd_parse(4, linux_argv);
+    TEST_ASSERT(linux_cmd != NULL);
+    dal_c_CompilerOpts_merge(&linux_cmd->opts, &proj->opts);
+    const dal_c_ProfileSpec* linux_profile = dal_c_ProfileSpec_by(linux_cmd->opts.profile);
+    TEST_ASSERT(linux_profile != NULL);
+    ArrStr* linux_args = ArrStr_init();
+    dal_c__appendCompileDbArguments(linux_args, linux_cmd, proj, linux_profile, source);
+    TEST_ASSERT(test_arrstr_contains(linux_args, "-D_GNU_SOURCE"));
+    TEST_ASSERT(!test_arrstr_contains(linux_args, "-DUNICODE"));
+    TEST_ASSERT(!test_arrstr_contains(linux_args, "-D_UNICODE"));
+    ArrStr_fini(&linux_args);
+    dal_c_Cmd_cleanup(&linux_cmd);
 
     const char* fast_argv[] = {
         dal_c_tool_name,

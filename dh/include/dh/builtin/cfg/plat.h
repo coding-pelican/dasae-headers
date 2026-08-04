@@ -5,7 +5,7 @@
  * @file    plat.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-22 (date of creation)
- * @updated 2026-07-30 (date of last update)
+ * @updated 2026-08-04 (date of last update)
  * @ingroup dal-project/da/foundation/cfg
  * @prefix  plat
  *
@@ -153,6 +153,21 @@ extern "C" {
 #undef __comp_enum__plat_type
 #define __comp_enum__plat_type plat_type_linux
 #endif
+
+/* Platform feature modes must be established before any compiler or system
+ * header can observe them. dh-c supplies the same defaults at the command
+ * line; these definitions keep direct/non-dh-c inclusion self-contained. */
+#if defined(_WIN32)
+#if !defined(UNICODE)
+#define UNICODE 1
+#endif /* !defined(UNICODE) */
+#if !defined(_UNICODE)
+#define _UNICODE 1
+#endif /* !defined(_UNICODE) */
+#endif /* defined(_WIN32) */
+#if defined(__linux__) && !defined(_GNU_SOURCE)
+#define _GNU_SOURCE 1
+#endif /* defined(__linux__) && !defined(_GNU_SOURCE) */
 
 #define __comp_bool__plat_is_unknown pp_Tok_eql(plat_type, plat_type_unknown)
 #define __comp_bool__plat_is_windows pp_Tok_eql(plat_type, plat_type_windows)

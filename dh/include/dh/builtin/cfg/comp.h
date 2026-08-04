@@ -210,7 +210,7 @@ extern "C" {
 #define __comp_num__comp_clang_ver_minor __clang_minor__
 #undef __comp_num__comp_clang_ver_patch
 #define __comp_num__comp_clang_ver_patch __clang_patchlevel__
-#endif
+#endif /* defined(__clang__) */
 #define __comp_val__comp_clang_ver ver_core_calc( \
     comp_clang_ver_major, comp_clang_ver_minor, comp_clang_ver_patch \
 )
@@ -229,7 +229,7 @@ extern "C" {
 #define __comp_num__comp_gcc_ver_minor __GNUC_MINOR__
 #undef __comp_num__comp_gcc_ver_patch
 #define __comp_num__comp_gcc_ver_patch __GNUC_PATCHLEVEL__
-#endif
+#endif /* defined(__GNUC__) && !defined(__clang__) */
 #define __comp_val__comp_gcc_ver ver_core_calc( \
     comp_gcc_ver_major, comp_gcc_ver_minor, comp_gcc_ver_patch \
 )
@@ -248,7 +248,7 @@ extern "C" {
 #define __comp_num__comp_gnu_ver_minor __GNUC_MINOR__
 #undef __comp_num__comp_gnu_ver_patch
 #define __comp_num__comp_gnu_ver_patch __GNUC_PATCHLEVEL__
-#endif
+#endif /* defined(__GNUC__) */
 #define __comp_val__comp_gnu_ver ver_core_calc( \
     comp_gnu_ver_major, comp_gnu_ver_minor, comp_gnu_ver_patch \
 )
@@ -340,42 +340,42 @@ extern "C" {
 
 #if defined(COMP_HOSTED) && defined(COMP_FREESTANDING)
 #error "`COMP_HOSTED` and `COMP_FREESTANDING` cannot both be defined"
-#endif
+#endif /* defined(COMP_HOSTED) && defined(COMP_FREESTANDING) */
 
 /* Expand convenience aliases before any flag evaluation */
 #if defined(COMP_NO_STDLIB)
 #if !defined(COMP_HAS_DEFAULT_LIBS) && !defined(COMP_NO_DEFAULT_LIBS)
 #define COMP_NO_DEFAULT_LIBS
-#endif
+#endif /* !defined(COMP_HAS_DEFAULT_LIBS) && !defined(COMP_NO_DEFAULT_LIBS) */
 #if !defined(COMP_HAS_START_FILES) && !defined(COMP_NO_START_FILES)
 #define COMP_NO_START_FILES
-#endif
+#endif /* !defined(COMP_HAS_START_FILES) && !defined(COMP_NO_START_FILES) */
 #endif /* defined(COMP_NO_STDLIB) */
 
 #if defined(COMP_NO_CRT)
 #if !defined(COMP_HAS_START_FILES) && !defined(COMP_NO_START_FILES)
 #define COMP_NO_START_FILES
-#endif
+#endif /* !defined(COMP_HAS_START_FILES) && !defined(COMP_NO_START_FILES) */
 #endif /* defined(COMP_NO_CRT) */
 
 #if defined(COMP_HAS_START_FILES) && defined(COMP_NO_START_FILES)
 #error "`COMP_HAS_START_FILES` and `COMP_NO_START_FILES` cannot both be defined"
-#endif
+#endif /* defined(COMP_HAS_START_FILES) && defined(COMP_NO_START_FILES) */
 #if defined(COMP_HAS_CRT) && defined(COMP_NO_CRT)
 #error "`COMP_HAS_CRT` and `COMP_NO_CRT` cannot both be defined"
-#endif
+#endif /* defined(COMP_HAS_CRT) && defined(COMP_NO_CRT) */
 #if defined(COMP_HAS_DEFAULT_LIBS) && defined(COMP_NO_DEFAULT_LIBS)
 #error "`COMP_HAS_DEFAULT_LIBS` and `COMP_NO_DEFAULT_LIBS` cannot both be defined"
-#endif
+#endif /* defined(COMP_HAS_DEFAULT_LIBS) && defined(COMP_NO_DEFAULT_LIBS) */
 #if defined(COMP_HAS_COMPILER_RT) && defined(COMP_NO_COMPILER_RT)
 #error "`COMP_HAS_COMPILER_RT` and `COMP_NO_COMPILER_RT` cannot both be defined"
-#endif
+#endif /* defined(COMP_HAS_COMPILER_RT) && defined(COMP_NO_COMPILER_RT) */
 #if defined(COMP_HAS_LIBC) && defined(COMP_NO_LIBC)
 #error "`COMP_HAS_LIBC` and `COMP_NO_LIBC` cannot both be defined"
-#endif
+#endif /* defined(COMP_HAS_LIBC) && defined(COMP_NO_LIBC) */
 #if defined(COMP_HAS_STDLIB) && defined(COMP_NO_STDLIB)
 #error "`COMP_HAS_STDLIB` and `COMP_NO_STDLIB` cannot both be defined"
-#endif
+#endif /* defined(COMP_HAS_STDLIB) && defined(COMP_NO_STDLIB) */
 
 /* env_type: auto-detect, then allow `COMP_FREESTANDING`/`COMP_HOSTED` to override */
 /*--- Compiler Attributes ---*/

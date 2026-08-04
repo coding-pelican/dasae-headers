@@ -93,28 +93,28 @@ extern "C" {
 
 #if __CHAR_BIT__ != 8
 #error "DH requires 8-bit bytes"
-#endif
+#endif /* __CHAR_BIT__ != 8 */
 #if __SIZEOF_LONG_LONG__ != 8
 #error "DH requires 64-bit long long"
-#endif
+#endif /* __SIZEOF_LONG_LONG__ != 8 */
 #if __SIZEOF_POINTER__ != __SIZEOF_SIZE_T__
 #error "DH requires pointer and size types to share one representation width"
-#endif
+#endif /* __SIZEOF_POINTER__ != __SIZEOF_SIZE_T__ */
 #if defined(__INTPTR_WIDTH__) && (__INTPTR_WIDTH__ != (__SIZEOF_POINTER__ * __CHAR_BIT__))
 #error "DH requires intptr_t and pointer widths to agree"
-#endif
+#endif /* defined(__INTPTR_WIDTH__) && (__INTPTR_WIDTH__ != (__SIZEOF_POINTER__ * __CHAR_BIT__)) */
 #if defined(__UINTPTR_WIDTH__) && (__UINTPTR_WIDTH__ != (__SIZEOF_POINTER__ * __CHAR_BIT__))
 #error "DH requires uintptr_t and pointer widths to agree"
-#endif
+#endif /* defined(__UINTPTR_WIDTH__) && (__UINTPTR_WIDTH__ != (__SIZEOF_POINTER__ * __CHAR_BIT__)) */
 #if defined(__SIZE_WIDTH__) && (__SIZE_WIDTH__ != (__SIZEOF_SIZE_T__ * __CHAR_BIT__))
 #error "DH requires size_t width facts to agree"
-#endif
+#endif /* defined(__SIZE_WIDTH__) && (__SIZE_WIDTH__ != (__SIZEOF_SIZE_T__ * __CHAR_BIT__)) */
 #if (__SIZEOF_POINTER__ != 2) && (__SIZEOF_POINTER__ != 4) && (__SIZEOF_POINTER__ != 8)
 #error "DH supports only 16-bit, 32-bit, or 64-bit native pointer-size domains"
-#endif
+#endif /* (__SIZEOF_POINTER__ != 2) && (__SIZEOF_POINTER__ != 4) && (__SIZEOF_POINTER__ != 8) */
 #if (__SIZEOF_LONG__ != 4) && (__SIZEOF_LONG__ != 8)
 #error "DH requires long to be 32-bit or 64-bit"
-#endif
+#endif /* (__SIZEOF_LONG__ != 4) && (__SIZEOF_LONG__ != 8) */
 
 #if __SIZEOF_LONG__ == 8
 #define __comp_enum__abi_long_unit abi_bits_unit_64bit

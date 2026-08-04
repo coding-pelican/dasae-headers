@@ -91,6 +91,19 @@ assert_contains() {
     esac
 }
 
+assert_not_contains() {
+    text=$1
+    needle=$2
+    message=$3
+    case "$text" in
+        *"$needle"*)
+            printf '%s\n' "$message" >&2
+            exit 1
+            ;;
+        *) ;;
+    esac
+}
+
 assert_occurrences() {
     text=$1
     needle=$2
@@ -238,6 +251,48 @@ copy_scenario_project() {
 
 build_binary "$unit_exe" "$repo_root/dh-c/tests/test-dal-c.c"
 build_binary "$cli_exe" "$repo_root/dh-c/src/dal-c.c"
+
+feature_probe="$scratch_root/builtin-platform-feature-probe.c"
+cat >"$feature_probe" <<'EOF'
+#include "dh/builtin/cfg.h"
+#if defined(__linux__) && !defined(_GNU_SOURCE)
+#error "dh/builtin/cfg.h must establish _GNU_SOURCE on Linux"
+#endif
+#if defined(_WIN32) && (!defined(UNICODE) || !defined(_UNICODE))
+#error "dh/builtin/cfg.h must establish both Windows Unicode selectors"
+#endif
+int main(void) { return 0; }
+EOF
+invoke_external "0" "$repo_root" clang -std=gnu17 -fsyntax-only     -U_GNU_SOURCE -UUNICODE -U_UNICODE     "-I$repo_root/dh/include" "$feature_probe"
+
+bootstrap_make_root="$scratch_root/bootstrap-feature-profile"
+mkdir -p "$bootstrap_make_root"
+invoke_external "0" "$bootstrap_make_root" sh "$repo_root/dh-c/gen-makefile.sh"
+
+invoke_external "0" "$bootstrap_make_root" make -f Makefile -pn clean ARCH_TARGET=x86_64-unknown-hurd-gnu
+assert_contains "$LAST_OUTPUT" "CFLAGS =" "Bootstrap Makefile did not expose CFLAGS"
+assert_contains "$LAST_OUTPUT" "-D_GNU_SOURCE" "GNU libc target did not receive _GNU_SOURCE"
+assert_not_contains "$LAST_OUTPUT" "-DUNICODE" "GNU libc target unexpectedly received Windows Unicode selectors"
+
+invoke_external "0" "$bootstrap_make_root" make -f Makefile -pn clean ARCH_TARGET=x86_64-unknown-linux-musl
+assert_contains "$LAST_OUTPUT" "-D_GNU_SOURCE" "musl target did not receive _GNU_SOURCE"
+
+invoke_external "0" "$bootstrap_make_root" make -f Makefile -pn clean ARCH_TARGET=x86_64-unknown-linux-uclibc
+assert_contains "$LAST_OUTPUT" "-D_GNU_SOURCE" "uClibc target did not receive _GNU_SOURCE"
+
+invoke_external "0" "$bootstrap_make_root" make -f Makefile -pn clean ARCH_TARGET=x86_64-unknown-linux-none
+assert_not_contains "$LAST_OUTPUT" "-D_GNU_SOURCE" "No-libc target unexpectedly received _GNU_SOURCE"
+
+invoke_external "0" "$bootstrap_make_root" make -f Makefile -pn clean ARCH_TARGET=x86_64-pc-linux-gnu COMPILE_ENV=freestanding
+assert_not_contains "$LAST_OUTPUT" "-D_GNU_SOURCE" "Freestanding target unexpectedly received _GNU_SOURCE"
+
+invoke_external "0" "$bootstrap_make_root" make -f Makefile -pn clean ARCH_TARGET=x86_64-pc-linux-gnu LINK_LIBC=off LINK_DEFAULT_LIBS=off
+assert_not_contains "$LAST_OUTPUT" "-D_GNU_SOURCE" "No-libc link model unexpectedly received _GNU_SOURCE"
+
+invoke_external "0" "$bootstrap_make_root" make -f Makefile -pn clean ARCH_TARGET=x86_64-w64-windows-gnu
+assert_contains "$LAST_OUTPUT" "-DUNICODE" "Windows target did not receive UNICODE"
+assert_contains "$LAST_OUTPUT" "-D_UNICODE" "Windows target did not receive _UNICODE"
+assert_not_contains "$LAST_OUTPUT" "-D_GNU_SOURCE" "Windows GNU target unexpectedly received _GNU_SOURCE"
 
 invoke_external "0" "$repo_root" "$unit_exe"
 

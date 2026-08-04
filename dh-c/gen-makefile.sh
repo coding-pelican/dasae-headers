@@ -65,6 +65,7 @@ FUNCTION_SECTIONS ?= profile
 DATA_SECTIONS ?= profile
 GC_SECTIONS ?= profile
 HOST_IS_WINDOWS := $(if $(filter Windows_NT,$(OS)),on,off)
+HOST_SYSTEM := $(if $(filter on,$(HOST_IS_WINDOWS)),Windows,$(shell uname -s 2>/dev/null))
 LINK_LIBC ?= auto
 LINK_DEFAULT_LIBS ?= auto
 LINK_START_FILES ?= auto
@@ -320,6 +321,16 @@ RESOLVED_STRIP = $(if $(filter profile,$(STRIP)),$(PROFILE_STRIP),$(STRIP))
 RESOLVED_ICF = $(if $(filter profile,$(ICF)),$(PROFILE_ICF),$(ICF))
 RESOLVED_TARGET_ARCH = $(if $(filter profile,$(TARGET_ARCH)),$(PROFILE_TARGET_ARCH),$(TARGET_ARCH))
 RESOLVED_TARGET_TUNE = $(if $(filter profile,$(TARGET_TUNE)),$(PROFILE_TARGET_TUNE),$(TARGET_TUNE))
+
+TARGET_FEATURE_IS_WINDOWS = $(if $(or $(findstring windows,$(ARCH_TARGET)),$(findstring mingw,$(ARCH_TARGET)),$(findstring msvc,$(ARCH_TARGET))),on,off)
+TARGET_FEATURE_HAS_GNU_SOURCE_LIBC = $(if $(or $(findstring -gnu,$(ARCH_TARGET)),$(findstring -musl,$(ARCH_TARGET)),$(findstring -uclibc,$(ARCH_TARGET)),$(findstring -android,$(ARCH_TARGET))),on,off)
+ifeq ($(ARCH_TARGET),auto)
+    RESOLVED_WINDOWS_FEATURE_PROFILE = $(HOST_IS_WINDOWS)
+    RESOLVED_GNU_SOURCE_FEATURE_PROFILE = $(if $(filter Linux Android,$(HOST_SYSTEM)),on,off)
+else
+    RESOLVED_WINDOWS_FEATURE_PROFILE = $(TARGET_FEATURE_IS_WINDOWS)
+    RESOLVED_GNU_SOURCE_FEATURE_PROFILE = $(if $(filter on,$(TARGET_FEATURE_IS_WINDOWS)),off,$(TARGET_FEATURE_HAS_GNU_SOURCE_LIBC))
+endif
 
 ifeq ($(ANALYSIS_ARTIFACTS),on)
     EMIT_MAP := on
@@ -654,12 +665,24 @@ CFLAGS = $(BASE_CFLAGS) $(PROFILE_CFLAGS) $(TARGET_FLAGS) $(CONTRACT_DEFINES) $(
 LDFLAGS_EXTRA = $(EXTRA_LIB_DIRS) $(LINK_ARGS)
 
 # Platform-specific flags
-ifeq ($(PLATFORM),windows)
-    CFLAGS += -D_WIN32_WINNT=0x0600
+ifeq ($(RESOLVED_WINDOWS_FEATURE_PROFILE),on)
+    CFLAGS += -D_WIN32_WINNT=0x0600 -DUNICODE -D_UNICODE
     CFLAGS += -fansi-escape-codes
+else
+    ifeq ($(RESOLVED_COMPILE_ENV),hosted)
+        ifeq ($(RESOLVED_LINK_DEFAULT_LIBS),on)
+            ifeq ($(RESOLVED_LINK_LIBC),on)
+                CFLAGS += -D_POSIX_C_SOURCE=200809L
+                ifeq ($(RESOLVED_GNU_SOURCE_FEATURE_PROFILE),on)
+                    CFLAGS += -D_GNU_SOURCE
+                endif
+            endif
+        endif
+    endif
+endif
+ifeq ($(PLATFORM),windows)
     LDFLAGS = -fuse-ld=lld $(TARGET_FLAGS) $(PROFILE_LDFLAGS) $(LDFLAGS_EXTRA)
 else
-    CFLAGS += -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L
     LDFLAGS = $(TARGET_FLAGS) $(PROFILE_LDFLAGS) $(LDFLAGS_EXTRA)
 endif
 

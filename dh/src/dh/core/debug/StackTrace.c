@@ -1,7 +1,3 @@
-#if defined(__linux__) && !defined(_GNU_SOURCE)
-#define _GNU_SOURCE
-#endif /* defined(__linux__) && !defined(_GNU_SOURCE) */
-
 #include "dh/core/debug/StackTrace.h"
 #include "dh/io/stream.h"
 #include "dh/thrd/Self.h"

@@ -1,11 +1,11 @@
 /**
- * @copyright Copyright (c) 2025 Gyeongtae Kim
+ * @copyright Copyright (c) 2025-2026 Gyeongtae Kim
  * @license   MIT License - see LICENSE file for details
  *
  * @file      cfg.h
  * @author    Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date      2025-12-31 (date of creation)
- * @updated   2025-12-31 (date of last update)
+ * @updated   2026-08-04 (date of last update)
  * @ingroup   dasae-headers(dh)/sys/api/windows
  * @prefix    sys_api_windows
  *
@@ -32,7 +32,7 @@ extern "C" {
 /* Target Version */
 #if !defined(sys_api_windows_pref_target_ver)
 #define sys_api_windows_pref_target_ver __comp_int__sys_api_windows_pref_target_ver
-#endif /* sys_api_windows_pref_target_ver */
+#endif /* !defined(sys_api_windows_pref_target_ver) */
 #define sys_api_windows__pref_target_ver_default __comp_int__sys_api_windows__pref_target_ver_default
 
 /* Latest Known Version */
@@ -79,7 +79,7 @@ extern "C" {
      * from the global namespace to reduce build time and conflicts. \
      */ \
     __comp_bool__sys_api_windows_pref_lean_and_mean
-#endif /* sys_api_windows_pref_lean_and_mean */
+#endif /* !defined(sys_api_windows_pref_lean_and_mean) */
 #define sys_api_windows__pref_lean_and_mean_default __comp_bool__sys_api_windows__pref_lean_and_mean_default
 
 /* Nominmax */
@@ -90,7 +90,7 @@ extern "C" {
      * with C++ standard library algorithms and modern C code. \
      */ \
     __comp_bool__sys_api_windows_pref_nominmax
-#endif /* sys_api_windows_pref_nominmax */
+#endif /* !defined(sys_api_windows_pref_nominmax) */
 #define sys_api_windows__pref_nominmax_default __comp_bool__sys_api_windows__pref_nominmax_default
 
 /* Unicode */
@@ -101,7 +101,7 @@ extern "C" {
      * of C runtime functions like _tcslen to resolve to wcslen. \
      */ \
     __comp_bool__sys_api_windows_pref_unicode
-#endif /* sys_api_windows_pref_unicode */
+#endif /* !defined(sys_api_windows_pref_unicode) */
 #define sys_api_windows__pref_unicode_default __comp_bool__sys_api_windows__pref_unicode_default
 
 /*========== Macros and Definitions =========================================*/
@@ -140,29 +140,33 @@ extern "C" {
 #if !defined(_WIN32_WINNT)
 /* Shift right by 16 to get 0xMMmm format (e.g., 0x0A00) */
 #define _WIN32_WINNT (sys_api_windows_pref_target_ver >> 16)
-#endif /* _WIN32_WINNT */
+#endif /* !defined(_WIN32_WINNT) */
 
 #if !defined(WINVER)
 #define WINVER _WIN32_WINNT
-#endif /* WINVER */
+#endif /* !defined(WINVER) */
 
 #if !defined(NTDDI_VERSION)
 /* Full precision for feature selection */
 #define NTDDI_VERSION sys_api_windows_pref_target_ver
-#endif /* NTDDI_VERSION */
+#endif /* !defined(NTDDI_VERSION) */
 
-#if !defined(WIN32_LEAN_AND_MEAN) && (!sys_api_windows_pref_lean_and_mean)
+#if !defined(WIN32_LEAN_AND_MEAN) && sys_api_windows_pref_lean_and_mean
 #define WIN32_LEAN_AND_MEAN 1
-#endif /* WIN32_LEAN_AND_MEAN */
+#endif /* !defined(WIN32_LEAN_AND_MEAN) && sys_api_windows_pref_lean_and_mean */
 
-#if !defined(NOMINMAX) && (!sys_api_windows_pref_nominmax)
+#if !defined(NOMINMAX) && sys_api_windows_pref_nominmax
 #define NOMINMAX 1
-#endif /* NOMINMAX */
+#endif /* !defined(NOMINMAX) && sys_api_windows_pref_nominmax */
 
-#if !defined(UNICODE) && (!sys_api_windows_pref_unicode)
+#if sys_api_windows_pref_unicode
+#if !defined(UNICODE)
 #define UNICODE 1
+#endif /* !defined(UNICODE) */
+#if !defined(_UNICODE)
 #define _UNICODE 1
-#endif /* UNICODE */
+#endif /* !defined(_UNICODE) */
+#endif /* sys_api_windows_pref_unicode */
 #endif /* plat_is_windows */
 
 #if defined(__cplusplus)
