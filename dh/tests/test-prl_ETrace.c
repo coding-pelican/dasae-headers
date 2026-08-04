@@ -1,7 +1,7 @@
 #include "dh-main.h"
 
+#if ETrace_enabled
 TEST_fn_("prl/ETrace: captures and resets frames" $scope) {
-    if (!ETrace_enabled) try_(TEST_skip());
     ETrace_enable();
     ETrace_reset();
 
@@ -14,7 +14,6 @@ TEST_fn_("prl/ETrace: captures and resets frames" $scope) {
 } $unscoped(TEST_fn);
 
 TEST_fn_("prl/ETrace: disable suppresses capture without clearing frames" $scope) {
-    if (!ETrace_enabled) try_(TEST_skip());
     ETrace_enable();
     ETrace_reset();
 
@@ -35,7 +34,6 @@ TEST_fn_("prl/ETrace: disable suppresses capture without clearing frames" $scope
 } $unscoped(TEST_fn);
 
 TEST_fn_("prl/ETrace - TEST runner resets ETrace before each case: seed" $scope) {
-    if (!ETrace_enabled) try_(TEST_skip());
     ETrace_enable();
     ETrace_reset();
     ETrace_captureFrame();
@@ -43,7 +41,20 @@ TEST_fn_("prl/ETrace - TEST runner resets ETrace before each case: seed" $scope)
 } $unscoped(TEST_fn);
 
 TEST_fn_("prl/ETrace - TEST runner resets ETrace before each case: verify" $scope) {
-    if (!ETrace_enabled) try_(TEST_skip());
     ETrace_enable();
     try_(TEST_expect(ETrace_depth() == 0));
 } $unscoped(TEST_fn);
+#else /* !ETrace_enabled */
+TEST_fn_("prl/ETrace: disabled surface remains inert" $scope) {
+    ETrace_enable();
+    ETrace_captureFrame();
+    try_(TEST_expect(!ETrace_isEnabled()));
+    try_(TEST_expect(ETrace_depth() == 0));
+
+    ETrace_disable();
+    ETrace_reset();
+    ETrace_print();
+    try_(TEST_expect(!ETrace_isEnabled()));
+    try_(TEST_expect(ETrace_depth() == 0));
+} $unscoped(TEST_fn);
+#endif /* ETrace_enabled */

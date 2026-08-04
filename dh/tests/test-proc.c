@@ -153,17 +153,12 @@ TEST_fn_("proc/Self: direct base address identifies the current image" $scope) {
     try_(TEST_expect(address != 0));
 } $unscoped(TEST_fn);
 
+#if debug_enabled
 TEST_fn_("proc/Self: clean exit returns in debug builds" $scope) {
-    pp_if_(debug_enabled)(
-        pp_then_(
-            let self = try_(proc_direct());
-            proc_cleanExit(self);
-        ),
-        pp_else_(
-            try_(TEST_skipMsg(u8_l("cleanExit terminates in non-debug builds")));
-        ));
-    return_ok({});
+    let self = try_(proc_direct());
+    proc_cleanExit(self);
 } $unscoped(TEST_fn);
+#endif /* debug_enabled */
 
 $static fn_((test_proc__cmd(S$S_const$u8 argv, proc_cmd_StdIO std_out))(proc_Spawn_Opts)) {
     return (proc_Spawn_Opts){

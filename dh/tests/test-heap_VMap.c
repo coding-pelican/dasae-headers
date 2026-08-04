@@ -91,7 +91,8 @@ TEST_fn_("heap/VMap: remap preserves prefix when supported" $guard) {
         defer_(let_ignore = heap_VMap_release(vmap, new_ptr, new_len));
         try_(TEST_expect(*new_ptr == u8_(0x7B)));
     } else_none {
+        let prefix_preserved = *ptr == u8_(0x7B);
         let_ignore = heap_VMap_release(vmap, ptr, old_len);
-        return_ok(try_(TEST_skip()));
+        try_(TEST_expect(prefix_preserved));
     }
 } $unguarded(TEST_fn)
