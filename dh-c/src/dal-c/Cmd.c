@@ -417,6 +417,7 @@ dal_c_Cmd* dal_c_Cmd_parse(int argc, const char* argv[]) {
         free(cmd);
         return NULL;
     }
+    cmd->opts.profile = dal_c_CmdAction_defaultProfile(cmd->action);
 
     int arg_idx = 2;
     if (argc > 2 && !str_startsWith(argv[2], dal_c_opt_prefix_short)) {
@@ -5651,28 +5652,16 @@ static int dal_c_Cmd__ensureProjectLibraryForConsumer(const dal_c_Cmd* self, con
     memset(&lib_cmd.payload, 0, sizeof(lib_cmd.payload));
     lib_cmd.action = dal_c_CmdAction_lib;
     lib_cmd.payload.lib.linking = dal_c_Linking_static;
-    int result = 0;
-    if (proj->defaults.target_kind_set && proj->defaults.target_kind == dal_c_Target_lib) {
-        result = dal_c_Cmd__buildLibrarySetFromSources(
-            &lib_cmd,
-            proj,
-            project_sources,
-            proj->name,
-            true,
-            false
-        );
-    } else {
-        result = dal_c_Cmd__buildFromSources(
-            &lib_cmd,
-            proj,
-            project_sources,
-            proj->name,
-            dal_c_Target_static_lib,
-            NULL,
-            true,
-            false
-        );
-    }
+    int result = dal_c_Cmd__buildFromSources(
+        &lib_cmd,
+        proj,
+        project_sources,
+        proj->name,
+        dal_c_Target_static_lib,
+        NULL,
+        true,
+        false
+    );
     ArrStr_fini(&project_sources);
     return result;
 }

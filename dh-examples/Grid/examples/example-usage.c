@@ -3,8 +3,8 @@
 
 #include <dh/io/stream.h>
 
-fn_((main(S$S_const$u8 args))(E$void) $scope) {
-    let_ignore = args;
+fn_((main(proc_Entry entry))(E$void) $scope) {
+    let_ignore = entry;
 
     var mat_raw = A_from$((i32){
         0, 1, 2,

@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>dasae-headers - Modern and Safe C Programming</title>
+        <title>dasae-headers - C to Modern and Safe</title>
         <style>
             body {
                 margin: 0;
@@ -23,22 +23,24 @@
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
+                gap: 36px;
                 width: 100%;
                 max-width: 1200px;
-                padding: 0 40px;
+                padding: 0 48px;
                 z-index: 2;
             }
 
             .content {
-                flex: 1;
+                flex: 1 1 0;
                 color: white;
-                max-width: 550px;
+                max-width: 520px;
+                min-width: 0;
             }
 
             .logo-section {
                 display: flex;
                 align-items: center;
-                margin-bottom: 25px;
+                margin-bottom: 18px;
             }
 
             .logo {
@@ -50,6 +52,7 @@
                 align-items: center;
                 justify-content: center;
                 position: relative;
+                flex-shrink: 0;
             }
 
             .logo-svg {
@@ -69,59 +72,64 @@
             }
 
             .tagline {
-                font-size: 28px;
+                font-size: 30px;
                 font-weight: 600;
                 color: #f0f6fc;
-                margin: 12px 0 20px 0;
+                margin: 0 0 12px 0;
                 line-height: 1.2;
             }
 
             .description {
-                font-size: 20px;
-                color: #8b949e;
-                line-height: 1.4;
-                margin-bottom: 25px;
+                font-size: 19px;
+                color: #b1bac4;
+                line-height: 1.45;
+                margin: 0 0 22px 0;
                 font-weight: 400;
             }
 
-            .features {
+            .layers {
                 display: flex;
-                gap: 25px;
-                flex-wrap: wrap;
+                gap: 12px;
+                width: 100%;
             }
 
-            .feature {
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                font-size: 18px;
+            .layer {
+                flex: 1 1 0;
+                min-width: 0;
+                border-left: 3px solid #60d1c3;
+                border-radius: 0 10px 10px 0;
+                padding: 12px 14px;
+                color: #f0f6fc;
+                background: rgba(96, 209, 195, 0.07);
+            }
+
+            .layer-title {
+                display: block;
                 color: #60d1c3;
+                font-size: 16px;
                 font-weight: 600;
+                line-height: 1.25;
+                letter-spacing: -0.01em;
+                white-space: nowrap;
             }
 
-            .feature::before {
-                content: "✓";
-                background: #60d1c3;
-                color: #0d1117;
-                width: 22px;
-                height: 22px;
-                border-radius: 50%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 14px;
-                font-weight: bold;
-                flex-shrink: 0;
+            .layer-detail {
+                display: block;
+                margin-top: 8px;
+                color: #c9d1d9;
+                font-size: 13.5px;
+                font-weight: 500;
+                line-height: 1.4;
             }
 
             .code-section {
-                flex: 1;
-                max-width: 580px;
-                background: rgba(22, 27, 34, 0.9);
+                flex: 1 1 0;
+                max-width: 560px;
+                background: rgba(22, 27, 34, 0.92);
                 border: 1px solid #30363d;
                 border-radius: 16px;
-                padding: 28px;
-                font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+                padding: 26px 28px;
+                font-family: "Cascadia Mono", "Cascadia Code", Consolas, "Liberation Mono", Menlo, monospace;
                 position: relative;
                 backdrop-filter: blur(12px);
                 box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
@@ -164,11 +172,12 @@
                 font-size: 15px;
                 line-height: 1.5;
                 font-weight: 400;
+                font-synthesis: none;
             }
 
             .keyword {
                 color: #cc89ed;
-                font-weight: 500;
+                font-weight: 400;
             }
             .string {
                 color: #a5d66f;
@@ -179,11 +188,11 @@
             }
             .function {
                 color: #6fc3ff;
-                font-weight: 500;
+                font-weight: 400;
             }
             .type {
                 color: #60d1c3;
-                font-weight: 500;
+                font-weight: 400;
             }
             .mutable {
                 color: #f07178;
@@ -268,15 +277,23 @@
                     <h1 class="project-name">dasae-headers</h1>
                 </div>
 
-                <div class="tagline">Modern C with Better Safety</div>
+                <div class="tagline">C to Modern and Safe</div>
 
-                <div class="description">A modern extension language for safer and more productive C programming</div>
+                <div class="description">A cohesive language and library layer for systems C</div>
 
-                <div class="features">
-                    <div class="feature">Memory Safety</div>
-                    <div class="feature">Type Safety</div>
-                    <div class="feature">Error Handling</div>
-                    <div class="feature">Modern Libraries</div>
+                <div class="layers">
+                    <div class="layer">
+                        <span class="layer-title">Language Surface</span>
+                        <span class="layer-detail">C11–C17<br />C23 compat</span>
+                    </div>
+                    <div class="layer">
+                        <span class="layer-title">Systems Library</span>
+                        <span class="layer-detail">portable<br />injectable</span>
+                    </div>
+                    <div class="layer">
+                        <span class="layer-title">Build Tooling</span>
+                        <span class="layer-detail">build · test<br />package</span>
+                    </div>
                 </div>
             </div>
 
@@ -289,21 +306,20 @@
                 </div>
 
                 <div class="code">
-                    <span class="comment">// Modern C with safety features</span><br />
-                    <span class="keyword">#include</span> <span class="string">"dh/main.h"</span><br />
-                    <span class="keyword">#include</span> <span class="string">"dh/io/common.h"</span><br />
-                    <span class="keyword">#include</span> <span class="string">"dh/fs/File.h"</span><br />
+                    <span class="comment">// Explicit startup context and error propagation</span><br />
+                    <span class="keyword">#include</span> <span class="string">"dh-main.h"</span><br />
+                    <span class="keyword">#include</span> <span class="string">"dh/io/std.h"</span><br />
                     <span class="keyword">#include</span> <span class="string">"dh/io/Writer.h"</span><br />
                     <br />
                     <span class="keyword">fn_</span>((<span class="function">main</span>(<span class="type"
-                        >S$S_const$u8</span
+                        >proc_Entry</span
                     >
-                    <span class="mutable">args</span>))(<span class="type">E$void</span>)
+                    <span class="mutable">entry</span>))(<span class="type">E$void</span>)
                     <span class="keyword">$scope</span>) {<br />
-                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">let_ignore</span> =
-                    <span class="mutable">args</span>;<br />
                     &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">let</span> <span class="constant">out</span> =
-                    <span class="function">fs_File_writer</span>(<span class="function">io_handleStdOut</span>());<br />
+                    <span class="function">io_std_out</span>(<span class="mutable">entry</span>.<span class="mutable"
+                        >std</span
+                    >);<br />
                     &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">let_</span>(<span class="constant">msg</span>,
                     <span class="type">O$S_const$u8</span>) = <span class="keyword">some</span>(<span class="function"
                         >u8_l</span
@@ -314,7 +330,7 @@
                         >"Hello, {:?s}!\n"</span
                     >), <span class="constant">msg</span>));<br />
                     &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return_ok</span>({});<br />
-                    } <span class="keyword">$unscoped_</span>(<span class="keyword">fn</span>);
+                    } <span class="keyword">$unscoped</span>(<span class="keyword">fn</span>);
                 </div>
             </div>
         </div>

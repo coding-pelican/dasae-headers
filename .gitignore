@@ -204,9 +204,9 @@ tmbootpicker.efi
 !**/.mailmap
 
 # CI/CD
-!**/.github/**
+!**/.github/
 !**/.gitlab-ci.yml
-!**/.gitlab/**
+!**/.gitlab/
 
 ########## Environment variables ##############################################
 .env*

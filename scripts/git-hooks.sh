@@ -36,7 +36,6 @@ case "$action" in
             echo "git-hooks: existing pre-push hook is not managed by this repository" >&2
             exit 1
         fi
-        dh_c_path=$(command -v dh-c || true)
         if [ -x /usr/bin/bash ]; then
             bash_path=/usr/bin/bash
         else
@@ -53,9 +52,6 @@ case "$action" in
             echo "$managed_marker"
             echo 'set -eu'
             echo 'repo_root=$(git rev-parse --show-toplevel)'
-            if [ -n "$dh_c_path" ]; then
-                echo "export DH_C='$dh_c_path'"
-            fi
             echo "exec '$bash_path' \"\$repo_root/scripts/verify-native.sh\""
         } >"$hook_path"
         chmod +x "$hook_path"

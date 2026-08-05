@@ -21,7 +21,7 @@ $static fn_((createHelloFile(S_const$u8 path, S_const$u8 message))(E$fs_File) $g
     errdefer_($ignore, fs_File_close(file));
 
     let written = try_(fs_File_writePos(file, message, 0));
-    debug_assert_true(written == message.len);
+    if (written != message.len) return_err(E_cause$fs_File_WriteFailed());
     try_(fs_File_sync(file));
 
     return_ok(file);

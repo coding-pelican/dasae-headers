@@ -86,6 +86,7 @@ assert_contains() {
         *"$needle"*) ;;
         *)
             printf '%s\n' "$message" >&2
+            printf 'Expected output to contain: %s\nActual output:\n%s\n' "$needle" "$text" >&2
             exit 1
             ;;
     esac
@@ -1098,6 +1099,12 @@ EOF
     assert_contains "$LAST_OUTPUT" "fixture: recursive dsl reaches current project" "Recursive test did not include current project tests"
     assert_occurrences "$LAST_OUTPUT" "fixture-dep: recursive dsl includes dependency once" "1" "Recursive test ran dependency tests outside the aggregate"
 
+    lib_kind_consumer_project=$(copy_scenario_project "dh-c/tests/fixture/lib-kind-project")
+    invoke_external "0" "$lib_kind_consumer_project" "$cli_exe" test
+    assert_contains "$LAST_OUTPUT" "status: PASS" "kind=lib consumer-only test did not pass"
+    assert_build_artifacts_exist "$lib_kind_consumer_project" "$lib_kind_static_pattern"
+    assert_build_artifacts_absent "$lib_kind_consumer_project" "$lib_kind_shared_pattern" "$lib_kind_import_pattern"
+
     lib_kind_project=$(copy_scenario_project "dh-c/tests/fixture/lib-kind-project")
     invoke_external "0" "$lib_kind_project" "$cli_exe" build
     assert_contains "$LAST_OUTPUT" "Build successful!" "Project kind=lib build did not succeed"
@@ -1252,7 +1259,13 @@ EOF
     cp "$cli_exe" "$self_sdk_root/bin/dh-c$exe_ext"
     portable_cwd=$(mktemp -d "${TMPDIR:-/tmp}/dh-c-self-prebuilt.XXXXXX")
     invoke_external "0" "$portable_cwd" env DH_HOME= "$self_sdk_root/bin/dh-c$exe_ext" --version
-    assert_contains "$LAST_OUTPUT" "dasae-headers path: $self_sdk_root" "Packaged dh-c did not discover its executable-relative SDK root"
+    normalized_version_output=$(printf '%s' "$LAST_OUTPUT" | tr '\\' '/')
+    case "$(uname -s)" in
+        MINGW*|MSYS*|CYGWIN*) normalized_sdk_root=$(cygpath -m "$self_sdk_root") ;;
+        *) normalized_sdk_root=$self_sdk_root ;;
+    esac
+    normalized_sdk_root=$(printf '%s' "$normalized_sdk_root" | tr '\\' '/')
+    assert_contains "$normalized_version_output" "dasae-headers path: $normalized_sdk_root" "Packaged dh-c did not discover its executable-relative SDK root"
     remove_recur "$portable_cwd"
 
     header_only_project=$(copy_scenario_project "dh-c/tests/fixture/header-only-project")

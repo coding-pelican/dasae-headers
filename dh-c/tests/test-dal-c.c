@@ -811,6 +811,39 @@ static void test_meta_tables(void) {
 }
 
 static void test_cmd_parse(void) {
+    TEST_ASSERT(dal_c_CmdAction_defaultProfile(dal_c_CmdAction_build) == dal_c_Profile_dev);
+    TEST_ASSERT(dal_c_CmdAction_defaultProfile(dal_c_CmdAction_test) == dal_c_Profile_test);
+    TEST_ASSERT(dal_c_CmdAction_defaultProfile(dal_c_CmdAction_test_dsl) == dal_c_Profile_test);
+
+    {
+        const char* argv[] = { dal_c_tool_name, dal_c_cmd_action_test, NULL };
+        dal_c_Cmd* cmd = dal_c_Cmd_parse(2, argv);
+        TEST_ASSERT(cmd != NULL);
+        TEST_ASSERT(cmd->action == dal_c_CmdAction_test);
+        TEST_ASSERT(cmd->opts.profile == dal_c_Profile_test);
+        TEST_ASSERT(!cmd->profile_explicit);
+        dal_c_Cmd_cleanup(&cmd);
+    }
+
+    {
+        const char* argv[] = { dal_c_tool_name, dal_c_cmd_action_test_dsl, NULL };
+        dal_c_Cmd* cmd = dal_c_Cmd_parse(2, argv);
+        TEST_ASSERT(cmd != NULL);
+        TEST_ASSERT(cmd->action == dal_c_CmdAction_test_dsl);
+        TEST_ASSERT(cmd->opts.profile == dal_c_Profile_test);
+        TEST_ASSERT(!cmd->profile_explicit);
+        dal_c_Cmd_cleanup(&cmd);
+    }
+
+    {
+        const char* argv[] = { dal_c_tool_name, dal_c_cmd_action_test, dal_c_profile_release, NULL };
+        dal_c_Cmd* cmd = dal_c_Cmd_parse(3, argv);
+        TEST_ASSERT(cmd != NULL);
+        TEST_ASSERT(cmd->opts.profile == dal_c_Profile_release);
+        TEST_ASSERT(cmd->profile_explicit);
+        dal_c_Cmd_cleanup(&cmd);
+    }
+
     {
         const char* argv[] = { dal_c_tool_name, "build", "release", "--output=app", "--sample", "--define=DEBUG", NULL };
         dal_c_Cmd* cmd = dal_c_Cmd_parse(6, argv);

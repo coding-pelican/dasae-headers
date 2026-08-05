@@ -169,7 +169,7 @@ static const char* const dal_c_help_topic_precedence_lines[] = {
 };
 static const char* const dal_c_help_topic_profiles_lines[] = {
     "Profiles select optimization/debug defaults; explicit file/project/CLI policy may override individual fields.",
-    "dev is the default. stable/release add LTO-oriented library artifacts according to their profile settings.",
+    "dev is the general default; test and test-dsl default to test. stable/release add LTO-oriented library artifacts according to their profile settings.",
     "Use `dh-c help --all` for the complete profile table.",
 };
 static const char* const dal_c_help_topic_invocation_lines[] = {

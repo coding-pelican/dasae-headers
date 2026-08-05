@@ -179,6 +179,9 @@ dh-c run [profile] [path] [options]
 dh-c test [profile] [path] [options]
 ```
 
+When omitted, `test` and `test-dsl` use the `test` profile. An explicitly
+selected profile such as `release` takes precedence.
+
 Test output separates result and timing:
 
 ```txt

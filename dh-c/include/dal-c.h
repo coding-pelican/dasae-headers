@@ -732,6 +732,8 @@ static inline const dal_c_ProfileSpec* dal_c_ProfileSpec_by(dal_c_Profile profil
 
 /// === COMMAND ACTION ENUM ===
 
+#define dal_c_default_profile dal_c_Profile_dev
+
 typedef enum dal_c_CmdAction {
     dal_c_CmdAction_invalid = -1,
     dal_c_CmdAction_version = 0,
@@ -754,6 +756,7 @@ typedef enum dal_c_CmdAction {
     dal_c_CmdAction_syntax = 17,
     dal_c_CmdAction_tidy = 18,
     dal_c_CmdAction_format_code = 19,
+    dal_c_CmdAction_count = 20,
 } dal_c_CmdAction;
 #define dal_c_cmd_action_version "version"
 #define dal_c_cmd_action_help "help"
@@ -775,54 +778,57 @@ typedef enum dal_c_CmdAction {
 #define dal_c_cmd_action_syntax "syntax"
 #define dal_c_cmd_action_tidy "tidy"
 #define dal_c_cmd_action_format "format"
+
+typedef struct dal_c_CmdActionSpec {
+    const char* name;
+    dal_c_Profile default_profile;
+} dal_c_CmdActionSpec;
+
+static const dal_c_CmdActionSpec dal_c_cmd_action_specs[dal_c_CmdAction_count] = {
+    [dal_c_CmdAction_version] = { dal_c_cmd_action_version, dal_c_default_profile },
+    [dal_c_CmdAction_help] = { dal_c_cmd_action_help, dal_c_default_profile },
+    [dal_c_CmdAction_build] = { dal_c_cmd_action_build, dal_c_default_profile },
+    [dal_c_CmdAction_lib] = { dal_c_cmd_action_lib, dal_c_default_profile },
+    [dal_c_CmdAction_run] = { dal_c_cmd_action_run, dal_c_default_profile },
+    [dal_c_CmdAction_test] = { dal_c_cmd_action_test, dal_c_Profile_test },
+    [dal_c_CmdAction_deps] = { dal_c_cmd_action_deps, dal_c_default_profile },
+    [dal_c_CmdAction_clean] = { dal_c_cmd_action_clean, dal_c_default_profile },
+    [dal_c_CmdAction_workspace] = { dal_c_cmd_action_workspace, dal_c_default_profile },
+    [dal_c_CmdAction_project] = { dal_c_cmd_action_project, dal_c_default_profile },
+    [dal_c_CmdAction_build_dsl] = { dal_c_cmd_action_build_dsl, dal_c_default_profile },
+    [dal_c_CmdAction_test_dsl] = { dal_c_cmd_action_test_dsl, dal_c_Profile_test },
+    [dal_c_CmdAction_clean_dsl] = { dal_c_cmd_action_clean_dsl, dal_c_default_profile },
+    [dal_c_CmdAction_build_self] = { dal_c_cmd_action_build_self, dal_c_default_profile },
+    [dal_c_CmdAction_clean_self] = { dal_c_cmd_action_clean_self, dal_c_default_profile },
+    [dal_c_CmdAction_toolchain] = { dal_c_cmd_action_toolchain, dal_c_default_profile },
+    [dal_c_CmdAction_compile_db] = { dal_c_cmd_action_compile_db, dal_c_default_profile },
+    [dal_c_CmdAction_syntax] = { dal_c_cmd_action_syntax, dal_c_default_profile },
+    [dal_c_CmdAction_tidy] = { dal_c_cmd_action_tidy, dal_c_default_profile },
+    [dal_c_CmdAction_format_code] = { dal_c_cmd_action_format, dal_c_default_profile },
+};
+
+static inline const dal_c_CmdActionSpec* dal_c_CmdActionSpec_by(dal_c_CmdAction action) {
+    if (0 <= action && action < dal_c_CmdAction_count) {
+        return &dal_c_cmd_action_specs[action];
+    }
+    return NULL;
+}
+
 static inline dal_c_CmdAction dal_c_CmdAction_parse(const char* str) {
-    if (str_eql(str, dal_c_cmd_action_build)) { return dal_c_CmdAction_build; }
-    if (str_eql(str, dal_c_cmd_action_lib)) { return dal_c_CmdAction_lib; }
-    if (str_eql(str, dal_c_cmd_action_run)) { return dal_c_CmdAction_run; }
-    if (str_eql(str, dal_c_cmd_action_test)) { return dal_c_CmdAction_test; }
-    if (str_eql(str, dal_c_cmd_action_deps)) { return dal_c_CmdAction_deps; }
-    if (str_eql(str, dal_c_cmd_action_clean)) { return dal_c_CmdAction_clean; }
-    if (str_eql(str, dal_c_cmd_action_workspace)) { return dal_c_CmdAction_workspace; }
-    if (str_eql(str, dal_c_cmd_action_project)) { return dal_c_CmdAction_project; }
-    if (str_eql(str, dal_c_cmd_action_build_dsl)) { return dal_c_CmdAction_build_dsl; }
-    if (str_eql(str, dal_c_cmd_action_test_dsl)) { return dal_c_CmdAction_test_dsl; }
-    if (str_eql(str, dal_c_cmd_action_clean_dsl)) { return dal_c_CmdAction_clean_dsl; }
-    if (str_eql(str, dal_c_cmd_action_build_self)) { return dal_c_CmdAction_build_self; }
-    if (str_eql(str, dal_c_cmd_action_clean_self)) { return dal_c_CmdAction_clean_self; }
-    if (str_eql(str, dal_c_cmd_action_toolchain)) { return dal_c_CmdAction_toolchain; }
-    if (str_eql(str, dal_c_cmd_action_compile_db)) { return dal_c_CmdAction_compile_db; }
-    if (str_eql(str, dal_c_cmd_action_syntax)) { return dal_c_CmdAction_syntax; }
-    if (str_eql(str, dal_c_cmd_action_tidy)) { return dal_c_CmdAction_tidy; }
-    if (str_eql(str, dal_c_cmd_action_format)) { return dal_c_CmdAction_format_code; }
-    if (str_eql(str, dal_c_cmd_action_help)) { return dal_c_CmdAction_help; }
-    if (str_eql(str, dal_c_cmd_action_version)) { return dal_c_CmdAction_version; }
+    for (int i = 0; i < dal_c_CmdAction_count; ++i) {
+        if (str_eql(str, dal_c_cmd_action_specs[i].name)) {
+            return (dal_c_CmdAction)i;
+        }
+    }
     return dal_c_CmdAction_invalid;
 }
 static inline const char* dal_c_CmdAction_format(dal_c_CmdAction action) {
-    switch (action) {
-    case dal_c_CmdAction_build: return dal_c_cmd_action_build;
-    case dal_c_CmdAction_lib: return dal_c_cmd_action_lib;
-    case dal_c_CmdAction_run: return dal_c_cmd_action_run;
-    case dal_c_CmdAction_test: return dal_c_cmd_action_test;
-    case dal_c_CmdAction_deps: return dal_c_cmd_action_deps;
-    case dal_c_CmdAction_clean: return dal_c_cmd_action_clean;
-    case dal_c_CmdAction_workspace: return dal_c_cmd_action_workspace;
-    case dal_c_CmdAction_project: return dal_c_cmd_action_project;
-    case dal_c_CmdAction_build_dsl: return dal_c_cmd_action_build_dsl;
-    case dal_c_CmdAction_test_dsl: return dal_c_cmd_action_test_dsl;
-    case dal_c_CmdAction_clean_dsl: return dal_c_cmd_action_clean_dsl;
-    case dal_c_CmdAction_build_self: return dal_c_cmd_action_build_self;
-    case dal_c_CmdAction_clean_self: return dal_c_cmd_action_clean_self;
-    case dal_c_CmdAction_toolchain: return dal_c_cmd_action_toolchain;
-    case dal_c_CmdAction_compile_db: return dal_c_cmd_action_compile_db;
-    case dal_c_CmdAction_syntax: return dal_c_cmd_action_syntax;
-    case dal_c_CmdAction_tidy: return dal_c_cmd_action_tidy;
-    case dal_c_CmdAction_format_code: return dal_c_cmd_action_format;
-    case dal_c_CmdAction_help: return dal_c_cmd_action_help;
-    case dal_c_CmdAction_version: return dal_c_cmd_action_version;
-    case dal_c_CmdAction_invalid:
-    default: return NULL;
-    }
+    const dal_c_CmdActionSpec* spec = dal_c_CmdActionSpec_by(action);
+    return spec ? spec->name : NULL;
+}
+static inline dal_c_Profile dal_c_CmdAction_defaultProfile(dal_c_CmdAction action) {
+    const dal_c_CmdActionSpec* spec = dal_c_CmdActionSpec_by(action);
+    return spec ? spec->default_profile : dal_c_default_profile;
 }
 
 /// === COMMAND LINE OPTIONS ===
@@ -1428,7 +1434,6 @@ char* dal_c_Project_getDepsDir(const dal_c_Project* proj);
 #define dal_c_default_macro_backtrace_limit 8
 #define dal_c_macro_backtrace_limit_short "short"
 #define dal_c_macro_backtrace_limit_unlimited "unlimited"
-#define dal_c_default_profile dal_c_Profile_dev
 #define dal_c_default_elapsed_precision 2
 #define dal_c_max_elapsed_precision 9
 
